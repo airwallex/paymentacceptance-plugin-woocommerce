@@ -50,8 +50,8 @@ add_action('plugins_loaded', 'airwallex_init');
 add_action('wp_footer', function () {
     global $airwallexIsCheckout;
 
-$orderService = new \Airwallex\Services\OrderService();
-    var_dump($orderService->getRefundByAmountAndTime(41, 5, date('Y-m-d H:i:s')));die;
+    $orderService = new \Airwallex\Services\OrderService();
+    
 
 
     $isCheckout          = is_checkout();
