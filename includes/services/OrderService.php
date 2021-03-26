@@ -65,10 +65,10 @@ class OrderService
                 number_format($amount, 2)
             ]
         );
-        //echo $q;
         if($row = $wpdb->get_row($q)){
             return $row->ID;
         }
+        return null;
     }
 
     /**

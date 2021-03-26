@@ -1,18 +1,18 @@
 const AirwallexClient = {
-    getCustomerInformation: function(fieldId, parameterName){
-        const $inputField = jQuery( '#' + fieldId );
-        if($inputField.length){
+    getCustomerInformation: function (fieldId, parameterName) {
+        const $inputField = jQuery('#' + fieldId);
+        if ($inputField.length) {
             return $inputField.val();
-        }else if(typeof AirwallexParameters[parameterName] !== 'undefined'){
+        } else if (typeof AirwallexParameters[parameterName] !== 'undefined') {
             return AirwallexParameters[parameterName];
-        }else{
+        } else {
             return '';
         }
     },
-    getCardHolderName: function(){
+    getCardHolderName: function () {
         return String(AirwallexClient.getCustomerInformation('billing_first_name', 'billingFirstName') + ' ' + AirwallexClient.getCustomerInformation('billing_last_name', 'billingLastName')).trim();
     },
-    getBillingInformation: function(){
+    getBillingInformation: function () {
         return {
             address: {
                 city: AirwallexClient.getCustomerInformation('billing_city', 'billingCity'),
@@ -26,13 +26,13 @@ const AirwallexClient = {
             email: AirwallexClient.getCustomerInformation('billing_email', 'billingEmail'),
         }
     },
-    ajaxGet: function(url, callback) {
+    ajaxGet: function (url, callback) {
         const xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function() {
+        xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
                 try {
                     var data = JSON.parse(xmlhttp.responseText);
-                } catch(err) {
+                } catch (err) {
                     console.log(err.message + " in " + xmlhttp.responseText);
                     return;
                 }
@@ -42,17 +42,19 @@ const AirwallexClient = {
         xmlhttp.open("GET", url, true);
         xmlhttp.send();
     },
-    displayCheckoutError: function(msg){
+    displayCheckoutError: function (msg) {
         const checkout_form = jQuery('form.checkout');
-        jQuery( '.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message' ).remove();
-        checkout_form.prepend( '<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout"><ul class="woocommerce-error"><li>' + msg + '</li></ul></div>' );
-        checkout_form.removeClass( 'processing' ).unblock();
-        checkout_form.find( '.input-text, select, input:checkbox' ).trigger( 'validate' ).blur();
-        var scrollElement           = jQuery( '.woocommerce-NoticeGroup-updateOrderReview, .woocommerce-NoticeGroup-checkout' );
+        jQuery('.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message').remove();
+        checkout_form.prepend('<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout"><ul class="woocommerce-error"><li>' + msg + '</li></ul></div>');
+        checkout_form.removeClass('processing').unblock();
+        checkout_form.find('.input-text, select, input:checkbox').trigger('validate').blur();
+        var scrollElement = jQuery('.woocommerce-NoticeGroup-updateOrderReview, .woocommerce-NoticeGroup-checkout');
 
-        if ( ! scrollElement.length ) {
+        if (!scrollElement.length) {
             scrollElement = checkout_form;
         }
-        jQuery.scroll_to_notices( scrollElement );
+        if(typeof jQuery.scroll_to_notices === 'function'){
+            jQuery.scroll_to_notices(scrollElement);
+        }
     }
 };
