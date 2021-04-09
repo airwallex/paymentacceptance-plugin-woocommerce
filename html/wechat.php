@@ -16,14 +16,14 @@ $airwallexIsCheckout = false;
 ?>
     <link rel="stylesheet" href="<?php echo AIRWALLEX_PLUGIN_URL.'/assets/css/airwallex.css'; ?>" />
     <div style="max-width:800px; padding:10px; margin: 0 auto; text-align: center;">
-        <h2><?php echo __('Your WeChat Payment', 'woocommerce-gateway-airwallex'); ?></h2>
+        <h2><?php echo __('Your WeChat Payment', AIRWALLEX_PLUGIN_NAME); ?></h2>
         <div id='wechat'></div>
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130.2 130.2" id="success-check" style="display:none;">
             <circle class="path circle" fill="none" stroke="#73AF55" stroke-width="6" stroke-miterlimit="10" cx="65.1" cy="65.1" r="62.1"/>
             <polyline class="path check" fill="none" stroke="#73AF55" stroke-width="6" stroke-linecap="round" stroke-miterlimit="10" points="100.2,40.2 51.5,88.8 29.8,67.5 "/>
         </svg>
         <div id="success-message" style="display:none;">
-            <?php echo __('Please hold on while your order is completed', 'woocommerce-gateway-airwallex'); ?>
+            <?php echo __('Please hold on while your order is completed', AIRWALLEX_PLUGIN_NAME); ?>
         </div>
 
 
