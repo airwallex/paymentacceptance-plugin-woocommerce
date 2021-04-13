@@ -6,7 +6,7 @@
  * Author: Airwallex
  * Author URI: https://www.airwallex.com
  * Version: 1.0.1
- * Requires at least: 4.0
+ * Requires at least: 4.5
  * Tested up to:
  * WC requires at least: 3.0
  * WC tested up to:
