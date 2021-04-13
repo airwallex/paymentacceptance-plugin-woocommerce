@@ -1,7 +1,7 @@
 === Airwallex Online Payments Gateway ===
 Contributors: airwallex
 Tags: credit card, airwallex, online payments, wechat, alipay, woocommerce
-Requires at least: 4.0
+Requires at least: 4.5
 Tested up to: 5.6
 Stable tag: trunk
 License: GPLv3

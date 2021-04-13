@@ -9,11 +9,9 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+wp_enqueue_style('airwallex-css', AIRWALLEX_PLUGIN_URL.'/assets/css/airwallex.css');
 get_header('shop');
-global $airwallexIsCheckout;
-$airwallexIsCheckout = false;
 ?>
-    <link rel="stylesheet" href="<?php echo AIRWALLEX_PLUGIN_URL.'/assets/css/airwallex.css'; ?>" />
     <div style="max-width:800px; padding:10px; margin: 0 auto; text-align: center;">
         <h2><?php echo __('Enter your credit card details to pay your order', AIRWALLEX_PLUGIN_NAME); ?></h2>
         <div id="full-featured-card" style="max-width:500px;margin:0 auto;"></div>
@@ -25,18 +23,20 @@ $airwallexIsCheckout = false;
             <?php echo __('Please hold on while your order is completed', AIRWALLEX_PLUGIN_NAME); ?>
         </div>
     </div>
-    <script src="<?php echo AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-checkout.js'; ?>"></script>
-    <script src="<?php echo AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-local.js'; ?>"></script>
+<?php
 
-    <script>
+wp_enqueue_script('airwallex-lib-js', AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-checkout.js', [], false, true);
+wp_enqueue_script('airwallex-local-js', AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-local.js', [], false, true);
+$environment = $isSandbox?'demo':'prod';
+$inlineJs = <<<AIRWALLEX
         Airwallex.init({
-            env: '<?php echo $isSandbox?'demo':'prod'; ?>',
+            env: '$environment',
             origin: window.location.origin,
         });
         const fullFeaturedCard = Airwallex.createElement('fullFeaturedCard', {
             intent: {
-                id: '<?php echo $paymentIntentId; ?>',
-                client_secret: '<?php echo $paymentIntentClientSecret; ?>'
+                id: '$paymentIntentId',
+                client_secret: '$paymentIntentClientSecret'
             }
         });
         fullFeaturedCard.mount('full-featured-card');
@@ -55,6 +55,6 @@ $airwallexIsCheckout = false;
         window.addEventListener('onError', (event) => {
             location.href = AirwallexParameters.confirmationUrl;
         });
-    </script>
-
-<?php get_footer('shop');
+AIRWALLEX;
+wp_add_inline_script('airwallex-local-js', $inlineJs);
+get_footer('shop');

@@ -56,15 +56,7 @@ class Card extends WC_Payment_Gateway
     {
         if ($this->get_option('checkout_form_type') === 'inline') {
             echo '<p>' . $this->description . '</p>';
-            echo '<div id="airwallex-card"></div>
-                    <script>
-                        try{
-                            airwallexSlimCard.mount(\'airwallex-card\');
-                        }catch (e) {
-                            //silent
-                        }
-                    </script>
-                    ';
+            echo '<div id="airwallex-card"></div>';
         } else {
             parent::payment_fields();
         }

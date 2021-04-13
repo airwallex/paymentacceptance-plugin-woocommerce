@@ -69,8 +69,8 @@ abstract class AbstractClient
     {
         $client      = $this->getHttpClient();
         $response    = $client->call('POST', $this->getAuthUrl('authentication/login'), null, [
-            'x-client-id: ' . $this->clientId,
-            'x-api-key: ' . $this->apiKey,
+            'x-client-id'=>$this->clientId,
+            'x-api-key'=> $this->apiKey
         ]);
         $this->token = $response->data['token'];
     }
@@ -163,7 +163,7 @@ abstract class AbstractClient
             $this->getPciUrl('pa/payment_intents/create'),
             json_encode($data),
             [
-                'Authorization: Bearer ' . $this->getToken(),
+                'Authorization'=>'Bearer ' . $this->getToken(),
             ]
         );
 
@@ -190,7 +190,7 @@ abstract class AbstractClient
             $this->getPciUrl('pa/payment_intents/' . $paymentIntentId),
             '',
             [
-                'Authorization: Bearer ' . $this->getToken(),
+                'Authorization'=>'Bearer ' . $this->getToken()
             ]
         );
 
@@ -218,7 +218,7 @@ abstract class AbstractClient
             $this->getPciUrl('pa/payment_intents/' . $paymentIntentId . '/capture'),
             json_encode(['amount' => $amount, 'request_id' => uniqid()]),
             [
-                'Authorization: Bearer ' . $this->getToken(),
+                'Authorization'=>'Bearer ' . $this->getToken()
             ]
         );
         return new PaymentIntent($response->data);
@@ -254,7 +254,7 @@ abstract class AbstractClient
                 ]
             ),
             [
-                'Authorization: Bearer ' . $this->getToken(),
+                'Authorization'=>'Bearer ' . $this->getToken()
             ]
         );
 

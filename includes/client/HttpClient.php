@@ -3,27 +3,13 @@
 namespace Airwallex\Client;
 
 use Exception;
+use WP_Error;
 
 class HttpClient
 {
     private $lastCallInfo = null;
 
-    /**
-     * @param $url
-     * @return resource
-     */
-    private function getCurlResource($url)
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_PORT, 443);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HEADER, false);
 
-        return $ch;
-    }
 
     /**
      * @param $method
@@ -35,34 +21,37 @@ class HttpClient
      */
     private function httpSend($method, $url, $data, $headers)
     {
-        $headers[] = 'Content-Type: application/json';
-        $headers[] = 'x-api-version: 2020-04-30';
-        $ch        = $this->getCurlResource($url);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        $headers['Content-Type'] = 'application/json';
+        $headers['x-api-version'] = '2020-04-30';
 
-        return $this->execute($ch);
-    }
+        if($method === 'POST'){
+            $response = wp_remote_post( $url, array(
+                    'method'      => 'POST',
+                    'timeout'     => 10,
+                    'redirection' => 5,
+                    'headers'     => $headers,
+                    'body'        => $data,
+                    'cookies'     => []
+                )
+            );
+        }else{
+            $response = wp_remote_get(
+                $url,
+                [
+                    'headers'=>$headers
+                ]
+            );
 
-    /**
-     * @param $ch
-     * @return bool|string
-     * @throws Exception
-     */
-    private function execute($ch)
-    {
-        $response = curl_exec($ch);
-        if ($response === false) {
-            $errorMsg = "CURL error: " . curl_error($ch);
-            curl_close($ch);
-            throw new Exception($errorMsg);
-        } else {
-            $this->lastCallInfo = curl_getinfo($ch);
         }
-        curl_close($ch);
-        return $response;
+        if(get_class($response) === WP_Error::class){
+            throw new Exception($response->get_error_message(), $response->get_error_code());
+        }
+        $this->lastCallInfo = [
+            'http_code'=>wp_remote_retrieve_response_code($response)
+        ];
+        return wp_remote_retrieve_body($response);
     }
+
 
     /**
      * @param $method
