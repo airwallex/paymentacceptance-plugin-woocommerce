@@ -1,4 +1,10 @@
 #airwallex-card{
     max-width:100%;
-    margin:0 auto;
+    border: 1px solid rgb(217, 217, 217);
+    width: 100%;
+    margin-left: 0;
+    box-shadow: none;
+    background: white;
+    padding: 15px 12px;
+    border-radius: 5px;    
 }

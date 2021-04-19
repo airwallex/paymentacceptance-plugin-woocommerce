@@ -3,7 +3,7 @@ Contributors: airwallex
 Tags: credit card, airwallex, online payments, wechat, alipay, woocommerce
 Requires at least: 4.5
 Tested up to: 5.7
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Author URI: https://www.airwallex.com
@@ -40,4 +40,25 @@ FEATURES
 * Full synchronisation between Airwallex’s Webapp and WooCommerce backoffice Admin
 * Embedded Fraud protection via Airwallex merchant portal, where the merchant can decide on risk appetite
 * Reporting
+
+
+== Changelog ==
+
+= 1.0.2 =
+*Release Date - 19 April 2021*
+
+* Improved CSS for better checkout experience
+
+= 1.0.1 =
+*Release Date - 13 April 2021*
+
+* Refactored JS
+* Replacing of curl with wp-core
+* Compatibility with checkoutWC plugin
+
+= 1.0.0 =
+*Release Date - 19 Marc 2021*
+
+* Initial version
+
 

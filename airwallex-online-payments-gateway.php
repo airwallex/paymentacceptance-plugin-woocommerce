@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 /**
  * Required minimums and constants
  */
-define('AIRWALLEX_VERSION', '1.0.1');
+define('AIRWALLEX_VERSION', '1.0.2');
 define('AIRWALLEX_PLUGIN_URL', untrailingslashit(plugins_url(basename(plugin_dir_path(__FILE__)), basename(__FILE__))));
 define('AIRWALLEX_PLUGIN_PATH', __DIR__ . '/');
 define('AIRWALLEX_PLUGIN_NAME', 'airwallex-online-payments-gateway');
