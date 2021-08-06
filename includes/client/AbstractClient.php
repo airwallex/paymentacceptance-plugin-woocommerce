@@ -119,7 +119,7 @@ abstract class AbstractClient
 
                 $orderData['products'][] = [
                     'desc' => $item->get_name(),
-                    'name' => $item->get_name(),
+                    'name' => (mb_strlen($item->get_name())<=120?$item->get_name():mb_substr($item->get_name(), 0, 117).'...'),
                     'quantity' => $item->get_quantity(),
                     'sku' => $sku,
                     'type' => 'physical',

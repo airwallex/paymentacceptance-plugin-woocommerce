@@ -43,7 +43,7 @@ class HttpClient
             );
 
         }
-        if(get_class($response) === WP_Error::class){
+        if(is_object($response) && get_class($response) === WP_Error::class){
             throw new Exception($response->get_error_message(), $response->get_error_code());
         }
         $this->lastCallInfo = [
