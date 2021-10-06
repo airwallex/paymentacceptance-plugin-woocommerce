@@ -26,7 +26,7 @@ class Card extends WC_Payment_Gateway
     public $method_description;
     public $title = 'Airwallex Credit Card';
     public $description = 'Use any credit card with Airwallex';
-    public $icon = '';
+    public $icon = AIRWALLEX_PLUGIN_URL.'/assets/images/airwallex_cc_icon.svg';
     public $id = self::GATEWAY_ID;
     public $plugin_id;
     public $supports = [

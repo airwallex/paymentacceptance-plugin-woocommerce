@@ -3,6 +3,8 @@
 namespace Airwallex\Services;
 
 
+use Airwallex\AbstractClient;
+use Exception;
 use WC_Order;
 use wpdb;
 
@@ -94,4 +96,25 @@ class OrderService
         }
         return null;
     }
+
+    /**
+     * @param int $wordpressCustomerId
+     * @param AbstractClient $client
+     * @return int|mixed
+     * @throws Exception
+     */
+    public function getAirwallexCustomerId($wordpressCustomerId, AbstractClient $client){
+        if($customer = $client->getCustomer($wordpressCustomerId)){
+            return $customer->getId();
+        }
+        $customer = $client->createCustomer($wordpressCustomerId);
+        return $customer->getId();
+    }
+
+
+    public function containsSubscription($orderId)
+    {
+        return (function_exists('wcs_order_contains_subscription') && (wcs_order_contains_subscription($orderId) || wcs_is_subscription($orderId) || wcs_order_contains_renewal($orderId)));
+    }
+
 }

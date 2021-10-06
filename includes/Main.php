@@ -3,6 +3,7 @@
 namespace Airwallex;
 
 use Airwallex\Gateways\Card;
+use Airwallex\Gateways\CardSubscriptions;
 use Airwallex\Gateways\WeChat;
 use Airwallex\Services\LogService;
 use AirwallexController;
@@ -87,7 +88,7 @@ class Main
                                 <br>',
                 ],
                 'client_id' => [
-                    'title' => __('Client ID', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Unique Client ID', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'text',
                     'desc' => '',
                     'id' => 'airwallex_client_id',
@@ -126,8 +127,12 @@ class Main
 
     public function addPaymentGateways($gateways)
     {
-        $gateways[] = '\\Airwallex\\Gateways\\Card';
-        $gateways[] = '\\Airwallex\\Gateways\\WeChat';
+        if ( class_exists( 'WC_Subscriptions_Order' ) && function_exists( 'wcs_create_renewal_order' ) ) {
+            $gateways[] = CardSubscriptions::class;
+        }else {
+            $gateways[] = Card::class;
+        }
+        $gateways[] = WeChat::class;
         return $gateways;
     }
 
@@ -203,6 +208,7 @@ class Main
                 }
             }
         }
+
         if (!$isCheckout) {
             wp_enqueue_script('airwallex-js');
             wp_add_inline_script( 'airwallex-js', $inlineScript);
@@ -286,28 +292,46 @@ class Main
             if (!data) {
                 AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', ''));
             }
-            Airwallex.confirmPaymentIntent({
-                element: airwallexSlimCard,
-                id: data.paymentIntent,
-                client_secret: data.clientSecret,
-                payment_method: {
-                    card: {
-                        name: AirwallexClient.getCardHolderName()
+            if(data.createConsent){
+                Airwallex.createPaymentConsent({
+                    intent_id: data.paymentIntent,
+                    customer_id: data.customerId,
+                    client_secret: data.clientSecret,
+                    currency: data.currency,
+                    element: airwallexSlimCard,
+                    next_triggered_by: 'merchant'
+                }).then((response) => {
+                    location.href = AirwallexParameters.confirmationUrl;
+                }).catch(err => {
+                    console.log(err);
+                    jQuery('form.checkout').unblock();
+                    AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', err.message || ''));
+                });
+            }else{
+                Airwallex.confirmPaymentIntent({
+                    element: airwallexSlimCard,
+                    id: data.paymentIntent,
+                    client_secret: data.clientSecret,
+                    payment_method: {
+                        card: {
+                            name: AirwallexClient.getCardHolderName()
+                        },
+                        billing: AirwallexClient.getBillingInformation()
                     },
-                    billing: AirwallexClient.getBillingInformation()
-                },
-                payment_method_options: {
-                    card: {
-                        auto_capture: $autoCapture,
-                    },
-                }
-            }).then((response) => {
-                location.href = AirwallexParameters.confirmationUrl;
-            }).catch(err => {
-                console.log(err);
-                jQuery('form.checkout').unblock();
-                AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', err.message || ''));
-            })
+                    payment_method_options: {
+                        card: {
+                            auto_capture: $autoCapture,
+                        },
+                    }
+                }).then((response) => {
+                    location.href = AirwallexParameters.confirmationUrl;
+                }).catch(err => {
+                    console.log(err);
+                    jQuery('form.checkout').unblock();
+                    AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', err.message || ''));
+                })
+            }
+            
         });
     }
     

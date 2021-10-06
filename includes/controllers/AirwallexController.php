@@ -4,6 +4,7 @@ use Airwallex\CardClient;
 use Airwallex\Gateways\Card;
 use Airwallex\Gateways\WeChat;
 use Airwallex\Services\LogService;
+use Airwallex\Services\OrderService;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\WeChatClient;
 
@@ -13,20 +14,20 @@ class AirwallexController
     {
         try {
             $apiClient = CardClient::getInstance();
-            $orderId   = (int)WC()->session->get('airwallex_order');
+            $orderId = (int)WC()->session->get('airwallex_order');
             if (empty($orderId)) {
                 $orderId = (int)WC()->session->get('order_awaiting_payment');
             }
             $gateway = new Card();
-            $order   = wc_get_order($orderId);
+            $order = wc_get_order($orderId);
             if (empty($order)) {
                 throw new Exception('Order not found: ' . $orderId);
             }
-            $paymentIntent             = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $gateway->is_submit_order_details());
-            $paymentIntentId           = $paymentIntent->getId();
+            $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $gateway->is_submit_order_details());
+            $paymentIntentId = $paymentIntent->getId();
             $paymentIntentClientSecret = $paymentIntent->getClientSecret();
-            $confirmationUrl           = $gateway->get_payment_confirmation_url();
-            $isSandbox                 = $gateway->is_sandbox() ? 'demo' : 'prod';
+            $confirmationUrl = $gateway->get_payment_confirmation_url();
+            $isSandbox = $gateway->is_sandbox() ? 'demo' : 'prod';
             WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
             include AIRWALLEX_PLUGIN_PATH . '/html/card-payment.php';
             die;
@@ -43,20 +44,20 @@ class AirwallexController
     {
         try {
             $apiClient = WeChatClient::getInstance();
-            $orderId   = (int)WC()->session->get('airwallex_order');
+            $orderId = (int)WC()->session->get('airwallex_order');
             if (empty($orderId)) {
                 $orderId = (int)WC()->session->get('order_awaiting_payment');
             }
             $gateway = new WeChat();
-            $order   = wc_get_order($orderId);
+            $order = wc_get_order($orderId);
             if (empty($order)) {
                 throw new Exception('Order not found: ' . $orderId);
             }
-            $paymentIntent             = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $gateway->is_submit_order_details());
-            $paymentIntentId           = $paymentIntent->getId();
+            $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $gateway->is_submit_order_details());
+            $paymentIntentId = $paymentIntent->getId();
             $paymentIntentClientSecret = $paymentIntent->getClientSecret();
-            $confirmationUrl           = $gateway->get_payment_confirmation_url();
-            $isSandbox                 = $gateway->is_sandbox() ? 'demo' : 'prod';
+            $confirmationUrl = $gateway->get_payment_confirmation_url();
+            $isSandbox = $gateway->is_sandbox() ? 'demo' : 'prod';
             WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
 
             include AIRWALLEX_PLUGIN_PATH . '/html/wechat.php';
@@ -77,21 +78,29 @@ class AirwallexController
     {
         try {
             $apiClient = CardClient::getInstance();
-            $orderId   = (int)WC()->session->get('airwallex_order');
+            $orderId = (int)WC()->session->get('airwallex_order');
             if (empty($orderId)) {
                 $orderId = (int)WC()->session->get('order_awaiting_payment');
             }
             $gateway = new Card();
-            $order   = wc_get_order($orderId);
+            $order = wc_get_order($orderId);
             if (empty($order)) {
                 throw new Exception('Order not found: ' . $orderId);
             }
-            $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $gateway->is_submit_order_details());
+            $orderService = new OrderService();
+            $airwallexCustomerId = null;
+            if ($orderService->containsSubscription($order->get_id())) {
+                $airwallexCustomerId = $orderService->getAirwallexCustomerId($order->get_customer_id(''), $apiClient);
+            }
+            $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $gateway->is_submit_order_details(), $airwallexCustomerId);
             WC()->session->set('airwallex_payment_intent_id', $paymentIntent->getId());
             header('Content-Type: application/json');
             http_response_code(200);
             echo json_encode([
                 'paymentIntent' => $paymentIntent->getId(),
+                'createConsent'=>!empty($airwallexCustomerId),
+                'customerId'=>!empty($airwallexCustomerId)?$airwallexCustomerId:'',
+                'currency'=>$order->get_currency(''),
                 'clientSecret' => $paymentIntent->getClientSecret(),
             ]);
             die;
@@ -109,9 +118,9 @@ class AirwallexController
     {
         try {
             $paymentIntentId = WC()->session->get('airwallex_payment_intent_id');
-            $apiClient       = CardClient::getInstance();
-            $paymentIntent   = $apiClient->getPaymentIntent($paymentIntentId);
-            $orderId         = (int)WC()->session->get('airwallex_order');
+            $apiClient = CardClient::getInstance();
+            $paymentIntent = $apiClient->getPaymentIntent($paymentIntentId);
+            $orderId = (int)WC()->session->get('airwallex_order');
             if (empty($orderId)) {
                 $orderId = (int)WC()->session->get('order_awaiting_payment');
             }
@@ -119,6 +128,14 @@ class AirwallexController
             if (empty($order)) {
                 throw new Exception('Order not found: ' . $orderId);
             }
+
+            if($paymentIntent->getPaymentConsentId()){
+                $order->add_meta_data('airwallex_consent_id', $paymentIntent->getPaymentConsentId());
+                $order->add_meta_data('airwallex_customer_id', $paymentIntent->getCustomerId());
+                $order->save();
+            }
+
+
             if (!in_array($paymentIntent->getStatus(), [PaymentIntent::STATUS_REQUIRES_CAPTURE, PaymentIntent::STATUS_SUCCEEDED], true)) {
                 //no valid payment intent
                 wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
@@ -171,7 +188,7 @@ class AirwallexController
 
     public function webhook()
     {
-        $body           = file_get_contents('php://input');
+        $body = file_get_contents('php://input');
         $webhookService = new \Airwallex\Services\WebhookService();
         try {
             $webhookService->process($this->getRequestHeaders(), $body);

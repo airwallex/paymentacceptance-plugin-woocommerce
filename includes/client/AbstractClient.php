@@ -3,6 +3,7 @@
 namespace Airwallex;
 
 use Airwallex\Client\HttpClient;
+use Airwallex\Struct\Customer;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
 use Exception;
@@ -67,10 +68,10 @@ abstract class AbstractClient
      */
     final protected function doAuth()
     {
-        $client      = $this->getHttpClient();
-        $response    = $client->call('POST', $this->getAuthUrl('authentication/login'), null, [
-            'x-client-id'=>$this->clientId,
-            'x-api-key'=> $this->apiKey
+        $client = $this->getHttpClient();
+        $response = $client->call('POST', $this->getAuthUrl('authentication/login'), null, [
+            'x-client-id' => $this->clientId,
+            'x-api-key' => $this->apiKey,
         ]);
         $this->token = $response->data['token'];
     }
@@ -82,20 +83,21 @@ abstract class AbstractClient
      * @return PaymentIntent
      * @throws Exception
      */
-    final public function createPaymentIntent($amount, $orderId, $withDetails = false)
+    final public function createPaymentIntent($amount, $orderId, $withDetails = false, $customerId = null)
     {
         $client = $this->getHttpClient();
-        $order  = wc_get_order((int)$orderId);
-        $data   = [
-            'amount' => $amount,
-            'currency' => $order->get_currency(),
-            'descriptor' => str_replace('%order%', $orderId, $this->paymentDescriptor),
-            'merchant_order_id' => $orderId,
-            'order' => [
-                'type' => 'physical_goods',
-            ],
-            'request_id' => uniqid(),
-        ];
+        $order = wc_get_order((int)$orderId);
+        $data = [
+                'amount' => $amount,
+                'currency' => $order->get_currency(),
+                'descriptor' => str_replace('%order%', $orderId, $this->paymentDescriptor),
+                'merchant_order_id' => $orderId,
+                'order' => [
+                    'type' => 'physical_goods',
+                ],
+                'request_id' => uniqid(),
+            ]
+            + ($customerId !== null ? ['customer_id' => $customerId] : []);
         if ($withDetails) {
 
             $orderData = [
@@ -119,7 +121,7 @@ abstract class AbstractClient
 
                 $orderData['products'][] = [
                     'desc' => $item->get_name(),
-                    'name' => (mb_strlen($item->get_name())<=120?$item->get_name():mb_substr($item->get_name(), 0, 117).'...'),
+                    'name' => (mb_strlen($item->get_name()) <= 120 ? $item->get_name() : mb_substr($item->get_name(), 0, 117) . '...'),
                     'quantity' => $item->get_quantity(),
                     'sku' => $sku,
                     'type' => 'physical',
@@ -163,7 +165,7 @@ abstract class AbstractClient
             $this->getPciUrl('pa/payment_intents/create'),
             json_encode($data),
             [
-                'Authorization'=>'Bearer ' . $this->getToken(),
+                'Authorization' => 'Bearer ' . $this->getToken(),
             ]
         );
 
@@ -171,6 +173,38 @@ abstract class AbstractClient
             throw new Exception('payment intent creation failed: ' . json_encode($response));
         }
 
+        return new PaymentIntent($response->data);
+    }
+
+
+    /**
+     * @param $paymentIntentId
+     * @param $paymentConsentId
+     * @return PaymentIntent
+     * @throws Exception
+     */
+    final public function confirmPaymentIntent($paymentIntentId, $paymentConsentId)
+    {
+        if (empty($paymentIntentId)) {
+            throw new Exception('payment intent id empty');
+        }
+        if (empty($paymentConsentId)) {
+            throw new Exception('payment consent id empty');
+        }
+        $client = $this->getHttpClient();
+        $response = $client->call(
+            'POST',
+            $this->getPciUrl('pa/payment_intents/' . $paymentIntentId . '/confirm'),
+            json_encode([
+                'payment_consent_reference' => [
+                    'id' => $paymentConsentId,
+                ],
+                'request_id' => uniqid(),
+            ]),
+            [
+                'Authorization' => 'Bearer ' . $this->getToken(),
+            ]
+        );
         return new PaymentIntent($response->data);
     }
 
@@ -184,20 +218,19 @@ abstract class AbstractClient
         if (empty($paymentIntentId)) {
             throw new Exception('payment intent id empty');
         }
-        $client   = $this->getHttpClient();
+        $client = $this->getHttpClient();
         $response = $client->call(
             'GET',
             $this->getPciUrl('pa/payment_intents/' . $paymentIntentId),
             '',
             [
-                'Authorization'=>'Bearer ' . $this->getToken()
+                'Authorization' => 'Bearer ' . $this->getToken(),
             ]
         );
 
         if ($response->status !== 200) {
             throw new Exception('unable to get payment intent: ' . json_encode($response));
         }
-
         return new PaymentIntent($response->data);
     }
 
@@ -212,13 +245,13 @@ abstract class AbstractClient
         if (empty($paymentIntentId)) {
             throw new Exception('payment intent id empty');
         }
-        $client   = $this->getHttpClient();
+        $client = $this->getHttpClient();
         $response = $client->call(
             'POST',
             $this->getPciUrl('pa/payment_intents/' . $paymentIntentId . '/capture'),
             json_encode(['amount' => $amount, 'request_id' => uniqid()]),
             [
-                'Authorization'=>'Bearer ' . $this->getToken()
+                'Authorization' => 'Bearer ' . $this->getToken(),
             ]
         );
         return new PaymentIntent($response->data);
@@ -239,7 +272,7 @@ abstract class AbstractClient
         $client = $this->getHttpClient();
         if ($amount === null) {
             $paymentIntent = $this->getPaymentIntent($paymentIntentId);
-            $amount        = $paymentIntent->getCapturedAmount();
+            $amount = $paymentIntent->getCapturedAmount();
         }
 
         $response = $client->call(
@@ -254,7 +287,7 @@ abstract class AbstractClient
                 ]
             ),
             [
-                'Authorization'=>'Bearer ' . $this->getToken()
+                'Authorization' => 'Bearer ' . $this->getToken(),
             ]
         );
 
@@ -264,5 +297,82 @@ abstract class AbstractClient
 
         return new Refund($response->data);
 
+    }
+
+
+    final public function createCustomer($wordpressCustomerId)
+    {
+        if (empty($wordpressCustomerId)) {
+            throw new Exception('customer id must not be empty');
+        }
+        $client = $this->getHttpClient();
+
+        $response = $client->call(
+            'POST',
+            $this->getPciUrl('pa/customers/create'),
+            json_encode(
+                [
+                    'merchant_customer_id' => $wordpressCustomerId,
+                    'request_id' => uniqid(),
+                    //TODO add details
+                ]
+            ),
+            [
+                'Authorization' => 'Bearer ' . $this->getToken(),
+            ]
+        );
+
+        if (empty($response->data['id'])) {
+            throw new Exception('customer creation failed: ' . json_encode($response));
+        }
+
+        return new Customer($response->data);
+    }
+
+    final public function getCustomer($wordpressCustomerId)
+    {
+        if (empty($wordpressCustomerId)) {
+            throw new Exception('customer id must not be empty');
+        }
+        $client = $this->getHttpClient();
+
+        $response = $client->call(
+            'GET',
+            $this->getPciUrl('pa/customers?' . http_build_query(
+                    [
+                        'merchant_customer_id' => $wordpressCustomerId,
+                    ]
+                )
+            ),
+            null,
+            [
+                'Authorization' => 'Bearer ' . $this->getToken(),
+            ]
+        );
+        if (empty($response->data['items'])) {
+            return null;
+        }
+        return new Customer($response->data['items'][0]);
+    }
+
+    public function createCustomerClientSecret($airwallexCustomerId)
+    {
+        if (empty($airwallexCustomerId)) {
+            throw new Exception('customer id must not be empty');
+        }
+        $client = $this->getHttpClient();
+
+        $response = $client->call(
+            'GET',
+            $this->getPciUrl(sprintf('/pa/customers/%s/generate_client_secret', $airwallexCustomerId)),
+            null,
+            [
+                'Authorization' => 'Bearer ' . $this->getToken(),
+            ]
+        );
+        if (empty($response->data['client_secret'])) {
+            throw new Exception('customer secret creation failed: ' . json_encode($response));
+        }
+        return $response->data['client_secret'];
     }
 }

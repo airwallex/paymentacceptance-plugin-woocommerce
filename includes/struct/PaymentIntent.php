@@ -2,7 +2,8 @@
 
 namespace Airwallex\Struct;
 
-class PaymentIntent extends AbstractBase{
+class PaymentIntent extends AbstractBase
+{
     const STATUS_REQUIRES_CAPTURE = 'REQUIRES_CAPTURE';
     const STATUS_SUCCEEDED = 'SUCCEEDED';
 
@@ -20,6 +21,47 @@ class PaymentIntent extends AbstractBase{
     protected $updatedAt;
     protected $clientSecret;
     protected $latestPaymentAttempt;
+    protected $paymentConsentId;
+    protected $customerId;
+
+    /**
+     * @return mixed
+     */
+    public function getCustomerId()
+    {
+        return $this->customerId;
+    }
+
+    /**
+     * @param mixed $customerId
+     * @return PaymentIntent
+     */
+    public function setCustomerId($customerId)
+    {
+        $this->customerId = $customerId;
+        return $this;
+    }
+
+
+
+    /**
+     * @return mixed
+     */
+    public function getPaymentConsentId()
+    {
+        return $this->paymentConsentId;
+    }
+
+    /**
+     * @param mixed $paymentConsentId
+     * @return PaymentIntent
+     */
+    public function setPaymentConsentId($paymentConsentId)
+    {
+        $this->paymentConsentId = $paymentConsentId;
+        return $this;
+    }
+
 
     /**
      * @return mixed
@@ -273,8 +315,6 @@ class PaymentIntent extends AbstractBase{
         $this->updatedAt = $updatedAt;
         return $this;
     }
-
-
 
 
 }
