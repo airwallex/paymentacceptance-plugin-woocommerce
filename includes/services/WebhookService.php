@@ -18,18 +18,20 @@ class WebhookService
      */
     public function process($headers, $msg)
     {
+        $logService = new LogService();
         try{
             $this->verifySignature($headers, $msg);
         }catch (Exception $e){
-            (new LogService())->warning('unable to verify webhook signature', [$headers, $msg]);
+            $logService->warning('unable to verify webhook signature', [$headers, $msg]);
             return;
         }
 
         $messageData = json_decode($msg, true);
-        (new LogService())->debug('received webhook notification', $messageData);
+        $logService->debug('received webhook notification', $messageData);
         $eventType       = $messageData['name'];
         $eventObjectType = explode('.', $eventType)[0];
         if ($eventObjectType === 'payment_intent') {
+            $logService->debug('received payment_intent webhook');
             $paymentIntent = new PaymentIntent($messageData['data']['object']);
 
             if (!$paymentIntent->getMerchantOrderId()) {
@@ -60,10 +62,17 @@ class WebhookService
                 $order->add_order_note('Airwallex Webhook notification: ' . $eventType . "\n\n" . 'Amount: ' . $paymentIntent->getAmount() . "\n\nCaptured amount: " . $paymentIntent->getCapturedAmount());
             }
         } elseif ($eventType === 'refund.processing' || $eventType === 'refund.succeeded') {
+            $logService->debug('received refund webhook');
             $orderService = new OrderService();
             $refund          = new Refund($messageData['data']['object']);
             $paymentIntentId = $refund->getPaymentIntentId();
             $order           = $orderService->getOrderByPaymentIntentId($paymentIntentId);
+            
+            if(empty($order)){
+                $logService->warning('no order found for refund', ['paymentIntent'=>$paymentIntentId]);
+                throw new Exception('no order found for refund on payment_intent '.$paymentIntentId);
+
+            }
             $order->add_order_note('Airwallex Webhook notification: ' . $eventType . "\n\n" . 'Amount: ' . $refund->getAmount());
 
             if(!$orderService->getRefundIdByAirwallexRefundId($refund->getId())){
@@ -80,7 +89,7 @@ class WebhookService
                     if($wcRefund instanceof WC_Order_Refund){
                         update_post_meta($wcRefund->get_id(), '_airwallex_refund_id', $refund->getId());
                     }else{
-                        (new LogService())->error('failed to create WC refund from webhook notification', $wcRefund);
+                        $logService->error('failed to create WC refund from webhook notification', $wcRefund);
                     }
                 }
             }
@@ -97,8 +106,9 @@ class WebhookService
 
     protected function setPaymentSuccess(\WC_Order $order, PaymentIntent $paymentIntent)
     {
+        $logService = new LogService();
         if ($paymentIntent->getStatus() === PaymentIntent::STATUS_SUCCEEDED) {
-            (new LogService())->debug('payment success', $paymentIntent->toArray());
+            $logService->debug('payment success', $paymentIntent->toArray());
             $order->payment_complete($paymentIntent->getId());
         } elseif ($paymentIntent->getStatus() === PaymentIntent::STATUS_REQUIRES_CAPTURE) {
             $apiClient   = CardClient::getInstance();
@@ -107,9 +117,9 @@ class WebhookService
                 $paymentIntentAfterCapture = $apiClient->capture($paymentIntent->getId(), $paymentIntent->getAmount());
                 if ($paymentIntentAfterCapture->getStatus() === PaymentIntent::STATUS_SUCCEEDED) {
                     $order->payment_complete($paymentIntent->getId());
-                    (new LogService())->debug('payment success', $paymentIntentAfterCapture->toArray());
+                    $logService->debug('payment success', $paymentIntentAfterCapture->toArray());
                 } else {
-                    (new LogService())->debug('capture failed', $paymentIntentAfterCapture->toArray());
+                    $logService->debug('capture failed', $paymentIntentAfterCapture->toArray());
                     $order->add_order_note('Airwallex payment failed capture');
                 }
             } else {

@@ -188,8 +188,7 @@ class Main
         $inlineScript = '
             const AirwallexParameters = {
                 asyncIntentUrl: \'' . $cardGateway->get_async_intent_url() . '\',
-                confirmationUrl: \'' . $cardGateway->get_payment_confirmation_url() . '\',
-                isCardInputComplete: false
+                confirmationUrl: \'' . $cardGateway->get_payment_confirmation_url() . '\'
             };';
         if (isset($_GET['pay_for_order']) && 'true' === $_GET['pay_for_order']) {
             global $wp;
@@ -210,8 +209,8 @@ class Main
         }
 
         if (!$isCheckout) {
-            wp_enqueue_script('airwallex-js');
-            wp_add_inline_script( 'airwallex-js', $inlineScript);
+            //separate pages for cc and wechat payment
+            define('AIRWALLEX_INLINE_JS', $inlineScript);
             return;
         }
 
@@ -273,10 +272,6 @@ class Main
     }, 1000);
     
     function confirmSlimCardPayment() {
-        if (!AirwallexParameters.isCardInputComplete) {
-            AirwallexClient.displayCheckoutError('$incompleteMessage');
-            return;
-        }
         //timeout necessary because of event order in plugin CheckoutWC
         setTimeout(function(){
             jQuery('form.checkout').block({
@@ -289,7 +284,7 @@ class Main
         }, 50);
     
         AirwallexClient.ajaxGet(AirwallexParameters.asyncIntentUrl, function (data) {
-            if (!data) {
+            if (!data || data.error) {
                 AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', ''));
             }
             if(data.createConsent){
@@ -334,14 +329,6 @@ class Main
             
         });
     }
-    
-    window.addEventListener('onChange', (event) => {
-        if (!event.detail) {
-            return;
-        }
-        const {complete} = event.detail;
-        AirwallexParameters.isCardInputComplete = complete;
-    });
     
     window.addEventListener('onError', (event) => {
         if (!event.detail) {

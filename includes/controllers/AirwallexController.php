@@ -5,6 +5,7 @@ use Airwallex\Gateways\Card;
 use Airwallex\Gateways\WeChat;
 use Airwallex\Services\LogService;
 use Airwallex\Services\OrderService;
+use Airwallex\Services\WebhookService;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\WeChatClient;
 
@@ -76,6 +77,7 @@ class AirwallexController
      */
     public function asyncIntent()
     {
+        $logService = new LogService();
         try {
             $apiClient = CardClient::getInstance();
             $orderId = (int)WC()->session->get('airwallex_order');
@@ -92,21 +94,24 @@ class AirwallexController
             if ($orderService->containsSubscription($order->get_id())) {
                 $airwallexCustomerId = $orderService->getAirwallexCustomerId($order->get_customer_id(''), $apiClient);
             }
+            $logService->debug('asyncIntent() before create', ['orderId'=>$orderId]);
             $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $gateway->is_submit_order_details(), $airwallexCustomerId);
             WC()->session->set('airwallex_payment_intent_id', $paymentIntent->getId());
             header('Content-Type: application/json');
             http_response_code(200);
-            echo json_encode([
+            $response = [
                 'paymentIntent' => $paymentIntent->getId(),
                 'createConsent'=>!empty($airwallexCustomerId),
                 'customerId'=>!empty($airwallexCustomerId)?$airwallexCustomerId:'',
                 'currency'=>$order->get_currency(''),
                 'clientSecret' => $paymentIntent->getClientSecret(),
-            ]);
+            ];
+            $logService->debug('asyncIntent() response', $response);
+            echo json_encode($response);
             die;
         } catch (Exception $e) {
-            (new LogService())->error('async intent controller action failed', $e->getMessage());
-            http_response_code(400);
+            $logService->error('async intent controller action failed', $e->getMessage());
+            http_response_code(200);
             echo json_encode([
                 'error' => 1,
             ]);
@@ -116,6 +121,7 @@ class AirwallexController
 
     public function paymentConfirmation()
     {
+        $logService = new LogService();
         try {
             $paymentIntentId = WC()->session->get('airwallex_payment_intent_id');
             $apiClient = CardClient::getInstance();
@@ -125,6 +131,9 @@ class AirwallexController
                 $orderId = (int)WC()->session->get('order_awaiting_payment');
             }
             $order = wc_get_order($orderId);
+
+            $logService->debug('paymentConfirmation() init', [$paymentIntentId, $orderId]);
+
             if (empty($order)) {
                 throw new Exception('Order not found: ' . $orderId);
             }
@@ -132,11 +141,13 @@ class AirwallexController
             if($paymentIntent->getPaymentConsentId()){
                 $order->add_meta_data('airwallex_consent_id', $paymentIntent->getPaymentConsentId());
                 $order->add_meta_data('airwallex_customer_id', $paymentIntent->getCustomerId());
+                $logService->debug('paymentConfirmation() save consent id', [$paymentIntent->toArray()]);
                 $order->save();
             }
 
 
             if (!in_array($paymentIntent->getStatus(), [PaymentIntent::STATUS_REQUIRES_CAPTURE, PaymentIntent::STATUS_SUCCEEDED], true)) {
+                $logService->warning('paymentConfirmation() invalid status', [$paymentIntent->toArray()]);
                 //no valid payment intent
                 wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
                 wp_redirect(wc_get_checkout_url());
@@ -145,7 +156,7 @@ class AirwallexController
 
             if (number_format($paymentIntent->getAmount(), 2) !== number_format($order->get_total(), 2)) {
                 //amount mismatch
-                (new LogService())->error('payment amounts did not match', $paymentIntent->toArray());
+                $logService->error('payment amounts did not match', $paymentIntent->toArray());
                 wc_add_notice('Airwallex payment error', 'error');
                 wp_redirect(wc_get_checkout_url());
                 die;
@@ -159,6 +170,7 @@ class AirwallexController
                 //handle REQUIRES_CAPTURE state (card payments only)
                 $cardGateway = new Card();
                 if ($cardGateway->is_capture_immediately()) {
+                    $logService->debug('paymentConfirmation() start capture', [$paymentIntent->toArray()]);
                     $paymentIntentAfterCapture = $apiClient->capture($paymentIntentId, $paymentIntent->getAmount());
                     if ($paymentIntentAfterCapture->getStatus() === PaymentIntent::STATUS_SUCCEEDED) {
                         $order->payment_complete($paymentIntentId);
@@ -171,6 +183,7 @@ class AirwallexController
                         die;
                     }
                 } else {
+                    $logService->debug('paymentConfirmation() payment complete', []);
                     $order->payment_complete($paymentIntentId);
                     $order->add_order_note('Airwallex payment authorized');
                 }
@@ -179,7 +192,7 @@ class AirwallexController
             wp_redirect($order->get_checkout_order_received_url());
             die;
         } catch (Exception $e) {
-            (new LogService())->error('payment confirmation controller action failed', $e->getMessage());
+            $logService->error('payment confirmation controller action failed', $e->getMessage());
             wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
             wp_redirect(wc_get_checkout_url());
             die;
@@ -188,8 +201,10 @@ class AirwallexController
 
     public function webhook()
     {
+        $logService = new LogService();
         $body = file_get_contents('php://input');
-        $webhookService = new \Airwallex\Services\WebhookService();
+        $logService->debug('webhook body', ['body'=>$body]);
+        $webhookService = new WebhookService();
         try {
             $webhookService->process($this->getRequestHeaders(), $body);
             http_response_code(200);
@@ -197,6 +212,7 @@ class AirwallexController
             echo json_encode(['success' => 1]);
             die;
         } catch (Exception $exception) {
+            $logService->warning('webhook exception', ['msg'=>$exception->getMessage()]);
             http_response_code(401);
             header('Content-Type: application/json');
             echo json_encode(['success' => 0]);

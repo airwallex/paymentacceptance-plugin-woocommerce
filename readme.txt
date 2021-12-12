@@ -3,7 +3,7 @@ Contributors: airwallex
 Tags: credit card, airwallex, online payments, wechat, alipay, woocommerce
 Requires at least: 4.5
 Tested up to: 5.7
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Author URI: https://www.airwallex.com
@@ -44,8 +44,16 @@ FEATURES
 
 == Changelog ==
 
+= 1.0.5 =
+* Release Date - 12 December 2021*
+
+* extended logging frontend, remove JS check for complete input
+* extended logging for webhooks
+* more robust JS on separate checkout pages
+* Upgrade JS lib
+
 = 1.0.4 =
-* Release Date - tca*
+* Release Date - Nov 2021*
 
 * Supporting wooCommerce subscriptions
 * Payment method icons for cards

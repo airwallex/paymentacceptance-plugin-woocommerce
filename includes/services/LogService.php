@@ -18,7 +18,7 @@ class LogService{
     }
 
     public function log($message, $level = 'debug', $data = null){
-        file_put_contents($this->getLogFile($level), '['.date('Y-m-d H:i:s').'] '.$message.' | '.serialize($data), 8);
+        file_put_contents($this->getLogFile($level), '['.date('Y-m-d H:i:s').'] '.$message.' | '.serialize($data)."\n", 8);
     }
 
     public function debug($message, $data = null){

@@ -27,7 +27,9 @@ get_header('shop');
 
 wp_enqueue_script('airwallex-lib-js', AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-checkout.js', [], false, true);
 wp_enqueue_script('airwallex-local-js', AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-local.js', [], false, true);
-
+if(defined('AIRWALLEX_INLINE_JS')){
+    wp_add_inline_script( 'airwallex-local-js', AIRWALLEX_INLINE_JS);
+}
 $environment = $isSandbox?'demo':'prod';
 $inlineJs = <<<AIRWALLEX
         Airwallex.init({
