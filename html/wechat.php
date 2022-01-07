@@ -14,6 +14,9 @@ get_header('shop');
 ?>
     <div style="max-width:800px; padding:10px; margin: 0 auto; text-align: center;">
         <h2><?php echo __('Your WeChat Payment', AIRWALLEX_PLUGIN_NAME); ?></h2>
+        <div id="airwallex-error-message" class="woocommerce-error" style="display:none;">
+            <?php echo __('Your payment could not be authenticated', AIRWALLEX_PLUGIN_NAME); ?>
+        </div>
         <div id='wechat'></div>
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130.2 130.2" id="success-check" style="display:none;">
             <circle class="path circle" fill="none" stroke="#73AF55" stroke-width="6" stroke-miterlimit="10" cx="65.1" cy="65.1" r="62.1"/>
@@ -22,8 +25,6 @@ get_header('shop');
         <div id="success-message" style="display:none;">
             <?php echo __('Please hold on while your order is completed', AIRWALLEX_PLUGIN_NAME); ?>
         </div>
-
-
     </div>
 <?php
 
@@ -47,6 +48,7 @@ $inlineJs = <<<AIRWALLEX
         weChat.mount('wechat');
         window.addEventListener('onSuccess', (event) => {
             document.getElementById('wechat').style.display = 'none';
+            document.getElementById('airwallex-error-message').style.display = 'none';
             var successCheck = document.getElementById('success-check');
             if(successCheck){
                 successCheck.style.display = 'inline-block';
@@ -58,7 +60,8 @@ $inlineJs = <<<AIRWALLEX
             location.href = AirwallexParameters.confirmationUrl;
         })
         window.addEventListener('onError', (event) => {
-            location.href = AirwallexParameters.confirmationUrl;
+            document.getElementById('airwallex-error-message').style.display = 'block';
+            console.warning(event.detail);
         });
 AIRWALLEX;
 wp_add_inline_script('airwallex-local-js', $inlineJs);

@@ -32,6 +32,11 @@
     animation: dash-check .9s .35s ease-in-out forwards;
 }
 
+#airwallex-error-message{
+    padding:20px;
+    margin-bottom:20px;
+}
+
 
 @-webkit-keyframes dash {
     0% {

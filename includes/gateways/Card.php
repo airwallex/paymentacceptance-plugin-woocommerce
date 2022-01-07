@@ -112,6 +112,9 @@ class Card extends WC_Payment_Gateway
                 'payment_descriptor' => [
                     'title' => __('Statement descriptor', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'text',
+                    'custom_attributes'=>[
+                        'maxlength'=>28
+                    ],
                     'description' => __('Descriptor that will be displayed to the customer. For example, in customer\'s credit card statement. Use %order% as a placeholder for the order\'s ID.', AIRWALLEX_PLUGIN_NAME),
                     'default' => __('Your order %order%', AIRWALLEX_PLUGIN_NAME),
                 ],

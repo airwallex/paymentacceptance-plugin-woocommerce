@@ -98,6 +98,11 @@ abstract class AbstractClient
                 'request_id' => uniqid(),
             ]
             + ($customerId !== null ? ['customer_id' => $customerId] : []);
+
+        if (mb_strlen($data['descriptor']) > 32) {
+            $data['descriptor'] = mb_substr($data['descriptor'], 0, 32);
+        }
+
         if ($withDetails) {
 
             $orderData = [
