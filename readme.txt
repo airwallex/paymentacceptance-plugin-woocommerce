@@ -3,7 +3,7 @@ Contributors: airwallex
 Tags: credit card, airwallex, online payments, wechat, alipay, woocommerce
 Requires at least: 4.5
 Tested up to: 5.7
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Author URI: https://www.airwallex.com
@@ -43,6 +43,11 @@ FEATURES
 
 
 == Changelog ==
+
+= 1.1.2 =
+* Release Date - 13 January 2022*
+
+* Bugfix weChat environment setting
 
 = 1.1.1 =
 * Release Date - 07 January 2022*

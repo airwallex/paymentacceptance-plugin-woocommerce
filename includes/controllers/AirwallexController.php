@@ -28,7 +28,7 @@ class AirwallexController
             $paymentIntentId = $paymentIntent->getId();
             $paymentIntentClientSecret = $paymentIntent->getClientSecret();
             $confirmationUrl = $gateway->get_payment_confirmation_url();
-            $isSandbox = $gateway->is_sandbox() ? 'demo' : 'prod';
+            $isSandbox = $gateway->is_sandbox();
             WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
             include AIRWALLEX_PLUGIN_PATH . '/html/card-payment.php';
             die;
@@ -58,7 +58,7 @@ class AirwallexController
             $paymentIntentId = $paymentIntent->getId();
             $paymentIntentClientSecret = $paymentIntent->getClientSecret();
             $confirmationUrl = $gateway->get_payment_confirmation_url();
-            $isSandbox = $gateway->is_sandbox() ? 'demo' : 'prod';
+            $isSandbox = $gateway->is_sandbox();
             WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
 
             include AIRWALLEX_PLUGIN_PATH . '/html/wechat.php';
