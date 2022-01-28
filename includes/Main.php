@@ -104,7 +104,7 @@ class Main
                 'webhook_secret' => [
                     'title' => __('Webhook Secret Key', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'password',
-                    'desc' => 'Webhook URL: ' . get_home_url() . '/wc-api/' . Main::ROUTE_SLUG_WEBHOOK . '/',
+                    'desc' => 'Webhook URL: ' . \WooCommerce::instance()->api_request_url(Main::ROUTE_SLUG_WEBHOOK),
                     'id' => 'airwallex_webhook_secret',
                     'value' => get_option('airwallex_webhook_secret'),
                 ],
@@ -222,6 +222,7 @@ class Main
         $incompleteMessage = __('Your credit card details are incomplete', AIRWALLEX_PLUGIN_NAME);
         $environment       = $cardGateway->is_sandbox() ? 'demo' : 'prod';
         $autoCapture       = $cardGateway->is_capture_immediately() ? 'true' : 'false';
+        $airwallexOrderId = absint(get_query_var( 'order-pay' ));
         $inlineScript .= <<<AIRWALLEX
 
     const airwallexCheckoutProcessingAction = function (msg) {
@@ -248,7 +249,7 @@ class Main
         if (airwallexCardPaymentOption.length && airwallexCardPaymentOption.is(':checked')) {
             if (jQuery('#airwallex-card').length) {
                 e.preventDefault();
-                confirmSlimCardPayment();
+                confirmSlimCardPayment($airwallexOrderId);
             }
         }
     });
@@ -271,7 +272,7 @@ class Main
         }
     }, 1000);
     
-    function confirmSlimCardPayment() {
+    function confirmSlimCardPayment(orderId) {
         //timeout necessary because of event order in plugin CheckoutWC
         setTimeout(function(){
             jQuery('form.checkout').block({
@@ -282,8 +283,13 @@ class Main
                     }
             });
         }, 50);
-    
-        AirwallexClient.ajaxGet(AirwallexParameters.asyncIntentUrl, function (data) {
+        
+        let asyncIntentUrl = AirwallexParameters.asyncIntentUrl;
+        if(orderId){
+            asyncIntentUrl += (asyncIntentUrl.indexOf('?') !== -1 ? '&' : '?') + 'airwallexOrderId=' + orderId;
+        }
+        
+        AirwallexClient.ajaxGet(asyncIntentUrl, function (data) {
             if (!data || data.error) {
                 AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', ''));
             }

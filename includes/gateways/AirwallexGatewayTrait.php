@@ -28,7 +28,7 @@ trait AirwallexGatewayTrait
 
     public function get_payment_url()
     {
-        return get_home_url() . '/wc-api/' . static::ROUTE_SLUG . '/';
+        return \WooCommerce::instance()->api_request_url(static::ROUTE_SLUG);
     }
 
     public function needs_setup()
@@ -38,7 +38,7 @@ trait AirwallexGatewayTrait
 
     public function get_payment_confirmation_url()
     {
-        return get_home_url() . '/wc-api/' . Main::ROUTE_SLUG_CONFIRMATION . '/';
+        return \WooCommerce::instance()->api_request_url(Main::ROUTE_SLUG_CONFIRMATION);
     }
 
     public function init_settings()

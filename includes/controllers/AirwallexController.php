@@ -80,7 +80,13 @@ class AirwallexController
         $logService = new LogService();
         try {
             $apiClient = CardClient::getInstance();
-            $orderId = (int)WC()->session->get('airwallex_order');
+            if(!empty($_GET['airwallexOrderId'])){
+                $orderId = $_GET['airwallexOrderId'];
+                WC()->session->set('airwallex_order', $orderId);
+            }
+            if (empty($orderId)) {
+                $orderId = (int)WC()->session->get('airwallex_order');
+            }
             if (empty($orderId)) {
                 $orderId = (int)WC()->session->get('order_awaiting_payment');
             }
