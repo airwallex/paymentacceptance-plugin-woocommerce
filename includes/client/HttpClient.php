@@ -9,7 +9,7 @@ class HttpClient
 {
     private $lastCallInfo = null;
 
-
+    const ERROR_CODE_UNAUTHORIZED = 'unauthorized';
 
     /**
      * @param $method
@@ -61,7 +61,7 @@ class HttpClient
      * @return Response
      * @throws Exception
      */
-    public function call($method, $url, $data, $headers)
+    public function call($method, $url, $data, $headers, $authorizationRetryClosure = null)
     {
         $startTime = microtime(true);
 
@@ -75,6 +75,11 @@ class HttpClient
         $response->time        = round(microtime(true) - $startTime, 3);
         $response->requestData = $data;
         $response->requestUrl  = $url;
+
+        if(isset($response->data['code']) && $response->data['code'] === self::ERROR_CODE_UNAUTHORIZED && !empty($authorizationRetryClosure)){
+            $headers['Authorization'] = $authorizationRetryClosure();
+            return $this->call($method, $url, $data, $headers);
+        }
 
         return $response;
     }

@@ -3,6 +3,7 @@
 namespace Airwallex;
 
 use Airwallex\Client\HttpClient;
+use Airwallex\Services\CacheService;
 use Airwallex\Struct\Customer;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
@@ -21,7 +22,9 @@ abstract class AbstractClient
     protected $isSandbox;
     protected $gateway;
     protected $token;
+    protected $tokenExpiry;
     protected $paymentDescriptor;
+    protected $cacheService;
 
     /**
      * @return AbstractClient
@@ -44,17 +47,36 @@ abstract class AbstractClient
         return ($this->isSandbox ? self::PCI_URL_SANDBOX : self::PCI_URL_LIVE) . $action;
     }
 
+    final protected function getCacheService()
+    {
+        if (!isset($this->cacheService)) {
+            $this->cacheService = new CacheService($this->apiKey);
+        }
+        return $this->cacheService;
+    }
+
     /**
      * @throws Exception
      */
     final public function getToken()
     {
-        if (empty($this->token)) {
-            $this->doAuth();
+        if (!empty($this->token) && $this->tokenExpiry > time()) {
+            return $this->token;
         }
-        if (empty($this->token)) {
-            throw new Exception('Unable to authorize card API');
+
+        $cachedTokenData = $this->getCacheService()->get('token');
+        if (!empty($cachedTokenData['token']) && !empty($cachedTokenData['expiry']) && $cachedTokenData['expiry'] > time()) {
+            $this->token = $cachedTokenData['token'];
+            $this->tokenExpiry = $cachedTokenData['expiry'];
+            return $this->token;
         }
+
+        $this->doAuth();
+
+        if (empty($this->token)) {
+            throw new Exception('Unable to authorize API');
+        }
+
         return $this->token;
     }
 
@@ -74,12 +96,18 @@ abstract class AbstractClient
             'x-api-key' => $this->apiKey,
         ]);
         $this->token = $response->data['token'];
+        $this->tokenExpiry = strtotime($response->data['expires_at']) - 10;
+        $this->getCacheService()->set('token', [
+            'token' => $this->token,
+            'expiry' => $this->tokenExpiry,
+        ]);
     }
 
     /**
      * @param $amount
      * @param $orderId
      * @param bool $withDetails
+     * @param null $customerId
      * @return PaymentIntent
      * @throws Exception
      */
@@ -171,7 +199,8 @@ abstract class AbstractClient
             json_encode($data),
             [
                 'Authorization' => 'Bearer ' . $this->getToken(),
-            ]
+            ],
+            $this->getAuthorizationRetryClosure()
         );
 
         if (empty($response->data['id'])) {
@@ -379,5 +408,13 @@ abstract class AbstractClient
             throw new Exception('customer secret creation failed: ' . json_encode($response));
         }
         return $response->data['client_secret'];
+    }
+
+    public function getAuthorizationRetryClosure(){
+        $me = $this;
+        return function() use ($me){
+            $me->doAuth();
+            return 'Bearer ' . $me->getToken();
+        };
     }
 }

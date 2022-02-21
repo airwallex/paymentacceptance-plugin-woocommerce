@@ -26,9 +26,11 @@ class LogService{
     }
 
     public function warning($message, $data = null){
+        $this->log('⚠ '.$message, 'debug', $data);
         $this->log($message, 'warning', $data);
     }
     public function error($message, $data = null){
+        $this->log('💣 '.$message, 'debug', $data);
         $this->log($message, 'error', $data);
     }
 
