@@ -44,6 +44,16 @@ FEATURES
 
 == Changelog ==
 
+= 1.1.5 =
+* Release Date - TBD*
+
+* add session logging
+* make security headers case insensitive
+* fix style issue for legacy themes
+* dynamic card logos
+* add SVG logo max height
+
+
 = 1.1.4 =
 * Release Date - 21 February 2022*
 

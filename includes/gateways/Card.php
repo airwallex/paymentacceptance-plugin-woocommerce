@@ -3,9 +3,11 @@
 namespace Airwallex\Gateways;
 
 use Airwallex\CardClient;
+use Airwallex\Services\CacheService;
 use Airwallex\Services\LogService;
 use Airwallex\Struct\PaymentIntent;
 use Exception;
+use WC_HTTPS;
 use WC_Order;
 use WC_Payment_Gateway;
 use WP_Error;
@@ -50,6 +52,41 @@ class Card extends WC_Payment_Gateway
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         $this->title = $this->get_option('title');
 
+    }
+
+    public function getCardLogos(){
+        $cacheService = new CacheService($this->get_api_key());
+        $logos = $cacheService->get('cardLogos', 86400);
+        if (empty($logos)) {
+            $apiClient       = CardClient::getInstance();
+            if($paymentMethodTypes = $apiClient->getPaymentMethodTypes()) {
+                $logos = [];
+                foreach ($paymentMethodTypes as $paymentMethodType) {
+                    if ($paymentMethodType['name'] === 'card' && empty($logos)) {
+                        foreach ($paymentMethodType['card_schemes'] as $cardType) {
+                            if (isset($cardType['resources']['logos']['svg'])) {
+                                $logos[] = $cardType['resources']['logos']['svg'];
+                            }
+                        }
+                    }
+                }
+                $cacheService->set('cardLogos', $logos);
+            }
+        }
+        return $logos;
+    }
+
+    public function get_icon() {
+        $return = '';
+        if($logos = $this->getCardLogos()){
+            foreach($logos as $logo){
+                $return .= '<img src="' . WC_HTTPS::force_https_url( $logo ) . '" class="airwallex-card-icon" alt="' . esc_attr( $this->get_title() ) . '" />';
+            }
+            apply_filters( 'woocommerce_gateway_icon', $return, $this->id );
+            return $return;
+        }else {
+            return parent::get_icon();
+        }
     }
 
     public function payment_fields()

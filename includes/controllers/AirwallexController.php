@@ -80,7 +80,7 @@ class AirwallexController
         $logService = new LogService();
         try {
             $apiClient = CardClient::getInstance();
-            if(!empty($_GET['airwallexOrderId'])){
+            if (!empty($_GET['airwallexOrderId'])) {
                 $orderId = $_GET['airwallexOrderId'];
                 WC()->session->set('airwallex_order', $orderId);
             }
@@ -100,19 +100,25 @@ class AirwallexController
             if ($orderService->containsSubscription($order->get_id())) {
                 $airwallexCustomerId = $orderService->getAirwallexCustomerId($order->get_customer_id(''), $apiClient);
             }
-            $logService->debug('asyncIntent() before create', ['orderId'=>$orderId]);
+            $logService->debug('asyncIntent() before create', ['orderId' => $orderId]);
             $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $gateway->is_submit_order_details(), $airwallexCustomerId);
             WC()->session->set('airwallex_payment_intent_id', $paymentIntent->getId());
             header('Content-Type: application/json');
             http_response_code(200);
             $response = [
                 'paymentIntent' => $paymentIntent->getId(),
-                'createConsent'=>!empty($airwallexCustomerId),
-                'customerId'=>!empty($airwallexCustomerId)?$airwallexCustomerId:'',
-                'currency'=>$order->get_currency(''),
+                'createConsent' => !empty($airwallexCustomerId),
+                'customerId' => !empty($airwallexCustomerId) ? $airwallexCustomerId : '',
+                'currency' => $order->get_currency(''),
                 'clientSecret' => $paymentIntent->getClientSecret(),
             ];
-            $logService->debug('asyncIntent() response', $response);
+            $logService->debug('asyncIntent() response', [
+                'response' => $response,
+                'session' => [
+                    'cookie' => WC()->session->get_session_cookie(),
+                    'data' => WC()->session->get_session_data(),
+                ],
+            ]);
             echo json_encode($response);
             die;
         } catch (Exception $e) {
@@ -129,22 +135,32 @@ class AirwallexController
     {
         $logService = new LogService();
         try {
-            $paymentIntentId = WC()->session->get('airwallex_payment_intent_id');
-            $apiClient = CardClient::getInstance();
-            $paymentIntent = $apiClient->getPaymentIntent($paymentIntentId);
+
             $orderId = (int)WC()->session->get('airwallex_order');
             if (empty($orderId)) {
                 $orderId = (int)WC()->session->get('order_awaiting_payment');
             }
+            $paymentIntentId = WC()->session->get('airwallex_payment_intent_id');
+
+            $logService->debug('paymentConfirmation() init', [
+                'paymentIntent' => $paymentIntentId,
+                'orderId' => $orderId,
+                'session' => [
+                    'cookie' => WC()->session->get_session_cookie(),
+                    'data' => WC()->session->get_session_data(),
+                ],
+            ]);
+
+            $apiClient = CardClient::getInstance();
+            $paymentIntent = $apiClient->getPaymentIntent($paymentIntentId);
+
             $order = wc_get_order($orderId);
-
-            $logService->debug('paymentConfirmation() init', [$paymentIntentId, $orderId]);
-
+            
             if (empty($order)) {
                 throw new Exception('Order not found: ' . $orderId);
             }
 
-            if($paymentIntent->getPaymentConsentId()){
+            if ($paymentIntent->getPaymentConsentId()) {
                 $order->add_meta_data('airwallex_consent_id', $paymentIntent->getPaymentConsentId());
                 $order->add_meta_data('airwallex_customer_id', $paymentIntent->getCustomerId());
                 $logService->debug('paymentConfirmation() save consent id', [$paymentIntent->toArray()]);
@@ -209,7 +225,7 @@ class AirwallexController
     {
         $logService = new LogService();
         $body = file_get_contents('php://input');
-        $logService->debug('webhook body', ['body'=>$body]);
+        $logService->debug('webhook body', ['body' => $body]);
         $webhookService = new WebhookService();
         try {
             $webhookService->process($this->getRequestHeaders(), $body);
@@ -218,7 +234,7 @@ class AirwallexController
             echo json_encode(['success' => 1]);
             die;
         } catch (Exception $exception) {
-            $logService->warning('webhook exception', ['msg'=>$exception->getMessage()]);
+            $logService->warning('webhook exception', ['msg' => $exception->getMessage()]);
             http_response_code(401);
             header('Content-Type: application/json');
             echo json_encode(['success' => 0]);
@@ -228,14 +244,17 @@ class AirwallexController
 
     private function getRequestHeaders()
     {
+        $headers = [];
         if (function_exists('getallheaders')) {
-            return getallheaders();
+            foreach (getallheaders() as $k => $v) {
+                $headers[strtolower($k)] = $v;
+            }
+            return $headers;
         }
 
-        $headers = [];
         foreach ($_SERVER as $name => $value) {
             if (substr($name, 0, 5) === 'HTTP_') {
-                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+                $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
             }
         }
         return $headers;

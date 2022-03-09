@@ -137,9 +137,9 @@ class WebhookService
     private function verifySignature($headers, $msg)
     {
 
-        $timestamp = $headers['X-Timestamp'];
+        $timestamp = $headers['x-timestamp'];
         $secret    = get_option('airwallex_webhook_secret');
-        $signature = $headers['X-Signature'];
+        $signature = $headers['x-signature'];
 
         if (hash_hmac('sha256', $timestamp . $msg, $secret) !== $signature) {
             throw new Exception('Invalid signature');

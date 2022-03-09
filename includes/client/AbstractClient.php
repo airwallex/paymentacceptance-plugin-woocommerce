@@ -389,6 +389,30 @@ abstract class AbstractClient
         return new Customer($response->data['items'][0]);
     }
 
+    final public function getPaymentMethodTypes()
+    {
+        $client = $this->getHttpClient();
+        $response = $client->call(
+            'GET',
+            $this->getPciUrl('pa/config/payment_method_types?' . http_build_query(
+                    [
+                        'active' => 'true',
+                        '__resources' => 'true',
+                    ]
+                )
+            ),
+            null,
+            [
+                'Authorization' => 'Bearer ' . $this->getToken(),
+            ]
+        );
+
+        if (empty($response->data['items'])) {
+            return null;
+        }
+        return $response->data['items'];
+    }
+
     public function createCustomerClientSecret($airwallexCustomerId)
     {
         if (empty($airwallexCustomerId)) {

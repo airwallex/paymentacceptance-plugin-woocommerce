@@ -7,4 +7,13 @@
     background: white;
     padding: 15px 12px;
     border-radius: 5px;    
+    box-sizing: border-box;
+}
+
+label[for="payment_method_airwallex_card"] > img, .airwallex-card-icon{
+    max-height: 1.5em;
+}
+
+.airwallex-card-icon{
+    margin:0 2px;
 }
