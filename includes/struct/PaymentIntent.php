@@ -23,6 +23,7 @@ class PaymentIntent extends AbstractBase
     protected $latestPaymentAttempt;
     protected $paymentConsentId;
     protected $customerId;
+    protected $metadata = [];
 
     /**
      * @return mixed
@@ -59,6 +60,24 @@ class PaymentIntent extends AbstractBase
     public function setPaymentConsentId($paymentConsentId)
     {
         $this->paymentConsentId = $paymentConsentId;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getMetadata()
+    {
+        return $this->metadata;
+    }
+
+    /**
+     * @param array $metadata
+     * @return PaymentIntent
+     */
+    public function setMetadata($metadata)
+    {
+        $this->metadata = $metadata;
         return $this;
     }
 

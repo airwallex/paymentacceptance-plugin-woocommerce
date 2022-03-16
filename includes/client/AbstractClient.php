@@ -115,11 +115,15 @@ abstract class AbstractClient
     {
         $client = $this->getHttpClient();
         $order = wc_get_order((int)$orderId);
+        $orderNumber = ($orderNumber = $order->get_meta('_order_number'))?$orderNumber:$orderId;
         $data = [
                 'amount' => $amount,
                 'currency' => $order->get_currency(),
                 'descriptor' => str_replace('%order%', $orderId, $this->paymentDescriptor),
-                'merchant_order_id' => $orderId,
+                'metadata'=>[
+                    'wp_order_id'=>$orderId,
+                ],
+                'merchant_order_id' => $orderNumber,
                 'order' => [
                     'type' => 'physical_goods',
                 ],

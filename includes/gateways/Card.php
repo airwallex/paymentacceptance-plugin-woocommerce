@@ -28,7 +28,7 @@ class Card extends WC_Payment_Gateway
     public $method_description;
     public $title = 'Airwallex Credit Card';
     public $description = 'Use any credit card with Airwallex';
-    public $icon = AIRWALLEX_PLUGIN_URL.'/assets/images/airwallex_cc_icon.svg';
+    public $icon = AIRWALLEX_PLUGIN_URL . '/assets/images/airwallex_cc_icon.svg';
     public $id = self::GATEWAY_ID;
     public $plugin_id;
     public $supports = [
@@ -41,10 +41,10 @@ class Card extends WC_Payment_Gateway
 
         $this->plugin_id = AIRWALLEX_PLUGIN_NAME;
         $this->init_settings();
-        $this->description = $this->get_option('description')?:($this->get_option('checkout_form_type') === 'inline'?'<!-- -->':'');
+        $this->description = $this->get_option('description') ?: ($this->get_option('checkout_form_type') === 'inline' ? '<!-- -->' : '');
         if ($this->get_client_id() && $this->get_api_key()) {
             $this->method_description = sprintf(__('The Airwallex API settings can be adjusted <a href="%s">here</a>', AIRWALLEX_PLUGIN_NAME), admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general'));
-            $this->form_fields        = $this->get_form_fields();
+            $this->form_fields = $this->get_form_fields();
         } else {
             $this->method_description = '<div class="error" style="padding:10px;">' . sprintf(__('To start using Airwallex payment methods, please enter your credentials first. <br><a href="%s" class="button-primary">API settings</a>', AIRWALLEX_PLUGIN_NAME), admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general')) . '</div>';
         }
@@ -54,12 +54,13 @@ class Card extends WC_Payment_Gateway
 
     }
 
-    public function getCardLogos(){
+    public function getCardLogos()
+    {
         $cacheService = new CacheService($this->get_api_key());
         $logos = $cacheService->get('cardLogos', 86400);
         if (empty($logos)) {
-            $apiClient       = CardClient::getInstance();
-            if($paymentMethodTypes = $apiClient->getPaymentMethodTypes()) {
+            $apiClient = CardClient::getInstance();
+            if ($paymentMethodTypes = $apiClient->getPaymentMethodTypes()) {
                 $logos = [];
                 foreach ($paymentMethodTypes as $paymentMethodType) {
                     if ($paymentMethodType['name'] === 'card' && empty($logos)) {
@@ -76,15 +77,16 @@ class Card extends WC_Payment_Gateway
         return $logos;
     }
 
-    public function get_icon() {
+    public function get_icon()
+    {
         $return = '';
-        if($logos = $this->getCardLogos()){
-            foreach($logos as $logo){
-                $return .= '<img src="' . WC_HTTPS::force_https_url( $logo ) . '" class="airwallex-card-icon" alt="' . esc_attr( $this->get_title() ) . '" />';
+        if ($logos = $this->getCardLogos()) {
+            foreach ($logos as $logo) {
+                $return .= '<img src="' . WC_HTTPS::force_https_url($logo) . '" class="airwallex-card-icon" alt="' . esc_attr($this->get_title()) . '" />';
             }
-            apply_filters( 'woocommerce_gateway_icon', $return, $this->id );
+            apply_filters('woocommerce_gateway_icon', $return, $this->id);
             return $return;
-        }else {
+        } else {
             return parent::get_icon();
         }
     }
@@ -101,11 +103,14 @@ class Card extends WC_Payment_Gateway
 
     public function get_async_intent_url()
     {
-        return \WooCommerce::instance()->api_request_url(self::ROUTE_SLUG_ASYNC_INTENT);
+        $url = \WooCommerce::instance()->api_request_url(self::ROUTE_SLUG_ASYNC_INTENT);
+        $url .= (strpos($url, '?') === false ? '?' : '&') . 'request_id=' . uniqid();
+        return $url;
     }
 
     public function get_form_fields()
     {
+        $isEmbeddedFieldsAllowed = (defined('WC_VERSION') && version_compare( WC_VERSION, '4.8.0', '>='));
         return apply_filters(
             'wc_airwallex_settings',
             [
@@ -139,17 +144,16 @@ class Card extends WC_Payment_Gateway
                 'checkout_form_type' => [
                     'title' => __('Checkout Form', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'select',
-                    'description' => '',
-                    'default' => 'inline',
-                    'options' => [
-                        'inline' => __('Embedded', AIRWALLEX_PLUGIN_NAME),
-                        'redirect' => __('On separate page', AIRWALLEX_PLUGIN_NAME),
-                    ],
+                    'description' => (!$isEmbeddedFieldsAllowed?' '.__('Please upgrade WooCommerce to 4.8.0+ to use embedded credit card input fields', AIRWALLEX_PLUGIN_NAME):''),
+                    'default' => $isEmbeddedFieldsAllowed?'inline':'redirect',
+                    'options' =>
+                        ($isEmbeddedFieldsAllowed?['inline' => __('Embedded', AIRWALLEX_PLUGIN_NAME)]:[])
+                        +['redirect' => __('On separate page', AIRWALLEX_PLUGIN_NAME)],
                 ],
                 'payment_descriptor' => [
                     'title' => __('Statement descriptor', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'text',
-                    'custom_attributes'=>[
+                    'custom_attributes' => [
                         'maxlength' => 28,
                     ],
                     'description' => __('Descriptor that will be displayed to the customer. For example, in customer\'s credit card statement. Use %order% as a placeholder for the order\'s ID.', AIRWALLEX_PLUGIN_NAME),
@@ -189,9 +193,9 @@ class Card extends WC_Payment_Gateway
 
     public function process_refund($order_id, $amount = null, $reason = '')
     {
-        $order           = wc_get_order($order_id);
+        $order = wc_get_order($order_id);
         $paymentIntentId = $order->get_transaction_id();
-        $apiClient       = CardClient::getInstance();
+        $apiClient = CardClient::getInstance();
         try {
             $refund = $apiClient->createRefund($paymentIntentId, $amount, $reason);
             $order->add_order_note('Airwallex refund initiated: ' . $refund->getId());
@@ -209,7 +213,7 @@ class Card extends WC_Payment_Gateway
      */
     public function capture(WC_Order $order, $amount = null)
     {
-        $apiClient       = CardClient::getInstance();
+        $apiClient = CardClient::getInstance();
         $paymentIntentId = $order->get_transaction_id();
         if (empty($paymentIntentId)) {
             throw new Exception('No Airwallex payment intent found for this order: ' . $order->get_id());
@@ -229,9 +233,9 @@ class Card extends WC_Payment_Gateway
 
     public function is_captured($order)
     {
-        $apiClient       = CardClient::getInstance();
+        $apiClient = CardClient::getInstance();
         $paymentIntentId = $order->get_transaction_id();
-        $paymentIntent   = $apiClient->getPaymentIntent($paymentIntentId);
+        $paymentIntent = $apiClient->getPaymentIntent($paymentIntentId);
         if ($paymentIntent->getStatus() === PaymentIntent::STATUS_SUCCEEDED) {
             return true;
         } else {

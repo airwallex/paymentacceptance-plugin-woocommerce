@@ -2,8 +2,8 @@
 Contributors: airwallex
 Tags: credit card, airwallex, online payments, wechat, alipay, woocommerce
 Requires at least: 4.5
-Tested up to: 5.8
-Stable tag: 1.1.4
+Tested up to: 6.3.1
+Stable tag: 1.1.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Author URI: https://www.airwallex.com
@@ -45,14 +45,16 @@ FEATURES
 == Changelog ==
 
 = 1.1.5 =
-* Release Date - TBD*
+* Release Date - 16 March 2022*
 
 * add session logging
 * make security headers case insensitive
 * fix style issue for legacy themes
 * dynamic card logos
 * add SVG logo max height
-
+* embedded fields only for WooC 4.8+
+* support for https://www.skyverge.com/product/woocommerce-sequential-order-numbers/
+* make asyncIntent request unique, additional logging, webhook logging icons
 
 = 1.1.4 =
 * Release Date - 21 February 2022*

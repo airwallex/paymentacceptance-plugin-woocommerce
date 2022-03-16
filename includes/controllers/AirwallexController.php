@@ -30,6 +30,11 @@ class AirwallexController
             $confirmationUrl = $gateway->get_payment_confirmation_url();
             $isSandbox = $gateway->is_sandbox();
             WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
+            (new LogService())->debug('cardPayment()', [
+                'orderId' => $orderId,
+                'paymentIntent' => $paymentIntentId,
+            ]);
+
             include AIRWALLEX_PLUGIN_PATH . '/html/card-payment.php';
             die;
         } catch (Exception $e) {
@@ -60,6 +65,10 @@ class AirwallexController
             $confirmationUrl = $gateway->get_payment_confirmation_url();
             $isSandbox = $gateway->is_sandbox();
             WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
+            (new LogService())->debug('weChatPayment()', [
+                'orderId' => $orderId,
+                'paymentIntent' => $paymentIntentId,
+            ]);
 
             include AIRWALLEX_PLUGIN_PATH . '/html/wechat.php';
             die;
@@ -155,7 +164,7 @@ class AirwallexController
             $paymentIntent = $apiClient->getPaymentIntent($paymentIntentId);
 
             $order = wc_get_order($orderId);
-            
+
             if (empty($order)) {
                 throw new Exception('Order not found: ' . $orderId);
             }
@@ -225,7 +234,7 @@ class AirwallexController
     {
         $logService = new LogService();
         $body = file_get_contents('php://input');
-        $logService->debug('webhook body', ['body' => $body]);
+        $logService->debug('🖧 webhook body', ['body' => $body]);
         $webhookService = new WebhookService();
         try {
             $webhookService->process($this->getRequestHeaders(), $body);
