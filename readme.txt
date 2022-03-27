@@ -44,6 +44,12 @@ FEATURES
 
 == Changelog ==
 
+= 1.1.6 =
+* Release Date - 27 March 2022*
+
+* Implementation of cronjob for handling non reflected payments
+* Passing referrer_data type and version in API request
+
 = 1.1.5 =
 * Release Date - 16 March 2022*
 

@@ -6,6 +6,7 @@ use Airwallex\Gateways\Card;
 use Airwallex\Gateways\CardSubscriptions;
 use Airwallex\Gateways\WeChat;
 use Airwallex\Services\LogService;
+use Airwallex\Services\OrderService;
 use AirwallexController;
 use Exception;
 use WC_Order;
@@ -28,6 +29,7 @@ class Main
     {
         $this->registerEvents();
         $this->registerOrderStatus();
+        $this->registerCron();
     }
 
     public function registerEvents()
@@ -43,6 +45,7 @@ class Main
         add_action('woocommerce_api_' . self::ROUTE_SLUG_WEBHOOK, [new AirwallexController, 'webhook']);
         add_action('woocommerce_api_' . Card::ROUTE_SLUG_ASYNC_INTENT, [new AirwallexController, 'asyncIntent']);
         add_filter('plugin_action_links_' . plugin_basename(AIRWALLEX_PLUGIN_PATH . AIRWALLEX_PLUGIN_NAME . '.php'), [$this, 'addPluginSettingsLink']);
+        add_action('airwallex_check_pending_transactions', [$this, 'checkPendingTransactions']);
     }
 
     protected function registerOrderStatus()
@@ -63,6 +66,20 @@ class Main
             return $statusList;
         });
 
+    }
+
+    protected function registerCron()
+    {
+
+        add_action('init', function () {
+            if (function_exists('as_schedule_cron_action')) {
+                as_schedule_recurring_action(
+                    strtotime('midnight tonight'),
+                    1,
+                    'airwallex_check_pending_transactions'
+                );
+            }
+        });
     }
 
     public function addPluginSettingsLink($links)
@@ -127,9 +144,9 @@ class Main
 
     public function addPaymentGateways($gateways)
     {
-        if ( class_exists( 'WC_Subscriptions_Order' ) && function_exists( 'wcs_create_renewal_order' ) ) {
+        if (class_exists('WC_Subscriptions_Order') && function_exists('wcs_create_renewal_order')) {
             $gateways[] = CardSubscriptions::class;
-        }else {
+        } else {
             $gateways[] = Card::class;
         }
         $gateways[] = WeChat::class;
@@ -146,6 +163,11 @@ class Main
     {
         $this->_handleStatusChangeForCard($statusTo, $order);
 
+    }
+
+    public function checkPendingTransactions()
+    {
+        (new OrderService())->checkPendingTransactions();
     }
 
     /**
@@ -180,11 +202,11 @@ class Main
 
     public function addJs()
     {
-        $isCheckout  = is_checkout();
+        $isCheckout = is_checkout();
         $cardGateway = new Card();
-        $jsUrl       = AIRWALLEX_PLUGIN_URL . '/assets/js/airwallex-checkout.js';
-        $jsUrlLocal  = AIRWALLEX_PLUGIN_URL . '/assets/js/airwallex-local.js';
-        $cssUrl      = AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout.css';
+        $jsUrl = AIRWALLEX_PLUGIN_URL . '/assets/js/airwallex-checkout.js';
+        $jsUrlLocal = AIRWALLEX_PLUGIN_URL . '/assets/js/airwallex-local.js';
+        $cssUrl = AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout.css';
         $inlineScript = '
             const AirwallexParameters = {
                 asyncIntentUrl: \'' . $cardGateway->get_async_intent_url() . '\',
@@ -214,15 +236,15 @@ class Main
             return;
         }
 
-        wp_enqueue_script( 'airwallex-lib-js', $jsUrl, [], false, true);
-        wp_enqueue_script( 'airwallex-local-js', $jsUrlLocal, [], false, true);
+        wp_enqueue_script('airwallex-lib-js', $jsUrl, [], false, true);
+        wp_enqueue_script('airwallex-local-js', $jsUrlLocal, [], false, true);
 
         wp_enqueue_style('airwallex-css', $cssUrl);
-        $errorMessage      = __('An error has occurred. Please check your payment details (%s)', AIRWALLEX_PLUGIN_NAME);
+        $errorMessage = __('An error has occurred. Please check your payment details (%s)', AIRWALLEX_PLUGIN_NAME);
         $incompleteMessage = __('Your credit card details are incomplete', AIRWALLEX_PLUGIN_NAME);
-        $environment       = $cardGateway->is_sandbox() ? 'demo' : 'prod';
-        $autoCapture       = $cardGateway->is_capture_immediately() ? 'true' : 'false';
-        $airwallexOrderId = absint(get_query_var( 'order-pay' ));
+        $environment = $cardGateway->is_sandbox() ? 'demo' : 'prod';
+        $autoCapture = $cardGateway->is_capture_immediately() ? 'true' : 'false';
+        $airwallexOrderId = absint(get_query_var('order-pay'));
         $inlineScript .= <<<AIRWALLEX
 
     const airwallexCheckoutProcessingAction = function (msg) {
@@ -344,6 +366,6 @@ class Main
         AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', error.message || ''));
     });
 AIRWALLEX;
-        wp_add_inline_script( 'airwallex-local-js', $inlineScript);
+        wp_add_inline_script('airwallex-local-js', $inlineScript);
     }
 }

@@ -115,13 +115,13 @@ abstract class AbstractClient
     {
         $client = $this->getHttpClient();
         $order = wc_get_order((int)$orderId);
-        $orderNumber = ($orderNumber = $order->get_meta('_order_number'))?$orderNumber:$orderId;
+        $orderNumber = ($orderNumber = $order->get_meta('_order_number')) ? $orderNumber : $orderId;
         $data = [
                 'amount' => $amount,
                 'currency' => $order->get_currency(),
                 'descriptor' => str_replace('%order%', $orderId, $this->paymentDescriptor),
-                'metadata'=>[
-                    'wp_order_id'=>$orderId,
+                'metadata' => [
+                    'wp_order_id' => $orderId,
                 ],
                 'merchant_order_id' => $orderNumber,
                 'order' => [
@@ -200,7 +200,10 @@ abstract class AbstractClient
         $response = $client->call(
             'POST',
             $this->getPciUrl('pa/payment_intents/create'),
-            json_encode($data),
+            json_encode(
+                $data
+                + $this->getReferrer()
+            ),
             [
                 'Authorization' => 'Bearer ' . $this->getToken(),
             ],
@@ -287,7 +290,13 @@ abstract class AbstractClient
         $response = $client->call(
             'POST',
             $this->getPciUrl('pa/payment_intents/' . $paymentIntentId . '/capture'),
-            json_encode(['amount' => $amount, 'request_id' => uniqid()]),
+            json_encode(
+                [
+                    'amount' => $amount,
+                    'request_id' => uniqid()
+                ]
+                + $this->getReferrer()
+            ),
             [
                 'Authorization' => 'Bearer ' . $this->getToken(),
             ]
@@ -323,6 +332,7 @@ abstract class AbstractClient
                     'reason' => $reason,
                     'request_id' => uniqid(),
                 ]
+                + $this->getReferrer()
             ),
             [
                 'Authorization' => 'Bearer ' . $this->getToken(),
@@ -344,7 +354,6 @@ abstract class AbstractClient
             throw new Exception('customer id must not be empty');
         }
         $client = $this->getHttpClient();
-
         $response = $client->call(
             'POST',
             $this->getPciUrl('pa/customers/create'),
@@ -354,6 +363,7 @@ abstract class AbstractClient
                     'request_id' => uniqid(),
                     //TODO add details
                 ]
+                + $this->getReferrer()
             ),
             [
                 'Authorization' => 'Bearer ' . $this->getToken(),
@@ -438,11 +448,22 @@ abstract class AbstractClient
         return $response->data['client_secret'];
     }
 
-    public function getAuthorizationRetryClosure(){
+    public function getAuthorizationRetryClosure()
+    {
         $me = $this;
-        return function() use ($me){
+        return function () use ($me) {
             $me->doAuth();
             return 'Bearer ' . $me->getToken();
         };
+    }
+
+    protected function getReferrer()
+    {
+        return [
+            'referrer_data' => [
+                'type' => 'woo_commerce',
+                'version' => AIRWALLEX_VERSION,
+            ],
+        ];
     }
 }

@@ -4,6 +4,9 @@ namespace Airwallex\Services;
 
 
 use Airwallex\AbstractClient;
+use Airwallex\CardClient;
+use Airwallex\Gateways\Card;
+use Airwallex\Struct\PaymentIntent;
 use Exception;
 use WC_Order;
 use wpdb;
@@ -115,6 +118,73 @@ class OrderService
     public function containsSubscription($orderId)
     {
         return (function_exists('wcs_order_contains_subscription') && (wcs_order_contains_subscription($orderId) || wcs_is_subscription($orderId) || wcs_order_contains_renewal($orderId)));
+    }
+
+    protected function getPendingPaymentOrders(){
+        global  $wpdb;
+        return $wpdb->get_results("
+            SELECT p.ID FROM ".$wpdb->posts." p
+                JOIN ".$wpdb->postmeta." pm ON (p.ID = pm.post_id AND pm.meta_key = '_payment_method' AND pm.meta_value = 'airwallex_card')
+            WHERE
+                p.post_type = 'shop_order'
+                    AND
+                p.post_status = 'wc-pending'"
+        );
+    }
+
+    public function checkPendingTransactions()
+    {
+        static $isStarted;
+        if(empty($isStarted)){
+            $isStarted = true;
+        }else{
+            return;
+        }
+
+        $logService = new LogService();
+        $logService->debug('⏱ start checkPendingTransactions()');
+        $orders = $this->getPendingPaymentOrders();
+        foreach($orders as $order){
+            $order = new WC_Order((int)$order->ID);
+            if($paymentIntentId = $order->get_transaction_id()){
+                $paymentMethod = get_post_meta($order->get_id(), '_payment_method', true);
+                if($paymentMethod === Card::GATEWAY_ID){
+                    try {
+                        $paymentIntent = CardClient::getInstance()->getPaymentIntent($paymentIntentId);
+                        (new OrderService())->setPaymentSuccess($order, $paymentIntent, 'cron');
+                    }catch (Exception $e){
+                        $logService->warning('checkPendingTransactions failed for order #'.$order->get_id().' with paymentIntent '.$paymentIntentId);
+                    }
+                }
+            }
+        }
+    }
+
+    public function setPaymentSuccess(\WC_Order $order, PaymentIntent $paymentIntent, $referrer = 'webhook')
+    {
+        $logService = new LogService();
+        $logIcon = ($referrer === 'webhook'?'🖧':'⏱');
+        if ($paymentIntent->getStatus() === PaymentIntent::STATUS_SUCCEEDED) {
+            $logService->debug($logIcon.' payment success', $paymentIntent->toArray());
+            $order->payment_complete($paymentIntent->getId());
+        } elseif ($paymentIntent->getStatus() === PaymentIntent::STATUS_REQUIRES_CAPTURE) {
+            $apiClient = CardClient::getInstance();
+            $cardGateway = new Card();
+            if ($cardGateway->is_capture_immediately()) {
+                $paymentIntentAfterCapture = $apiClient->capture($paymentIntent->getId(), $paymentIntent->getAmount());
+                if ($paymentIntentAfterCapture->getStatus() === PaymentIntent::STATUS_SUCCEEDED) {
+                    $order->payment_complete($paymentIntent->getId());
+                    $logService->debug($logIcon.' payment success', $paymentIntentAfterCapture->toArray());
+                } else {
+                    $logService->debug($logIcon.' capture failed', $paymentIntentAfterCapture->toArray());
+                    $order->add_order_note('Airwallex payment failed capture');
+                }
+            } else {
+                $order->payment_complete($paymentIntent->getId());
+                $order->add_order_note('Airwallex payment authorized');
+                $logService->debug($logIcon.' payment authorized', ['order'=>$order->get_id(), 'payment_intent'=>$paymentIntent->getId()]);
+            }
+        }
     }
 
 }

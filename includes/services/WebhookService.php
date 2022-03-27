@@ -19,6 +19,7 @@ class WebhookService
     public function process($headers, $msg)
     {
         $logService = new LogService();
+        $orderService = new OrderService();
         try {
             $this->verifySignature($headers, $msg);
         } catch (Exception $e) {
@@ -51,12 +52,12 @@ class WebhookService
                         if ($order->get_payment_method() === Card::GATEWAY_ID) {
                             $cardGateway = new Card();
                             if (!$cardGateway->is_capture_immediately()) {
-                                $this->setPaymentSuccess($order, $paymentIntent);
+                                $orderService->setPaymentSuccess($order, $paymentIntent);
                             }
                         }
                         break;
                     case 'payment_intent.succeeded':
-                        $this->setPaymentSuccess($order, $paymentIntent);
+                        $orderService->setPaymentSuccess($order, $paymentIntent);
                         break;
                 }
 
@@ -64,7 +65,6 @@ class WebhookService
             }
         } elseif ($eventType === 'refund.processing' || $eventType === 'refund.succeeded') {
             $logService->debug('🖧 received refund webhook');
-            $orderService = new OrderService();
             $refund = new Refund($messageData['data']['object']);
             $paymentIntentId = $refund->getPaymentIntentId();
             $order = $orderService->getOrderByPaymentIntentId($paymentIntentId);
@@ -94,40 +94,10 @@ class WebhookService
                     }
                 }
             }
-
-
-        }
-//        payment_intent.succeeded: Card payment succeeded(capture requested) or Wechat payment succeeded
-//        payment_intent.capture_required: Card payment authorized.
-//        payment_intent.cancelled: Payment intent cancelled
-//        refund.processing: We've requested the refund successfully.
-
-    }
-
-    protected function setPaymentSuccess(\WC_Order $order, PaymentIntent $paymentIntent)
-    {
-        $logService = new LogService();
-        if ($paymentIntent->getStatus() === PaymentIntent::STATUS_SUCCEEDED) {
-            $logService->debug('🖧 payment success', $paymentIntent->toArray());
-            $order->payment_complete($paymentIntent->getId());
-        } elseif ($paymentIntent->getStatus() === PaymentIntent::STATUS_REQUIRES_CAPTURE) {
-            $apiClient = CardClient::getInstance();
-            $cardGateway = new Card();
-            if ($cardGateway->is_capture_immediately()) {
-                $paymentIntentAfterCapture = $apiClient->capture($paymentIntent->getId(), $paymentIntent->getAmount());
-                if ($paymentIntentAfterCapture->getStatus() === PaymentIntent::STATUS_SUCCEEDED) {
-                    $order->payment_complete($paymentIntent->getId());
-                    $logService->debug('🖧 payment success', $paymentIntentAfterCapture->toArray());
-                } else {
-                    $logService->debug('🖧 capture failed', $paymentIntentAfterCapture->toArray());
-                    $order->add_order_note('Airwallex payment failed capture');
-                }
-            } else {
-                $order->payment_complete($paymentIntent->getId());
-                $order->add_order_note('Airwallex payment authorized');
-            }
         }
     }
+
+
 
     /**
      * @param array $headers
