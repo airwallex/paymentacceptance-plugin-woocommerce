@@ -22,7 +22,7 @@ class CacheService
         if(!$this->isActive){
             return;
         }
-        file_put_contents($this->getFilePath($key), serialize($value));
+        @file_put_contents($this->getFilePath($key), serialize($value));
     }
 
     public function delete($key)
@@ -44,7 +44,7 @@ class CacheService
             return false;
         }
         $path = $this->getFilePath($key);
-        return (file_exists($path) || filemtime($path) > time() - $maxAge);
+        return file_exists($path) && filemtime($path) > time() - $maxAge;
     }
 
     public function getFilePath($key)
@@ -55,7 +55,7 @@ class CacheService
 
     private function prepareCacheDirectory()
     {
-        if (file_exists(ABSPATH . $this->dir)) {
+        if (file_exists(ABSPATH . $this->dir) && is_writable(ABSPATH . $this->dir)) {
             return true;
         }
 

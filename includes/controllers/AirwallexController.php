@@ -112,6 +112,9 @@ class AirwallexController
             $logService->debug('asyncIntent() before create', ['orderId' => $orderId]);
             $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $gateway->is_submit_order_details(), $airwallexCustomerId);
             WC()->session->set('airwallex_payment_intent_id', $paymentIntent->getId());
+
+            update_post_meta($orderId, '_tmp_airwallex_payment_intent', $paymentIntent->getId());
+
             header('Content-Type: application/json');
             http_response_code(200);
             $response = [
@@ -150,6 +153,10 @@ class AirwallexController
                 $orderId = (int)WC()->session->get('order_awaiting_payment');
             }
             $paymentIntentId = WC()->session->get('airwallex_payment_intent_id');
+
+            if(empty($paymentIntentId)){
+                $paymentIntentId = get_post_meta($orderId, '_tmp_airwallex_payment_intent', true);
+            }
 
             $logService->debug('paymentConfirmation() init', [
                 'paymentIntent' => $paymentIntentId,
