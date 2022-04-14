@@ -146,15 +146,15 @@ class AirwallexController
     public function paymentConfirmation()
     {
         $logService = new LogService();
-        try {
 
+        try {
             $orderId = (int)WC()->session->get('airwallex_order');
             if (empty($orderId)) {
                 $orderId = (int)WC()->session->get('order_awaiting_payment');
             }
             $paymentIntentId = WC()->session->get('airwallex_payment_intent_id');
 
-            if(empty($paymentIntentId)){
+            if (empty($paymentIntentId)) {
                 $paymentIntentId = get_post_meta($orderId, '_tmp_airwallex_payment_intent', true);
             }
 
@@ -177,9 +177,9 @@ class AirwallexController
             }
 
             if ($paymentIntent->getPaymentConsentId()) {
+                $logService->debug('paymentConfirmation() save consent id', [$paymentIntent->toArray()]);
                 $order->add_meta_data('airwallex_consent_id', $paymentIntent->getPaymentConsentId());
                 $order->add_meta_data('airwallex_customer_id', $paymentIntent->getCustomerId());
-                $logService->debug('paymentConfirmation() save consent id', [$paymentIntent->toArray()]);
                 $order->save();
             }
 
@@ -187,6 +187,7 @@ class AirwallexController
             if (!in_array($paymentIntent->getStatus(), [PaymentIntent::STATUS_REQUIRES_CAPTURE, PaymentIntent::STATUS_SUCCEEDED], true)) {
                 $logService->warning('paymentConfirmation() invalid status', [$paymentIntent->toArray()]);
                 //no valid payment intent
+                $this->setTemporaryOrderStateAfterDecline($order);
                 wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
                 wp_redirect(wc_get_checkout_url());
                 die;
@@ -194,7 +195,8 @@ class AirwallexController
 
             if (number_format($paymentIntent->getAmount(), 2) !== number_format($order->get_total(), 2)) {
                 //amount mismatch
-                $logService->error('payment amounts did not match', $paymentIntent->toArray());
+                $logService->error('payment amounts did not match', [number_format($paymentIntent->getAmount(), 2), number_format($order->get_total(), 2), $paymentIntent->toArray()]);
+                $this->setTemporaryOrderStateAfterDecline($order);
                 wc_add_notice('Airwallex payment error', 'error');
                 wp_redirect(wc_get_checkout_url());
                 die;
@@ -216,6 +218,7 @@ class AirwallexController
                         (new LogService())->debug('payment success during checkout', $paymentIntent->toArray());
                     } else {
                         (new LogService())->error('payment capture failed during checkout', $paymentIntentAfterCapture->toArray());
+                        $this->setTemporaryOrderStateAfterDecline($order);
                         wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
                         wp_redirect(wc_get_checkout_url());
                         die;
@@ -231,9 +234,21 @@ class AirwallexController
             die;
         } catch (Exception $e) {
             $logService->error('payment confirmation controller action failed', $e->getMessage());
+            $this->setTemporaryOrderStateAfterDecline($order);
             wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
             wp_redirect(wc_get_checkout_url());
             die;
+        }
+    }
+
+    /**
+     * @param WC_Order $order
+     * @return void
+     */
+    private function setTemporaryOrderStateAfterDecline($order)
+    {
+        if ($orderStatus = get_option('airwallex_temporary_order_status_after_decline')) {
+            $order->update_status($orderStatus, 'Airwallex Webhook');
         }
     }
 

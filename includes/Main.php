@@ -133,7 +133,17 @@ class Main
                     'id' => 'airwallex_submit_order_details',
                     'value' => get_option('airwallex_submit_order_details'),
                 ],
-
+                'temporary_order_status_after_decline' => [
+                    'title' => __('Temporary order status after decline during checkout', AIRWALLEX_PLUGIN_NAME),
+                    'id' => 'airwallex_temporary_order_status_after_decline',
+                    'type' => 'select',
+                    'desc' => __('This order status is set, when the payment has been declined and the customer redirected to the checkout page to try again.', AIRWALLEX_PLUGIN_NAME),
+                    'options' => [
+                        'pending' => _x('Pending payment', 'Order status', 'woocommerce'),
+                        'failed' => _x('Failed', 'Order status', 'woocommerce'),
+                    ],
+                    'value' => get_option('airwallex_temporary_order_status_after_decline'),
+                ],
                 'sectionend' => [
                     'type' => 'sectionend',
                 ],

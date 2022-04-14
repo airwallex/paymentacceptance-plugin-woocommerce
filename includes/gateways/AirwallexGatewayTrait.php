@@ -21,6 +21,11 @@ trait AirwallexGatewayTrait
         return in_array(get_option('airwallex_submit_order_details'), ['yes', 1, true, '1'], true);
     }
 
+    public function temporary_order_status_after_decline()
+    {
+        return get_option('airwallex_temporary_order_status_after_decline')?:'pending';
+    }
+
     public function is_sandbox()
     {
         return in_array($this->get_option('sandbox'), [true, 'yes'], true);

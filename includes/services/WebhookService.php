@@ -46,7 +46,7 @@ class WebhookService
             if (!empty($order)) {
                 switch ($eventType) {
                     case 'payment_intent.cancelled':
-                        $order->update_status('cancelled', 'Airwallex Webhook');
+                        $order->update_status('failed', 'Airwallex Webhook');
                         break;
                     case 'payment_intent.capture_required':
                         if ($order->get_payment_method() === Card::GATEWAY_ID) {
