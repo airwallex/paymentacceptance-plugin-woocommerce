@@ -31,11 +31,21 @@ class CacheService
      */
     private function prepareCacheDirectory()
     {
-        if (file_exists(ABSPATH . $this->dir) && is_writable(ABSPATH . $this->dir)) {
-            return true;
+        if (file_exists(ABSPATH . $this->dir)) {
+
+            if (is_writable(ABSPATH . $this->dir)) {
+                return true;
+            }
+            chmod(ABSPATH . $this->dir, 0771);
+            if (is_writable(ABSPATH . $this->dir)) {
+                return true;
+            }
         }
 
-        if (mkdir(ABSPATH . $this->dir, 0661, true)) {
+        (new LogService())->warning('No writable log directory. I\'ll try to create one.');
+
+        if (mkdir(ABSPATH . $this->dir, 0771, true)) {
+            chmod(ABSPATH . $this->dir, 0771);
             if (file_put_contents(ABSPATH . $this->dir . '/.htaccess', "Order deny,allow\nDeny from all")) {
                 return true;
             }
@@ -54,7 +64,12 @@ class CacheService
         if (!$this->isActive) {
             return;
         }
-        @file_put_contents($this->getFilePath($key), serialize($value));
+        $path = $this->getFilePath($key);
+        if (file_exists($path) && !is_writable($path)) {
+            (new LogService())->warning('Cache file not writable: ' . $path);
+            chmod($path, 0660);
+        }
+        @file_put_contents($path, serialize($value));
     }
 
     /**

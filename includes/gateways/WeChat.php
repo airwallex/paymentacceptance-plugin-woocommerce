@@ -76,7 +76,7 @@ class WeChat extends WC_Payment_Gateway
                     'title' => __('Test mode (Sandbox)', AIRWALLEX_PLUGIN_NAME),
                     'label' => __('Enable sandbox', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'checkbox',
-                    'description' => '',
+                    'description' => __('When enabled, please ensure to use your demo Airwallex account details in API settings.', AIRWALLEX_PLUGIN_NAME),
                     'default' => 'yes',
                 ],
                 'submit_order_details' => [

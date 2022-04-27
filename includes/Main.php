@@ -70,14 +70,17 @@ class Main
 
     protected function registerCron()
     {
-
-        add_action('init', function () {
+        $interval = (int)get_option('airwallex_cronjob_interval');
+        $interval = ($interval < 3600)?3600:$interval;
+        add_action('init', function () use ($interval) {
             if (function_exists('as_schedule_cron_action')) {
-                as_schedule_recurring_action(
-                    strtotime('midnight tonight'),
-                    1,
-                    'airwallex_check_pending_transactions'
-                );
+                if(!as_next_scheduled_action('airwallex_check_pending_transactions')) {
+                    as_schedule_recurring_action(
+                        strtotime('midnight tonight'),
+                        $interval,
+                        'airwallex_check_pending_transactions'
+                    );
+                }
             }
         });
     }
@@ -143,6 +146,19 @@ class Main
                         'failed' => _x('Failed', 'Order status', 'woocommerce'),
                     ],
                     'value' => get_option('airwallex_temporary_order_status_after_decline'),
+                ],
+                'cronjob_interval' => [
+                    'title' => __('Cronjob Interval', AIRWALLEX_PLUGIN_NAME),
+                    'id' => 'airwallex_cronjob_interval',
+                    'type' => 'select',
+                    'desc' => '',
+                    'options' => [
+                        '3600' => __('every hour (recommended)', AIRWALLEX_PLUGIN_NAME),
+                        '14400' => __('every 4 hours', AIRWALLEX_PLUGIN_NAME),
+                        '28800' => __('every 8 hours', AIRWALLEX_PLUGIN_NAME),
+                        '43200' => __('every 12 hours', AIRWALLEX_PLUGIN_NAME),
+                    ],
+                    'value' => get_option('airwallex_cronjob_interval'),
                 ],
                 'sectionend' => [
                     'type' => 'sectionend',
