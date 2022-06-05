@@ -44,7 +44,7 @@ class HttpClient
 
         }
         if(is_object($response) && get_class($response) === WP_Error::class){
-            throw new Exception($response->get_error_message(), $response->get_error_code());
+            throw new Exception($response->get_error_message().' | '.$response->get_error_code());
         }
         $this->lastCallInfo = [
             'http_code'=>wp_remote_retrieve_response_code($response)
