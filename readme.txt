@@ -55,7 +55,6 @@ FEATURES
 * Release Date - 14 April 2022*
 
 * Implementation of cronjob for handling non reflected payments
-* Passing referrer_data type and version in API request
 * Fix Cache errors, fallback to transport payment intent in db
 * Optional status after decline, clean cache service
 
