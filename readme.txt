@@ -3,7 +3,7 @@ Contributors: airwallex
 Tags: credit card, airwallex, online payments, wechat, alipay, woocommerce
 Requires at least: 4.5
 Tested up to: 6.4.1
-Stable tag: 1.1.7
+Stable tag: 1.1.8
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Author URI: https://www.airwallex.com
@@ -44,6 +44,11 @@ FEATURES
 
 == Changelog ==
 
+= 1.1.8 =
+* Release Date - 11 July 2022*
+
+* Replacing the latest airwallex checkout file
+
 = 1.1.7 =
 * Release Date - 27 April 2022*
 
@@ -55,7 +60,6 @@ FEATURES
 * Release Date - 14 April 2022*
 
 * Implementation of cronjob for handling non reflected payments
-* Passing referrer_data type and version in API request
 * Fix Cache errors, fallback to transport payment intent in db
 * Optional status after decline, clean cache service
 
