@@ -24,7 +24,7 @@ class WebhookService
             $this->verifySignature($headers, $msg);
         } catch (Exception $e) {
             $logService->warning('unable to verify webhook signature', [$headers, $msg]);
-            return;
+            throw $e;
         }
 
         $messageData = json_decode($msg, true);
@@ -110,9 +110,10 @@ class WebhookService
         $timestamp = $headers['x-timestamp'];
         $secret = get_option('airwallex_webhook_secret');
         $signature = $headers['x-signature'];
+        $calculatedSignature = hash_hmac('sha256', $timestamp . $msg, $secret);
 
-        if (hash_hmac('sha256', $timestamp . $msg, $secret) !== $signature) {
-            throw new Exception('Invalid signature');
+        if ($calculatedSignature !== $signature) {
+            throw new Exception('Invalid signature: '.$signature.' vs. '.$calculatedSignature);
         }
     }
 

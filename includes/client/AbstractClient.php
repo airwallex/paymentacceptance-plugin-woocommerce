@@ -15,6 +15,8 @@ abstract class AbstractClient
     const AUTH_URL_SANDBOX = 'https://pci-api-demo.airwallex.com/api/v1/';
     const PCI_URL_LIVE = 'https://pci-api.airwallex.com/api/v1/';
     const PCI_URL_SANDBOX = 'https://pci-api-demo.airwallex.com/api/v1/';
+    const GENERAL_URL_LIVE = 'https://api.airwallex.com/api/v1/';
+    const GENERAL_URL_SANDBOX = 'https://api-demo.airwallex.com/api/v1/';
 
     public static $instance;
     protected $clientId;
@@ -45,6 +47,11 @@ abstract class AbstractClient
     final public function getPciUrl($action)
     {
         return ($this->isSandbox ? self::PCI_URL_SANDBOX : self::PCI_URL_LIVE) . $action;
+    }
+
+    final public function getGeneralUrl($action)
+    {
+        return ($this->isSandbox ? self::GENERAL_URL_SANDBOX : self::GENERAL_URL_LIVE) . $action;
     }
 
     final protected function getCacheService()
@@ -90,17 +97,32 @@ abstract class AbstractClient
      */
     final protected function doAuth()
     {
+        if(empty($this->clientId) || empty($this->apiKey)){
+            return;
+        }
         $client = $this->getHttpClient();
         $response = $client->call('POST', $this->getAuthUrl('authentication/login'), null, [
             'x-client-id' => $this->clientId,
             'x-api-key' => $this->apiKey,
         ]);
-        $this->token = $response->data['token'];
-        $this->tokenExpiry = strtotime($response->data['expires_at']) - 10;
-        $this->getCacheService()->set('token', [
-            'token' => $this->token,
-            'expiry' => $this->tokenExpiry,
+        if(!empty($response) && !empty($response->data) && !empty($response->data['token'])) {
+            $this->token = $response->data['token'];
+            $this->tokenExpiry = strtotime($response->data['expires_at']) - 10;
+            $this->getCacheService()->set('token', [
+                'token' => $this->token,
+                'expiry' => $this->tokenExpiry,
+            ]);
+        }
+    }
+
+    final public function testAuth()
+    {
+        $client = $this->getHttpClient();
+        $response = $client->call('POST', $this->getAuthUrl('authentication/login'), null, [
+            'x-client-id' => $this->clientId,
+            'x-api-key' => $this->apiKey,
         ]);
+        return !empty($response->data['token']);
     }
 
     /**
@@ -124,6 +146,7 @@ abstract class AbstractClient
                     'wp_order_id' => $orderId,
                 ],
                 'merchant_order_id' => $orderNumber,
+                'return_url' => WC()->api_request_url(Main::ROUTE_SLUG_CONFIRMATION),
                 'order' => [
                     'type' => 'physical_goods',
                 ],
@@ -139,7 +162,6 @@ abstract class AbstractClient
 
             $orderData = [
                 'type' => 'physical_goods',
-                'test' => 1,
                 'products' => [],
             ];
 
@@ -425,6 +447,24 @@ abstract class AbstractClient
             return null;
         }
         return $response->data['items'];
+    }
+
+    final public function getAccount()
+    {
+        $client = $this->getHttpClient();
+        $response = $client->call(
+            'GET',
+            $this->getGeneralUrl('account'
+            ),
+            null,
+            [
+                'Authorization' => 'Bearer ' . $this->getToken(),
+            ]
+        );
+        if (empty($response->data)) {
+            return null;
+        }
+        return $response->data;
     }
 
     public function createCustomerClientSecret($airwallexCustomerId)

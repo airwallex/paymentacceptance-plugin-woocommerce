@@ -107,6 +107,11 @@ class OrderService
      * @throws Exception
      */
     public function getAirwallexCustomerId($wordpressCustomerId, AbstractClient $client){
+
+        if(empty($wordpressCustomerId)){
+            $wordpressCustomerId = uniqid();
+        }
+
         if($customer = $client->getCustomer($wordpressCustomerId)){
             return $customer->getId();
         }

@@ -13,6 +13,7 @@ class PaymentIntent extends AbstractBase
     protected $currency;
     protected $order;
     protected $merchantOrderId;
+    protected $returnUrl;
     protected $supplementaryAmount;
     protected $descriptor;
     protected $status;
@@ -206,6 +207,24 @@ class PaymentIntent extends AbstractBase
     public function setOrder($order)
     {
         $this->order = $order;
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getReturnUrl()
+    {
+        return $this->returnUrl;
+    }
+
+    /**
+     * @param mixed $returnUrl
+     * @return PaymentIntent
+     */
+    public function setReturnUrl($returnUrl)
+    {
+        $this->returnUrl = $returnUrl;
         return $this;
     }
 

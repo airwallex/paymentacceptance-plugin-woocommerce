@@ -3,7 +3,7 @@ Contributors: airwallex
 Tags: credit card, airwallex, online payments, wechat, alipay, woocommerce
 Requires at least: 4.5
 Tested up to: 6.4.1
-Stable tag: 1.1.8
+Stable tag: 1.2.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Author URI: https://www.airwallex.com
@@ -43,6 +43,13 @@ FEATURES
 
 
 == Changelog ==
+
+
+= 1.2.0 =
+* Release Date - 17 October 2022*
+
+* Implementation of Drop-In elements
+* IDs in manual payment URLs for safer sessions
 
 = 1.1.8 =
 * Release Date - 11 July 2022*

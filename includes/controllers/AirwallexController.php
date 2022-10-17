@@ -2,6 +2,7 @@
 
 use Airwallex\CardClient;
 use Airwallex\Gateways\Card;
+use Airwallex\Gateways\Main;
 use Airwallex\Gateways\WeChat;
 use Airwallex\Services\LogService;
 use Airwallex\Services\OrderService;
@@ -39,6 +40,48 @@ class AirwallexController
             die;
         } catch (Exception $e) {
             (new LogService())->error('card payment controller action failed', $e->getMessage());
+            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wp_redirect(wc_get_checkout_url());
+            die;
+        }
+
+    }
+
+    public function dropInPayment()
+    {
+        try {
+            $apiClient = CardClient::getInstance();
+            $orderId = (int)WC()->session->get('airwallex_order');
+            if (empty($orderId)) {
+                $orderId = (int)WC()->session->get('order_awaiting_payment');
+            }
+            $gateway = new Main();
+            $order = wc_get_order($orderId);
+            if (empty($order)) {
+                throw new Exception('Order not found: ' . $orderId);
+            }
+            $airwallexCustomerId = null;
+            $orderService = new OrderService();
+            $isSubscription = $orderService->containsSubscription($order->get_id());
+            if($order->get_customer_id('') || $isSubscription) {
+                $airwallexCustomerId = $orderService->getAirwallexCustomerId($order->get_customer_id(''), $apiClient);
+            }
+
+            $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $gateway->is_submit_order_details(), $airwallexCustomerId);
+            $paymentIntentId = $paymentIntent->getId();
+            $paymentIntentClientSecret = $paymentIntent->getClientSecret();
+            $confirmationUrl = $gateway->get_payment_confirmation_url();
+            $isSandbox = $gateway->is_sandbox();
+            WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
+            (new LogService())->debug('dropInPayment()', [
+                'orderId' => $orderId,
+                'paymentIntent' => $paymentIntentId,
+            ]);
+
+            include AIRWALLEX_PLUGIN_PATH . '/html/drop-in-payment.php';
+            die;
+        } catch (Exception $e) {
+            (new LogService())->error('drop in payment controller action failed', $e->getMessage());
             wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
             wp_redirect(wc_get_checkout_url());
             die;
@@ -119,6 +162,7 @@ class AirwallexController
             http_response_code(200);
             $response = [
                 'paymentIntent' => $paymentIntent->getId(),
+                'orderId' => $orderId,
                 'createConsent' => !empty($airwallexCustomerId),
                 'customerId' => !empty($airwallexCustomerId) ? $airwallexCustomerId : '',
                 'currency' => $order->get_currency(''),
@@ -143,20 +187,52 @@ class AirwallexController
         }
     }
 
+    private function getOrderAndPaymentIntentForConfirmation()
+    {
+        $logService = new LogService();
+        $orderId = (int)WC()->session->get('airwallex_order');
+        if (empty($orderId)) {
+            $orderId = (int)WC()->session->get('order_awaiting_payment');
+        }
+        if (empty($orderId) && !empty($_GET['order_id'])) {
+            $logService->debug('detected order id from URL', ['get' => $_GET]);
+            $orderId = (int)$_GET['order_id'];
+        }
+
+        if (empty($orderId)) {
+            throw new Exception('I tried hard, but no order was found for confirmation');
+        }
+
+        $paymentIntentId = WC()->session->get('airwallex_payment_intent_id');
+        if (empty($paymentIntentId)) {
+            $paymentIntentId = get_post_meta($orderId, '_tmp_airwallex_payment_intent', true);
+        }
+
+        if (!empty($_GET['intent_id'])) {
+            $intentIdFromUrl = $_GET['intent_id'];
+            if (!empty($paymentIntentId) && $paymentIntentId !== $intentIdFromUrl) {
+                $logService->warning('different intent ids from url and session', ['from_session' => $paymentIntentId, 'from_url' => $intentIdFromUrl]);
+                if (!empty($_GET['order_id'])) {
+                    throw new Exception('different intent ids from url and session - fraud suspected');
+                }
+            } else {
+                $paymentIntentId = $intentIdFromUrl;
+            }
+        }
+        return [
+            'order_id' => $orderId,
+            'payment_intent_id' => $paymentIntentId,
+        ];
+    }
+
     public function paymentConfirmation()
     {
         $logService = new LogService();
 
         try {
-            $orderId = (int)WC()->session->get('airwallex_order');
-            if (empty($orderId)) {
-                $orderId = (int)WC()->session->get('order_awaiting_payment');
-            }
-            $paymentIntentId = WC()->session->get('airwallex_payment_intent_id');
-
-            if (empty($paymentIntentId)) {
-                $paymentIntentId = get_post_meta($orderId, '_tmp_airwallex_payment_intent', true);
-            }
+            $orderInformation = $this->getOrderAndPaymentIntentForConfirmation();
+            $orderId = $orderInformation['order_id'];
+            $paymentIntentId = $orderInformation['payment_intent_id'];
 
             $logService->debug('paymentConfirmation() init', [
                 'paymentIntent' => $paymentIntentId,
@@ -234,7 +310,9 @@ class AirwallexController
             die;
         } catch (Exception $e) {
             $logService->error('payment confirmation controller action failed', $e->getMessage());
-            $this->setTemporaryOrderStateAfterDecline($order);
+            if (!empty($order)) {
+                $this->setTemporaryOrderStateAfterDecline($order);
+            }
             wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
             wp_redirect(wc_get_checkout_url());
             die;

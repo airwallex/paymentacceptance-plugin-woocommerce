@@ -4,6 +4,7 @@ namespace Airwallex;
 
 use Airwallex\Gateways\Card;
 use Airwallex\Gateways\CardSubscriptions;
+use Airwallex\Gateways\Main as MainGateway;
 use Airwallex\Gateways\WeChat;
 use Airwallex\Services\LogService;
 use Airwallex\Services\OrderService;
@@ -15,6 +16,9 @@ class Main
 {
     const ROUTE_SLUG_CONFIRMATION = 'airwallex_payment_confirmation';
     const ROUTE_SLUG_WEBHOOK = 'airwallex_webhook';
+
+    const OPTION_KEY_MERCHANT_COUNTRY = 'airwallex_merchant_country';
+
     public static $instance;
 
     public static function getInstance()
@@ -40,13 +44,62 @@ class Main
         add_filter('woocommerce_payment_gateways', [$this, 'addPaymentGateways']);
         add_action('woocommerce_order_status_changed', [$this, 'handleStatusChange'], 10, 4);
         add_action('woocommerce_api_' . Card::ROUTE_SLUG, [new AirwallexController, 'cardPayment']);
+        add_action('woocommerce_api_' . MainGateway::ROUTE_SLUG, [new AirwallexController, 'dropInPayment']);
         add_action('woocommerce_api_' . WeChat::ROUTE_SLUG, [new AirwallexController, 'weChatPayment']);
         add_action('woocommerce_api_' . self::ROUTE_SLUG_CONFIRMATION, [new AirwallexController, 'paymentConfirmation']);
         add_action('woocommerce_api_' . self::ROUTE_SLUG_WEBHOOK, [new AirwallexController, 'webhook']);
         add_action('woocommerce_api_' . Card::ROUTE_SLUG_ASYNC_INTENT, [new AirwallexController, 'asyncIntent']);
         add_filter('plugin_action_links_' . plugin_basename(AIRWALLEX_PLUGIN_PATH . AIRWALLEX_PLUGIN_NAME . '.php'), [$this, 'addPluginSettingsLink']);
         add_action('airwallex_check_pending_transactions', [$this, 'checkPendingTransactions']);
+        add_action('woocommerce_settings_saved', [$this, 'updateMerchantCountryAfterSave']);
     }
+
+    public function updateMerchantCountryAfterSave()
+    {
+        if (empty($_POST['airwallex_client_id']) || empty($_POST['airwallex_api_key'])) {
+            return;
+        }
+        $this->updateMerchantCountry();
+    }
+
+    protected function updateMerchantCountry()
+    {
+        if (empty(get_option('airwallex_client_id')) || empty(get_option('airwallex_api_key'))) {
+            return;
+        }
+        $country = null;
+        try {
+            $client = new AdminClient(get_option('airwallex_client_id'), get_option('airwallex_api_key'), false);
+            $country = $client->getMerchantCountry();
+        } catch (Exception $e) {
+            //silent
+        }
+        if (empty($country)) {
+            //try in sandbox
+            try {
+                $client = new AdminClient(get_option('airwallex_client_id'), get_option('airwallex_api_key'), true);
+                $country = $client->getMerchantCountry();
+            } catch (Exception $e) {
+                //silent
+            }
+        }
+        update_option(self::OPTION_KEY_MERCHANT_COUNTRY, $country);
+    }
+
+    public function getMerchantCountry()
+    {
+        $country = get_option(self::OPTION_KEY_MERCHANT_COUNTRY);
+
+        if (empty($country)) {
+            $this->updateMerchantCountry();
+            $country = get_option(self::OPTION_KEY_MERCHANT_COUNTRY);
+        }
+        if (empty($country)) {
+            $country = get_option('woocommerce_default_country');
+        }
+        return $country;
+    }
+
 
     protected function registerOrderStatus()
     {
@@ -71,10 +124,10 @@ class Main
     protected function registerCron()
     {
         $interval = (int)get_option('airwallex_cronjob_interval');
-        $interval = ($interval < 3600)?3600:$interval;
+        $interval = ($interval < 3600) ? 3600 : $interval;
         add_action('init', function () use ($interval) {
             if (function_exists('as_schedule_cron_action')) {
-                if(!as_next_scheduled_action('airwallex_check_pending_transactions')) {
+                if (!as_next_scheduled_action('airwallex_check_pending_transactions')) {
                     as_schedule_recurring_action(
                         strtotime('midnight tonight'),
                         $interval,
@@ -170,6 +223,7 @@ class Main
 
     public function addPaymentGateways($gateways)
     {
+        $gateways[] = MainGateway::class;
         if (class_exists('WC_Subscriptions_Order') && function_exists('wcs_create_renewal_order')) {
             $gateways[] = CardSubscriptions::class;
         } else {
@@ -226,17 +280,21 @@ class Main
         }
     }
 
-    public function addJs()
+    public function addJsLegacy()
     {
         $isCheckout = is_checkout();
         $cardGateway = new Card();
-        $jsUrl = AIRWALLEX_PLUGIN_URL . '/assets/js/airwallex-checkout.js';
+        $jsUrl = 'https://checkout.airwallex.com/assets/elements.bundle.min.js';
         $jsUrlLocal = AIRWALLEX_PLUGIN_URL . '/assets/js/airwallex-local.js';
         $cssUrl = AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout.css';
+
+        $confirmationUrl = $cardGateway->get_payment_confirmation_url();
+        $confirmationUrl .= (strpos($confirmationUrl, '?') === false) ? '?' : '&';
+
         $inlineScript = '
             const AirwallexParameters = {
                 asyncIntentUrl: \'' . $cardGateway->get_async_intent_url() . '\',
-                confirmationUrl: \'' . $cardGateway->get_payment_confirmation_url() . '\'
+                confirmationUrl: \'' . $confirmationUrl . '\'
             };';
         if (isset($_GET['pay_for_order']) && 'true' === $_GET['pay_for_order']) {
             global $wp;
@@ -341,6 +399,7 @@ class Main
             if (!data || data.error) {
                 AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', ''));
             }
+            const finalConfirmationUrl = AirwallexParameters.confirmationUrl + 'order_id=' + data.orderId + '&intent_id=' + data.paymentIntent;
             if(data.createConsent){
                 Airwallex.createPaymentConsent({
                     intent_id: data.paymentIntent,
@@ -350,7 +409,7 @@ class Main
                     element: airwallexSlimCard,
                     next_triggered_by: 'merchant'
                 }).then((response) => {
-                    location.href = AirwallexParameters.confirmationUrl;
+                    location.href = finalConfirmationUrl;
                 }).catch(err => {
                     console.log(err);
                     jQuery('form.checkout').unblock();
@@ -373,7 +432,7 @@ class Main
                         },
                     }
                 }).then((response) => {
-                    location.href = AirwallexParameters.confirmationUrl;
+                    location.href = finalConfirmationUrl;
                 }).catch(err => {
                     console.log(err);
                     jQuery('form.checkout').unblock();

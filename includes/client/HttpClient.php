@@ -24,30 +24,30 @@ class HttpClient
         $headers['Content-Type'] = 'application/json';
         $headers['x-api-version'] = '2020-04-30';
 
-        if($method === 'POST'){
-            $response = wp_remote_post( $url, array(
-                    'method'      => 'POST',
-                    'timeout'     => 10,
+        if ($method === 'POST') {
+            $response = wp_remote_post($url, [
+                    'method' => 'POST',
+                    'timeout' => 10,
                     'redirection' => 5,
-                    'headers'     => $headers,
-                    'body'        => $data,
-                    'cookies'     => []
-                )
+                    'headers' => $headers,
+                    'body' => $data,
+                    'cookies' => [],
+                ]
             );
-        }else{
+        } else {
             $response = wp_remote_get(
                 $url,
                 [
-                    'headers'=>$headers
+                    'headers' => $headers,
                 ]
             );
 
         }
-        if(is_object($response) && get_class($response) === WP_Error::class){
-            throw new Exception($response->get_error_message().' | '.$response->get_error_code());
+        if (is_object($response) && get_class($response) === WP_Error::class) {
+            throw new Exception($response->get_error_message() . ' | ' . $response->get_error_code());
         }
         $this->lastCallInfo = [
-            'http_code'=>wp_remote_retrieve_response_code($response)
+            'http_code' => wp_remote_retrieve_response_code($response),
         ];
         return wp_remote_retrieve_body($response);
     }
@@ -69,14 +69,14 @@ class HttpClient
         if (!($responseData = json_decode($rawResponse, true))) {
             throw new Exception('API response invalid');
         }
-        $response              = new Response();
-        $response->data        = $responseData;
-        $response->status      = $this->lastCallInfo["http_code"];
-        $response->time        = round(microtime(true) - $startTime, 3);
+        $response = new Response();
+        $response->data = $responseData;
+        $response->status = $this->lastCallInfo["http_code"];
+        $response->time = round(microtime(true) - $startTime, 3);
         $response->requestData = $data;
-        $response->requestUrl  = $url;
+        $response->requestUrl = $url;
 
-        if(isset($response->data['code']) && $response->data['code'] === self::ERROR_CODE_UNAUTHORIZED && !empty($authorizationRetryClosure)){
+        if (isset($response->data['code']) && $response->data['code'] === self::ERROR_CODE_UNAUTHORIZED && !empty($authorizationRetryClosure)) {
             $headers['Authorization'] = $authorizationRetryClosure();
             return $this->call($method, $url, $data, $headers);
         }

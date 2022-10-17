@@ -28,7 +28,7 @@ get_header('shop');
     </div>
 <?php
 
-wp_enqueue_script('airwallex-lib-js', AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-checkout.js', [], false, true);
+wp_enqueue_script('airwallex-lib-js', 'https://checkout.airwallex.com/assets/elements.bundle.min.js', [], false, true);
 wp_enqueue_script('airwallex-local-js', AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-local.js', [], false, true);
 if(defined('AIRWALLEX_INLINE_JS')){
     wp_add_inline_script( 'airwallex-local-js', AIRWALLEX_INLINE_JS);

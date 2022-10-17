@@ -79,13 +79,6 @@ class WeChat extends WC_Payment_Gateway
                     'description' => __('When enabled, please ensure to use your demo Airwallex account details in API settings.', AIRWALLEX_PLUGIN_NAME),
                     'default' => 'yes',
                 ],
-                'submit_order_details' => [
-                    'title' => __('Submit order details', AIRWALLEX_PLUGIN_NAME),
-                    'label' => __('yes', AIRWALLEX_PLUGIN_NAME),
-                    'type' => 'checkbox',
-                    'description' => '',
-                    'default' => 'yes',
-                ]
             ]
         );
     }
