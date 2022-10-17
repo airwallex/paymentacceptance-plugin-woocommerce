@@ -24,10 +24,10 @@ class Card extends WC_Payment_Gateway
     const ROUTE_SLUG_WECHAT = 'airwallex_wechat';
     const ROUTE_SLUG_ASYNC_INTENT = 'airwallex_async_intent';
     const GATEWAY_ID = 'airwallex_card';
-    public $method_title = 'Airwallex Credit Card';
+    public $method_title = 'Airwallex - Cards';
     public $method_description;
-    public $title = 'Airwallex Credit Card';
-    public $description = 'Use any credit card with Airwallex';
+    public $title = 'Airwallex - Cards';
+    public $description = 'Accept only credit and debit card payments with your Airwallex account.';
     public $icon = AIRWALLEX_PLUGIN_URL . '/assets/images/airwallex_cc_icon.svg';
     public $id = self::GATEWAY_ID;
     public $plugin_id;
@@ -43,7 +43,7 @@ class Card extends WC_Payment_Gateway
         $this->init_settings();
         $this->description = $this->get_option('description') ?: ($this->get_option('checkout_form_type') === 'inline' ? '<!-- -->' : '');
         if ($this->get_client_id() && $this->get_api_key()) {
-            $this->method_description = sprintf(__('The Airwallex API settings can be adjusted <a href="%s">here</a>', AIRWALLEX_PLUGIN_NAME), admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general'));
+            $this->method_description = __('Accept only credit and debit card payments with your Airwallex account.', AIRWALLEX_PLUGIN_NAME);
             $this->form_fields = $this->get_form_fields();
         } else {
             $this->method_description = '<div class="error" style="padding:10px;">' . sprintf(__('To start using Airwallex payment methods, please enter your credentials first. <br><a href="%s" class="button-primary">API settings</a>', AIRWALLEX_PLUGIN_NAME), admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general')) . '</div>';

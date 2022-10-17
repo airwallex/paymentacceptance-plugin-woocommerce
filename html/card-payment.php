@@ -43,7 +43,11 @@ $inlineJs = <<<AIRWALLEX
             intent: {
                 id: '$paymentIntentId',
                 client_secret: '$paymentIntentClientSecret'
-            }
+            },
+            style: {
+                popupWidth: 400,
+                popupHeight: 549,
+            },
         });
         fullFeaturedCard.mount('full-featured-card');
         window.addEventListener('onSuccess', (event) => {

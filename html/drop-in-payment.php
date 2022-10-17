@@ -71,6 +71,14 @@ $elementConfiguration = json_encode([
         'googlePayRequestOptions' => [
             'countryCode' => $merchantCountry,
         ],
+        'style' => [
+            'variant' => 'bootstrap',
+            'popupWidth' => 400,
+            'popupHeight' => 549,
+            'base' => [
+              'color' => 'black',
+            ],
+        ],
     ]
     + ($airwallexCustomerId?['customer_id' => $airwallexCustomerId]:[])
     + ($isSubscription ? [

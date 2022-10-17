@@ -167,16 +167,16 @@
         flex-direction: column-reverse !important;
     }
 
-    .airwallex-checkout .airwallex-col-1 {
+    .airwallex-checkout.airwallex-tpl-2col-2 .airwallex-col-1 {
         padding-top: 2em;
         padding-right: 0;
     }
 
-    .airwallex-checkout .airwallex-col-2 {
+    .airwallex-checkout.airwallex-tpl-2col-2 .airwallex-col-2 {
         padding-right: 0;
     }
 
-    .airwallex-checkout .payment-section {
+    .airwallex-checkout.airwallex-tpl-2col-2 .payment-section {
         padding: 1em;
     }
 }
