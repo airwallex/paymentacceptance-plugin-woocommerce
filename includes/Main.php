@@ -365,7 +365,12 @@ class Main
         origin: window.location.origin, // Setup your event target to receive the browser events message
     });
     
-    const airwallexSlimCard = Airwallex.createElement('card');
+    const airwallexSlimCard = Airwallex.createElement('card', {
+        style: {
+            popupWidth: 400,
+            popupHeight: 549,
+        },
+    });
     
     airwallexSlimCard.mount('airwallex-card');
     setInterval(function(){

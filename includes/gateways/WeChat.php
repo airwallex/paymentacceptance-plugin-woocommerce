@@ -16,9 +16,9 @@ class WeChat extends WC_Payment_Gateway
     use AirwallexGatewayTrait;
 
     const ROUTE_SLUG = 'airwallex_wechat';
-    public $method_title = 'Airwallex WeChat Pay';
+    public $method_title = 'Airwallex - WeChat Pay';
     public $method_description = '';
-    public $title = 'WeChat Pay';
+    public $title = 'Airwallex - WeChat Pay';
     public $description = '';
     public $icon = '';
     public $id = 'airwallex_wechat';
@@ -34,7 +34,7 @@ class WeChat extends WC_Payment_Gateway
         $this->init_settings();
         $this->description = $this->get_option('description');
         if($this->get_client_id() && $this->get_api_key()){
-            $this->method_description = sprintf(__('The Airwallex API settings can be adjusted <a href="%s">here</a>', AIRWALLEX_PLUGIN_NAME), admin_url( 'admin.php?page=wc-settings&tab=checkout&section=airwallex_general' ));
+            $this->method_description = __('Accept only WeChat Pay payments with your Airwallex account.', AIRWALLEX_PLUGIN_NAME);
             $this->form_fields = $this->get_form_fields();
         }else{
             $this->method_description = '<div class="error" style="padding:10px;">'.sprintf(__('To start using Airwallex payment methods, please enter your credentials first. <br><a href="%s" class="button-primary">API settings</a>', AIRWALLEX_PLUGIN_NAME), admin_url( 'admin.php?page=wc-settings&tab=checkout&section=airwallex_general' )).'</div>';

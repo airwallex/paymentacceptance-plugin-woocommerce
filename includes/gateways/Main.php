@@ -23,7 +23,7 @@ class Main extends WC_Payment_Gateway
     const STATUS_ERROR = 'error';
     const ROUTE_SLUG = 'airwallex_main';
     public $method_title = 'Airwallex Payments';
-    public $method_description = '';
+    public $method_description = 'Airwallex - All Payment Methods';
     public $title = 'Airwallex Payments';
     public $description = '';
     public $icon = '';
@@ -114,7 +114,7 @@ class Main extends WC_Payment_Gateway
             if ($paymentMethodTypes = $apiClient->getPaymentMethodTypes()) {
                 $logos = [];
                 foreach ($paymentMethodTypes as $paymentMethodType) {
-                    if (isset($paymentMethodType['card_schemes'])) {
+                    if ($paymentMethodType['name'] === 'card') {
                         $prefix = $paymentMethodType['name'] . '_';
                         $subMethods = $paymentMethodType['card_schemes'];
                     } else {
@@ -197,7 +197,7 @@ class Main extends WC_Payment_Gateway
                     'title' => __('Title', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'text',
                     'description' => __('What title to display for this payment method', AIRWALLEX_PLUGIN_NAME),
-                    'default' => __('Airwallex Payments', AIRWALLEX_PLUGIN_NAME),
+                    'default' => __('Pay with cards and more', AIRWALLEX_PLUGIN_NAME),
                     'desc_tip' => true,
                 ],
                 'description' => [
