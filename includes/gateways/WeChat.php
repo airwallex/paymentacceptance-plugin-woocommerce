@@ -17,9 +17,9 @@ class WeChat extends WC_Payment_Gateway
 
     const ROUTE_SLUG = 'airwallex_wechat';
     public $method_title = 'Airwallex - WeChat Pay';
-    public $method_description = 'Accept only WeChat Pay payments with your Airwallex account.';
+    public $method_description = '';
     public $title = 'Airwallex - WeChat Pay';
-    public $description = 'Accept only WeChat Pay payments with your Airwallex account.';
+    public $description = '';
     public $icon = '';
     public $id = 'airwallex_wechat';
     public $plugin_id;

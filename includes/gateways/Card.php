@@ -27,7 +27,7 @@ class Card extends WC_Payment_Gateway
     public $method_title = 'Airwallex - Cards';
     public $method_description;
     public $title = 'Airwallex - Cards';
-    public $description = 'Accept only credit and debit card payments with your Airwallex account.';
+    public $description = '';
     public $icon = AIRWALLEX_PLUGIN_URL . '/assets/images/airwallex_cc_icon.svg';
     public $id = self::GATEWAY_ID;
     public $plugin_id;

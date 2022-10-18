@@ -25,7 +25,7 @@ class Main extends WC_Payment_Gateway
     public $method_title = 'Airwallex Payments';
     public $method_description = 'Airwallex - All Payment Methods';
     public $title = 'Airwallex Payments';
-    public $description = 'Airwallex - All Payment Methods';
+    public $description = '';
     public $icon = '';
     public $id = 'airwallex_main';
     public $plugin_id;
@@ -204,7 +204,7 @@ class Main extends WC_Payment_Gateway
                     'title' => __('Description', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'text',
                     'description' => __('What subtext to display for this payment method. Can be left blank.', AIRWALLEX_PLUGIN_NAME),
-                    'default' => 'Click “Place Order” to pay with cards and other payment methods',
+                    'default' => '',
                     'desc_tip' => true,
                 ],
                 'icons' => [
