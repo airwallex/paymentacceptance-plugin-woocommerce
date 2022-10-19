@@ -22,9 +22,9 @@ class Main extends WC_Payment_Gateway
     const STATUS__NOT_CONNECTED = 'not connected';
     const STATUS_ERROR = 'error';
     const ROUTE_SLUG = 'airwallex_main';
-    public $method_title = 'Airwallex Payments';
-    public $method_description = 'Airwallex - All Payment Methods';
-    public $title = 'Airwallex Payments';
+    public $method_title = 'Airwallex - All Payment Methods';
+    public $method_description = 'Accepts all available payment methods with your Airwallex account, including cards, Apple Pay, Google Pay, and other local payment methods. ';
+    public $title = 'Airwallex - All Payment Methods';
     public $description = '';
     public $icon = '';
     public $id = 'airwallex_main';
