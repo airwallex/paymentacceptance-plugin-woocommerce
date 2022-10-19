@@ -28,9 +28,6 @@ get_header('shop');
             </div>
             <div class="airwallex-col-2">
                 <div class="payment-section">
-                    <div class="airwallex-info">
-                        <?php echo __('Select a payment method', AIRWALLEX_PLUGIN_NAME); ?>
-                    </div>
                     <div id="airwallex-error-message" class="woocommerce-error" style="display:none;">
                         <?php echo __('Your payment could not be authenticated', AIRWALLEX_PLUGIN_NAME); ?>
                     </div>
