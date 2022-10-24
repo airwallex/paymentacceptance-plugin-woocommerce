@@ -1,6 +1,6 @@
 === Airwallex Online Payments Gateway ===
 Contributors: airwallex
-Tags: credit card, airwallex, online payments, wechat, alipay, woocommerce
+Tags: credit card, airwallex, payments, wechat, alipay, apple pay
 Requires at least: 4.5
 Tested up to: 6.0.3
 Stable tag: 1.2.0
@@ -9,7 +9,7 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Author URI: https://www.airwallex.com
 Attributions: airwallex
 
-Accept Visa and Mastercard as well as local payment methods using Airwallex
+Accept credit/debit card, Apple Pay, Google Pay, and 30+ local payment methods on your WooCommerce Store with Airwallex.
 
 == Description ==
 
@@ -20,7 +20,7 @@ See the [installation guide](https://www.airwallex.com/docs/online-payments__plu
 
 == WHY CHOOSE AIRWALLEX ==
 
-#### Improve conversion by localizing your checkout experience, offering all the local payment methods that your customers use, and support multi-currency checkout
+#### Improve conversion by localizing your checkout experience, offering all the local payment methods that your customers use, and supporting multi-currency checkout
 Airwallex allows your customers to pay you through all mainstream payment methods, including major card schemes (Visa, Mastercard, American Express, UnionPay), mobile wallets like Apple Pay and Google Pay, and 30+ local payment methods across APAC and Europe such as WeChat Pay & Alipay in China, iDeal, Bancontact, GiroPay and Sofort in Europe, and DANA and GrabPay in Southeast Asia.
 
 #### Improve your profit margins by cutting out unnecessary fees by getting like-for-like settlement in 7+ currencies
