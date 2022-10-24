@@ -1,49 +1,59 @@
 === Airwallex Online Payments Gateway ===
 Contributors: airwallex
-Tags: credit card, airwallex, online payments, wechat, alipay, woocommerce
+Tags: credit card, airwallex, payments, wechat, alipay, apple pay
 Requires at least: 4.5
-Tested up to: 6.4.1
+Tested up to: 6.0.3
 Stable tag: 1.2.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Author URI: https://www.airwallex.com
 Attributions: airwallex
 
-Accept Visa and Mastercard as well as local payment methods using Airwallex
+Accept credit/debit card, Apple Pay, Google Pay, and 30+ local payment methods on your WooCommerce Store with Airwallex.
 
 == Description ==
 
-Accept payments, settle like-for-like in select preferred currencies, and manage FX conversions with Airwallex Payments and Global Accounts.
+## POWER YOUR CHECKOUT WITH AIRWALLEX ONLINE PAYMENTS
+Power your WooCommerce store checkout with Airwallex Online payments’ multi-currency checkout, with its like-for-like settlement and 30+ payment methods, to get paid by your global customers in an easier, faster and more cost-effective way. 
 
-== Why use this extension and choose Airwallex ==
+See the [installation guide](https://www.airwallex.com/docs/online-payments__plugins__woocommerce__install-the-woocommerce-plugin) for how to install and configure this plugin. 
 
-* The Airwallex plugin allowing you to take payments directly on your store via Woocommerce extension.
-* Accept Visa and Mastercard as well as local payment methods.
-* Currency supported 10+ major currencies (e.g. USD, GBP, EUR) with card payment methods and WeChat Pay.
-* Airwallex is directly integrated with WeChat Pay and therefore provide lowest fee on the market. 
-* Fraud and 3D Secure 2.0 is fully integrated with the Airwallex Payment Acceptance platform. 
-* Benefit from frequent and free updates and new functionality in the roadmap - like Multi Currency Pricing, more local/alternative payment methods
-* Find out how much you can save with our transparent and competitive pricing.
-* Quick onboarding with the access to full Airwallex product portfolio including payment acceptance. 
-* Stay compliant, reduce fraud and increase conversion with 3D Secure. Airwallex complies with the second Payment Services Directive (PSD2)
-* We work with world-class security providers to ensure your funds and accounts are secure at all times. Our security systems and procedures are based on the highest international standards including PCI Level 1 compliance.
+== WHY CHOOSE AIRWALLEX ==
 
-== What's included ==
-The Airwallex plugin allows to accept payments and funds are settled in as little as two business days in the merchant wallet within Airwallex end-to-end platform.
-The plugin supports checkout directly on the Website without the need of redirecting outside. Customers never have to leave the store to make a payment.
-Airwallex has no setup fees, no monthly fees, no hidden costs. Merchant pay per transaction very transparent fee Interchange++
+#### Improve conversion by localizing your checkout experience, offering all the local payment methods that your customers use, and supporting multi-currency checkout
+Airwallex allows your customers to pay you through all mainstream payment methods, including major card schemes (Visa, Mastercard, American Express, UnionPay), mobile wallets like Apple Pay and Google Pay, and 30+ local payment methods across APAC and Europe such as WeChat Pay & Alipay in China, iDeal, Bancontact, GiroPay and Sofort in Europe, and DANA and GrabPay in Southeast Asia.
 
-FEATURES
-* Credit Cards
-* Local Payment Methods (WeChat Pay) with simple and low fees
-* Dynamic 3DS (including 3DS2 and 3DS1)
-* Full synchronisation between Airwallex’s Webapp and WooCommerce backoffice Admin
-* Embedded Fraud protection via Airwallex merchant portal, where the merchant can decide on risk appetite
-* Reporting
+#### Improve your profit margins by cutting out unnecessary fees by getting like-for-like settlement in 7+ currencies
+Accept 100+ currencies and get like-for-like settlements in 7+ currencies, including USD, CAD, GBP, EUR and AUD, directly into your Airwallex multi-currency wallet. Avoid forced FX conversions to your home currency, and instead use the settled funds to pay for your SaaS subscriptions through Airwallex Borderless Cards, or your global suppliers using Airwallex Transfers. You can also convert these collections back to your home currency at very low FX rates with Airwallex.
 
+#### Enable a faster checkout experience for repeat customers by saving their card details
+Increase your checkout conversion by removing the friction of having your customers re-enter their card details when making repeat purchases. Now they can save their card number on file for faster future payments.
+
+== PLUGIN FEATURES ==
+
+**Support for all available Airwallex payment methods:** 30+ payment methods live including major schemes, wallets and bank transfers. Full list [here](https://www.airwallex.com/docs/online-payments__overview)
+**Checkout in 100+ currencies and enjoy like-for-like settlements in 7+ currencies:** See more details on supported processing & settlement currencies for each payment method [here](https://www.airwallex.com/docs/online-payments__overview)
+**Recurring payments:** Compatible with WooCommerce Subscriptions for recurring payments with Visa, Mastercard, Apple Pay, Google Pay, and more.
+**Local, in-house support**, in UK, Netherlands, Australia, Hong Kong, China, and Singapore: You will always be helped by someone who knows our products intimately
+Simple and secure: Reduce chargebacks with our 3DS fraud engine, customizable risk settings and built-in dispute management
+**No redirect:** The plugin supports checkout directly on the merchant store website without the need to redirect customers away from the website to make a payment
+**Mult-lingual error codes:** Support for multilingual error codes during the checkout process
+**Transparent pricing:** Airwallex has no setup fees, no monthly fees, and no hidden costs.  Merchant pay per transaction
+**Customizable checkout:** Take control over the look and feel of your checkout. 
+**Support for partial payment refunds**, for WooCommerce 2.2 and above
+
+== Installation ==
+
+**Configure and go live:** Please refer to our [installation guide](https://www.airwallex.com/docs/online-payments__plugins__woocommerce__install-the-woocommerce-plugin) for how to install and configure this plugin.
+
+**Get in touch:** Sign up for an account at [www.airwallex.com](https://www.airwallex.com). We provide sandbox testing accounts on an as-needed basis. Once your account is activated, please contact [support@airwallex.com](https://www.airwallex.com/docs/support@airwallex.com) to request a demo account for testing. Provide your Airwallex registered company name and the payment methods you want to test using the demo account.
+If you encounter any unexpected behavior, first check your configuration against the installation guide and retry. Contact [support@airwallex.com](https://www.airwallex.com/docs/support@airwallex.com) if you need any help.
+
+== ABOUT AIRWALLEX ==
+
+Airwallex is a global payments platform with a mission to empower businesses of all sizes to grow without borders, and by doing so, contribute to the global economy. With technology at its core, Airwallex has built a financial infrastructure and platform to help businesses manage online payments, treasury and payout globally, without the constraints of the traditional financial system. Airwallex has raised over US$900 million since it was established in 2015, and is backed by world-leading investors. Today, the business operates with a team of over 1,200 employees across 19 locations globally.
 
 == Changelog ==
-
 
 = 1.2.0 =
 * Release Date - 17 October 2022*
