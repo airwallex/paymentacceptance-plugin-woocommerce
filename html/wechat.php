@@ -10,6 +10,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 wp_enqueue_style('airwallex-css', AIRWALLEX_PLUGIN_URL.'/assets/css/airwallex.css');
+
+//prevent errors when using Avada theme and Fusion Builder
+if(class_exists('Fusion_Template_Builder')){
+    global $post;
+    $post = 0;
+    do_action('wp');
+}
+
 get_header('shop');
 ?>
     <div style="max-width:800px; padding:10px; margin: 0 auto; text-align: center;">
