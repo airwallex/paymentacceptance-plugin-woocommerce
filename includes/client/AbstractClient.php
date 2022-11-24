@@ -139,7 +139,6 @@ abstract class AbstractClient
     {
         $client = $this->getHttpClient();
         $order = wc_get_order((int)$orderId);
-        (new LogService())->debug('order', $order);
         $orderNumber = ($orderNumber = $order->get_meta('_order_number')) ? $orderNumber : $orderId;
         $data = [
                 'amount' => $amount,
@@ -463,7 +462,6 @@ abstract class AbstractClient
                 'Authorization' => 'Bearer ' . $this->getToken(),
             ]
         );
-        // (new LogService())->debug('getPaymentLogos3.6', $response->data['items']);
         if (empty($response->data['items'])) {
             return null;
         }

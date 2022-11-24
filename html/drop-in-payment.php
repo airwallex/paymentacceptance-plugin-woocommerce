@@ -107,7 +107,6 @@ $inlineJs = <<<AIRWALLEX
             locale: '$locale',
             origin: window.location.origin, // Setup your event target to receive the browser events message
         });
-        console.log('$environment');
         const dropIn = Airwallex.createElement('dropIn', $elementConfiguration);
         dropIn.mount('airwallex-drop-in');
         window.addEventListener('onSuccess', (event) => {
