@@ -28,7 +28,7 @@ trait AirwallexGatewayTrait
 
     public function is_sandbox()
     {
-        return in_array($this->get_option('sandbox'), [true, 'yes'], true);
+        return in_array(get_option('airwallex_enable_sandbox'), [true, 'yes'], true);
     }
 
     public function get_payment_url()

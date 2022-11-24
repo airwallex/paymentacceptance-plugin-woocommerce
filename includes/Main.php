@@ -181,13 +181,13 @@ class Main
                     'id' => 'airwallex_webhook_secret',
                     'value' => get_option('airwallex_webhook_secret'),
                 ],
-                'submit_order_details' => [
-                    'title' => __('Submit order details', AIRWALLEX_PLUGIN_NAME),
+                'enable_sandbox' => [
+                    'title' => __('Enable sandbox', AIRWALLEX_PLUGIN_NAME),
                     'desc' => __('yes', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'checkbox',
                     'default' => 'yes',
-                    'id' => 'airwallex_submit_order_details',
-                    'value' => get_option('airwallex_submit_order_details'),
+                    'id' => 'airwallex_enable_sandbox',
+                    'value' => get_option('airwallex_enable_sandbox'),
                 ],
                 'temporary_order_status_after_decline' => [
                     'title' => __('Temporary order status after decline during checkout', AIRWALLEX_PLUGIN_NAME),
