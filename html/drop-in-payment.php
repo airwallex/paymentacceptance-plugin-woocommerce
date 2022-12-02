@@ -63,7 +63,7 @@ $environment = $isSandbox ? 'demo' : 'prod';
 $locale = substr(get_bloginfo('language'), 0, 2);
 $methods = $gateway->get_option('methods');
 $airwallexMain = \Airwallex\Main::getInstance();
-$merchantCountry = $airwallexMain->getMerchantCountry();
+$merchantCountry = strtoupper(substr($paymentIntentId, 4, 2));
 
 $elementConfiguration = json_encode([
         'intent_id' => $paymentIntentId,

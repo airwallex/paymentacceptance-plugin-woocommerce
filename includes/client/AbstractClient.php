@@ -8,6 +8,7 @@ use Airwallex\Struct\Customer;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
 use Exception;
+use Airwallex\Services\LogService;
 
 abstract class AbstractClient
 {
@@ -41,6 +42,7 @@ abstract class AbstractClient
 
     final public function getAuthUrl($action)
     {
+        (new LogService())->debug('getAuthUrl', ['isSandbox' => $this->isSandbox]);
         return ($this->isSandbox ? self::AUTH_URL_SANDBOX : self::AUTH_URL_LIVE) . $action;
     }
 
@@ -158,66 +160,84 @@ abstract class AbstractClient
             $data['descriptor'] = mb_substr($data['descriptor'], 0, 32);
         }
 
-        if ($withDetails) {
+        // Set customer detail
+        $customerAddress = [
+            'city'=> $order->get_billing_city(),
+            'country_code' => $order->get_billing_country(),
+            'postcode' => $order->get_billing_postcode(),
+            'state' => $order->get_billing_state(),
+            'street' => $order->get_billing_country(),
+        ];
 
-            $orderData = [
-                'type' => 'physical_goods',
-                'products' => [],
+        $customer = [
+            'email' => $order->get_billing_email(),
+            'first_name' => $order->get_billing_first_name(),
+            'last_name' => $order->get_billing_last_name(),
+            'merchant_customer_id' => $order->get_customer_id(),
+            'phone_number' => $order->get_billing_phone(),
+            'address' => $customerAddress,
+        ];
+
+        $data['customer'] = $customerId === null ? $customer : null;
+
+        // Set order details
+        $orderData = [
+            'type' => 'physical_goods',
+            'products' => [],
+        ];
+
+        foreach ($order->get_items() as $item) {
+
+            $price = 0;
+            if (is_callable([$item, 'get_total'])) {
+                $price = $item->get_quantity() ? $item->get_total() / $item->get_quantity() : 0;
+            }
+
+            if (is_callable([$item, 'get_product'])) {
+                $sku = $item->get_product() ? $item->get_product()->get_sku() : null;
+            } else {
+                $sku = uniqid();
+            }
+
+            $orderData['products'][] = [
+                'desc' => $item->get_name(),
+                'name' => (mb_strlen($item->get_name()) <= 120 ? $item->get_name() : mb_substr($item->get_name(), 0, 117) . '...'),
+                'quantity' => $item->get_quantity(),
+                'sku' => $sku,
+                'type' => 'physical',
+                'unit_price' => round($price, 2),
             ];
-
-            foreach ($order->get_items() as $item) {
-
-                $price = 0;
-                if (is_callable([$item, 'get_total'])) {
-                    $price = $item->get_quantity() ? $item->get_total() / $item->get_quantity() : 0;
-                }
-
-                if (is_callable([$item, 'get_product'])) {
-                    $sku = $item->get_product() ? $item->get_product()->get_sku() : null;
-                } else {
-                    $sku = uniqid();
-                }
-
-                $orderData['products'][] = [
-                    'desc' => $item->get_name(),
-                    'name' => (mb_strlen($item->get_name()) <= 120 ? $item->get_name() : mb_substr($item->get_name(), 0, 117) . '...'),
-                    'quantity' => $item->get_quantity(),
-                    'sku' => $sku,
-                    'type' => 'physical',
-                    'unit_price' => round($price, 2),
-                ];
-            }
-
-            if ($order->has_shipping_address()) {
-                $orderData['shipping'] = [
-                    'address' => [
-                        'city' => $order->get_shipping_city(),
-                        'country_code' => $order->get_shipping_country(),
-                        'postcode' => $order->get_shipping_postcode(),
-                        'state' => $order->get_shipping_state(),
-                        'street' => $order->get_shipping_address_1(),
-                    ],
-                    'first_name' => $order->get_shipping_first_name(),
-                    'last_name' => $order->get_shipping_last_name(),
-                    'shipping_method' => $order->get_shipping_method(),
-                ];
-            } elseif ($order->has_billing_address()) {
-                $orderData['shipping'] = [
-                    'address' => [
-                        'city' => $order->get_billing_city(),
-                        'country_code' => $order->get_billing_country(),
-                        'postcode' => $order->get_billing_postcode(),
-                        'state' => $order->get_shipping_state(),
-                        'street' => $order->get_billing_address_1(),
-                    ],
-                    'first_name' => $order->get_billing_first_name(),
-                    'last_name' => $order->get_billing_last_name(),
-                    'shipping_method' => $order->get_shipping_method(),
-                ];
-            }
-            //var_dump($orderData);die;
-            $data['order'] = $orderData;
         }
+
+        if ($order->has_shipping_address()) {
+            $orderData['shipping'] = [
+                'address' => [
+                    'city' => $order->get_shipping_city(),
+                    'country_code' => $order->get_shipping_country(),
+                    'postcode' => $order->get_shipping_postcode(),
+                    'state' => $order->get_shipping_state(),
+                    'street' => $order->get_shipping_address_1(),
+                ],
+                'first_name' => $order->get_shipping_first_name(),
+                'last_name' => $order->get_shipping_last_name(),
+                'shipping_method' => $order->get_shipping_method(),
+            ];
+        } elseif ($order->has_billing_address()) {
+            $orderData['shipping'] = [
+                'address' => [
+                    'city' => $order->get_billing_city(),
+                    'country_code' => $order->get_billing_country(),
+                    'postcode' => $order->get_billing_postcode(),
+                    'state' => $order->get_shipping_state(),
+                    'street' => $order->get_billing_address_1(),
+                ],
+                'first_name' => $order->get_billing_first_name(),
+                'last_name' => $order->get_billing_last_name(),
+                'shipping_method' => $order->get_shipping_method(),
+            ];
+        }
+        //var_dump($orderData);die;
+        $data['order'] = $orderData;
 
         $response = $client->call(
             'POST',
@@ -442,7 +462,6 @@ abstract class AbstractClient
                 'Authorization' => 'Bearer ' . $this->getToken(),
             ]
         );
-
         if (empty($response->data['items'])) {
             return null;
         }

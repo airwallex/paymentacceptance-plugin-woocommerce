@@ -134,13 +134,6 @@ class Card extends WC_Payment_Gateway
                     'description' => __('This controls the description which the user sees during checkout.', AIRWALLEX_PLUGIN_NAME),
                     'default' => '',
                 ],
-                'sandbox' => [
-                    'title' => __('Test mode (Sandbox)', AIRWALLEX_PLUGIN_NAME),
-                    'label' => __('Enable sandbox', AIRWALLEX_PLUGIN_NAME),
-                    'type' => 'checkbox',
-                    'description' => __('When enabled, please ensure to use your demo Airwallex account details in API settings.', AIRWALLEX_PLUGIN_NAME),
-                    'default' => 'yes',
-                ],
                 'checkout_form_type' => [
                     'title' => __('Checkout Form', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'select',

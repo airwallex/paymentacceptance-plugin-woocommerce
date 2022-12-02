@@ -233,13 +233,6 @@ class Main extends WC_Payment_Gateway
                     ]
                     ,
                 ],
-                'sandbox' => [
-                    'title' => __('Test mode (Sandbox)', AIRWALLEX_PLUGIN_NAME),
-                    'label' => __('Enable sandbox', AIRWALLEX_PLUGIN_NAME),
-                    'type' => 'checkbox',
-                    'description' => __('When enabled, please ensure to use your demo Airwallex account details in API settings.', AIRWALLEX_PLUGIN_NAME),
-                    'default' => 'yes',
-                ],
             ]
         );
     }

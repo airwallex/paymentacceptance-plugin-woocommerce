@@ -11,7 +11,7 @@ class WeChatClient extends AbstractClient
         $this->gateway           = new WeChat();
         $this->clientId          = $this->gateway->get_client_id();
         $this->apiKey            = $this->gateway->get_api_key();
-        $this->isSandbox         = in_array($this->gateway->get_option('sandbox'), [true, 'yes'], true);
+        $this->isSandbox         = in_array(get_option('airwallex_enable_sandbox'), [true, 'yes'], true);
         $this->paymentDescriptor = '';
     }
 }
