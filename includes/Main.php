@@ -185,7 +185,7 @@ class Main
                     'title' => __('Enable sandbox', AIRWALLEX_PLUGIN_NAME),
                     'desc' => __('yes', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'checkbox',
-                    'default' => 'yes',
+                    'default' => 'no',
                     'id' => 'airwallex_enable_sandbox',
                     'value' => get_option('airwallex_enable_sandbox'),
                 ],
