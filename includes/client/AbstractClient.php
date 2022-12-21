@@ -166,7 +166,7 @@ abstract class AbstractClient
             'country_code' => $order->get_billing_country(),
             'postcode' => $order->get_billing_postcode(),
             'state' => $order->get_billing_state(),
-            'street' => $order->get_billing_country(),
+            'street' => $order->get_shipping_address_1(),
         ];
 
         $customer = [
@@ -175,8 +175,11 @@ abstract class AbstractClient
             'last_name' => $order->get_billing_last_name(),
             'merchant_customer_id' => $order->get_customer_id(),
             'phone_number' => $order->get_billing_phone(),
-            'address' => $customerAddress,
         ];
+
+        if ($order->get_billing_city() && $order->get_billing_country() && $order->get_shipping_address_1()) {
+            $data['customer']['address'] = $customerAddress;
+        }
 
         $data['customer'] = $customerId === null ? $customer : null;
 
@@ -210,31 +213,38 @@ abstract class AbstractClient
         }
 
         if ($order->has_shipping_address()) {
+            $shippingAddress = [
+                'city' => $order->get_shipping_city(),
+                'country_code' => $order->get_shipping_country(),
+                'postcode' => $order->get_shipping_postcode(),
+                'state' => $order->get_shipping_state(),
+                'street' => $order->get_shipping_address_1(),
+            ];
             $orderData['shipping'] = [
-                'address' => [
-                    'city' => $order->get_shipping_city(),
-                    'country_code' => $order->get_shipping_country(),
-                    'postcode' => $order->get_shipping_postcode(),
-                    'state' => $order->get_shipping_state(),
-                    'street' => $order->get_shipping_address_1(),
-                ],
                 'first_name' => $order->get_shipping_first_name(),
                 'last_name' => $order->get_shipping_last_name(),
                 'shipping_method' => $order->get_shipping_method(),
             ];
+            if ($order->get_shipping_city() && $order->get_shipping_country() && $order->get_shipping_address_1()) {
+                $orderData['shipping']['address'] = $shippingAddress;
+            }
         } elseif ($order->has_billing_address()) {
+            
+            $billingAddress = [
+                'city' => $order->get_billing_city(),
+                'country_code' => $order->get_billing_country(),
+                'postcode' => $order->get_billing_postcode(),
+                'state' => $order->get_shipping_state(),
+                'street' => $order->get_billing_address_1(),
+            ];
             $orderData['shipping'] = [
-                'address' => [
-                    'city' => $order->get_billing_city(),
-                    'country_code' => $order->get_billing_country(),
-                    'postcode' => $order->get_billing_postcode(),
-                    'state' => $order->get_shipping_state(),
-                    'street' => $order->get_billing_address_1(),
-                ],
                 'first_name' => $order->get_billing_first_name(),
                 'last_name' => $order->get_billing_last_name(),
                 'shipping_method' => $order->get_shipping_method(),
             ];
+            if ($order->get_billing_city() && $order->get_billing_country() && $order->get_billing_address_1()) {
+                $orderData['shipping']['address'] = $billingAddress;
+            }
         }
         //var_dump($orderData);die;
         $data['order'] = $orderData;
