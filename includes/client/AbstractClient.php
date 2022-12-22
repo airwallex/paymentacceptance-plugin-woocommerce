@@ -4,11 +4,11 @@ namespace Airwallex;
 
 use Airwallex\Client\HttpClient;
 use Airwallex\Services\CacheService;
+use Airwallex\Services\LogService;
 use Airwallex\Struct\Customer;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
 use Exception;
-use Airwallex\Services\LogService;
 
 abstract class AbstractClient
 {
@@ -99,7 +99,7 @@ abstract class AbstractClient
      */
     final protected function doAuth()
     {
-        if(empty($this->clientId) || empty($this->apiKey)){
+        if (empty($this->clientId) || empty($this->apiKey)) {
             return;
         }
         $client = $this->getHttpClient();
@@ -107,7 +107,7 @@ abstract class AbstractClient
             'x-client-id' => $this->clientId,
             'x-api-key' => $this->apiKey,
         ]);
-        if(!empty($response) && !empty($response->data) && !empty($response->data['token'])) {
+        if (!empty($response) && !empty($response->data) && !empty($response->data['token'])) {
             $this->token = $response->data['token'];
             $this->tokenExpiry = strtotime($response->data['expires_at']) - 10;
             $this->getCacheService()->set('token', [
@@ -162,7 +162,7 @@ abstract class AbstractClient
 
         // Set customer detail
         $customerAddress = [
-            'city'=> $order->get_billing_city(),
+            'city' => $order->get_billing_city(),
             'country_code' => $order->get_billing_country(),
             'postcode' => $order->get_billing_postcode(),
             'state' => $order->get_billing_state(),
@@ -229,7 +229,7 @@ abstract class AbstractClient
                 $orderData['shipping']['address'] = $shippingAddress;
             }
         } elseif ($order->has_billing_address()) {
-            
+
             $billingAddress = [
                 'city' => $order->get_billing_city(),
                 'country_code' => $order->get_billing_country(),
@@ -246,8 +246,18 @@ abstract class AbstractClient
                 $orderData['shipping']['address'] = $billingAddress;
             }
         }
-        //var_dump($orderData);die;
+
         $data['order'] = $orderData;
+
+        if (($intent = $this->getCachedPaymentIntent($data)) && $intent instanceof PaymentIntent) {
+            if ($liveIntent = $this->getPaymentIntent($intent->getId())) {
+                if (number_format($liveIntent->getAmount(), 2) === number_format((float)$data['amount'], 2)) {
+                    return $liveIntent;
+                }
+            }
+
+        }
+
 
         $response = $client->call(
             'POST',
@@ -266,7 +276,27 @@ abstract class AbstractClient
             throw new Exception('payment intent creation failed: ' . json_encode($response));
         }
 
-        return new PaymentIntent($response->data);
+        $returnIntent = new PaymentIntent($response->data);
+        $this->savePaymentIntentToCache($data, $returnIntent);
+        return $returnIntent;
+    }
+
+    protected function savePaymentIntentToCache($data, PaymentIntent $paymentIntent)
+    {
+        if (isset($data['request_id'])) {
+            unset($data['request_id']);
+        }
+        $key = 'payment-intent-' . md5(serialize($data));
+        return $this->getCacheService()->set($key, $paymentIntent);
+    }
+
+    protected function getCachedPaymentIntent($data)
+    {
+        if (isset($data['request_id'])) {
+            unset($data['request_id']);
+        }
+        $key = 'payment-intent-' . md5(serialize($data));
+        return $this->getCacheService()->get($key);
     }
 
 
@@ -345,7 +375,7 @@ abstract class AbstractClient
             json_encode(
                 [
                     'amount' => $amount,
-                    'request_id' => uniqid()
+                    'request_id' => uniqid(),
                 ]
                 + $this->getReferrer()
             ),
