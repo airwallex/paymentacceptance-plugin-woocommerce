@@ -18,6 +18,8 @@ abstract class AbstractClient
     const PCI_URL_SANDBOX = 'https://pci-api-demo.airwallex.com/api/v1/';
     const GENERAL_URL_LIVE = 'https://api.airwallex.com/api/v1/';
     const GENERAL_URL_SANDBOX = 'https://api-demo.airwallex.com/api/v1/';
+    const LOG_URL_LIVE = 'https://api.airwallex.com/';
+    const LOG_URL_SANDBOX = 'https://api-demo.airwallex.com/';
 
     public static $instance;
     protected $clientId;
@@ -54,6 +56,11 @@ abstract class AbstractClient
     final public function getGeneralUrl($action)
     {
         return ($this->isSandbox ? self::GENERAL_URL_SANDBOX : self::GENERAL_URL_LIVE) . $action;
+    }
+
+    final public function getLogUrl($action)
+    {
+        return ($this->isSandbox ? self::LOG_URL_SANDBOX : self::LOG_URL_LIVE) . $action;
     }
 
     final protected function getCacheService()

@@ -16,6 +16,7 @@ class Main
 {
     const ROUTE_SLUG_CONFIRMATION = 'airwallex_payment_confirmation';
     const ROUTE_SLUG_WEBHOOK = 'airwallex_webhook';
+    const ROUTE_SLUG_JS_LOGGER = 'airwallex_js_log';
 
     const OPTION_KEY_MERCHANT_COUNTRY = 'airwallex_merchant_country';
 
@@ -48,12 +49,21 @@ class Main
         add_action('woocommerce_api_' . WeChat::ROUTE_SLUG, [new AirwallexController, 'weChatPayment']);
         add_action('woocommerce_api_' . self::ROUTE_SLUG_CONFIRMATION, [new AirwallexController, 'paymentConfirmation']);
         add_action('woocommerce_api_' . self::ROUTE_SLUG_WEBHOOK, [new AirwallexController, 'webhook']);
+        if($this->isJsLoggingActive()){
+            add_action('woocommerce_api_' . self::ROUTE_SLUG_JS_LOGGER, [new AirwallexController, 'jsLog']);
+        }
         add_action('woocommerce_api_' . Card::ROUTE_SLUG_ASYNC_INTENT, [new AirwallexController, 'asyncIntent']);
         add_filter('plugin_action_links_' . plugin_basename(AIRWALLEX_PLUGIN_PATH . AIRWALLEX_PLUGIN_NAME . '.php'), [$this, 'addPluginSettingsLink']);
         add_action('airwallex_check_pending_transactions', [$this, 'checkPendingTransactions']);
         add_action('woocommerce_settings_saved', [$this, 'updateMerchantCountryAfterSave']);
+        add_action('requests-requests.before_request', [$this, 'modifyRequestsForLogging'], 10, 5);
     }
 
+    public function modifyRequestsForLogging($url, $headers, $data, $type, &$options){
+        if(!$options['blocking'] && strpos($url, 'airwallex')){
+            $options['transport'] = 'Requests_Transport_fsockopen';
+        }
+    }
     public function updateMerchantCountryAfterSave()
     {
         if (empty($_POST['airwallex_client_id']) || empty($_POST['airwallex_api_key'])) {
@@ -177,7 +187,7 @@ class Main
                 'webhook_secret' => [
                     'title' => __('Webhook Secret Key', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'password',
-                    'desc' => 'Webhook URL: ' . \WooCommerce::instance()->api_request_url(Main::ROUTE_SLUG_WEBHOOK),
+                    'desc' => 'Webhook URL: ' . WC()->api_request_url(Main::ROUTE_SLUG_WEBHOOK),
                     'id' => 'airwallex_webhook_secret',
                     'value' => get_option('airwallex_webhook_secret'),
                 ],
@@ -185,7 +195,7 @@ class Main
                     'title' => __('Enable sandbox', AIRWALLEX_PLUGIN_NAME),
                     'desc' => __('yes', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'checkbox',
-                    'default' => 'no',
+                    'default' => 'yes',
                     'id' => 'airwallex_enable_sandbox',
                     'value' => get_option('airwallex_enable_sandbox'),
                 ],
@@ -212,6 +222,14 @@ class Main
                         '43200' => __('every 12 hours', AIRWALLEX_PLUGIN_NAME),
                     ],
                     'value' => get_option('airwallex_cronjob_interval'),
+                ],
+                'do_js_logging' => [
+                    'title' => __('Activate JS logging', AIRWALLEX_PLUGIN_NAME),
+                    'desc' => __('yes (only for special cases after contacting Airwallex)', AIRWALLEX_PLUGIN_NAME),
+                    'type' => 'checkbox',
+                    'default' => 'yes',
+                    'id' => 'airwallex_do_js_logging',
+                    'value' => get_option('airwallex_do_js_logging'),
                 ],
                 'sectionend' => [
                     'type' => 'sectionend',
@@ -280,6 +298,10 @@ class Main
         }
     }
 
+    public function isJsLoggingActive(){
+        return in_array(get_option('airwallex_do_js_logging'), ['yes', 1, true, '1'], true);
+    }
+
     public function addJsLegacy()
     {
         $isCheckout = is_checkout();
@@ -312,6 +334,13 @@ class Main
                     $inlineScript .= 'AirwallexParameters.billingEmail = ' . json_encode($order->get_billing_email()) . ';';
                 }
             }
+        }
+
+        if($this->isJsLoggingActive()){
+            $loggingInlineScript = "\nconst airwallexJsLogUrl = '".WC()->api_request_url(Main::ROUTE_SLUG_JS_LOGGER)."';";
+            wp_enqueue_script('airwallex-js-logging-js', AIRWALLEX_PLUGIN_URL . '/assets/js/jsnlog.js', [], false, false);
+            wp_add_inline_script('airwallex-js-logging-js', $loggingInlineScript);
+
         }
 
         if (!$isCheckout) {
@@ -365,12 +394,7 @@ class Main
         origin: window.location.origin, // Setup your event target to receive the browser events message
     });
     
-    const airwallexSlimCard = Airwallex.createElement('card', {
-        style: {
-            popupWidth: 400,
-            popupHeight: 549,
-        },
-    });
+    const airwallexSlimCard = Airwallex.createElement('card');
     
     airwallexSlimCard.mount('airwallex-card');
     setInterval(function(){
