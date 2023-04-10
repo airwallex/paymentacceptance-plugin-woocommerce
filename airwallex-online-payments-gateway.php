@@ -5,7 +5,7 @@
  * Description: Official Airwallex Plugin
  * Author: Airwallex
  * Author URI: https://www.airwallex.com
- * Version: 1.2.2
+ * Version: 1.2.3
  * Requires at least: 4.5
  * Tested up to:
  * WC requires at least: 3.0
