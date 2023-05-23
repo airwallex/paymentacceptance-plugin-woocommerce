@@ -4,6 +4,7 @@ namespace Airwallex\Services;
 
 use Airwallex\CardClient;
 use Airwallex\Gateways\Card;
+use Airwallex\Main;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
 use Exception;
@@ -124,6 +125,11 @@ class WebhookService
     private function getOrderIdForPaymentIntent(PaymentIntent $paymentIntent)
     {
         $metaData = $paymentIntent->getMetadata();
+        if(isset($metaData['wp_instance_key'])){
+            if($metaData['wp_instance_key'] !== Main::getInstanceKey()){
+                return 0;
+            }
+        }
         if (!empty($metaData['wp_order_id'])) {
             return (int)$metaData['wp_order_id'];
         } else {

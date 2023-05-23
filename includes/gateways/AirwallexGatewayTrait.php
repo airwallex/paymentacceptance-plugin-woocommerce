@@ -6,6 +6,23 @@ use Airwallex\Main;
 
 trait AirwallexGatewayTrait
 {
+    public $iconOrder = [
+        'card_visa' => 1,
+        'card_mastercard' => 2,
+        'card_amex' => 3,
+        'card_jcb' => 4,
+    ];
+
+    public function sort_icons($iconArray)
+    {
+        uksort($iconArray, function($a, $b){
+            $orderA = isset($this->iconOrder[$a])? $this->iconOrder[$a] : 999;
+            $orderB = isset($this->iconOrder[$b])? $this->iconOrder[$b] : 999;
+            return $orderA - $orderB;
+        });
+        return $iconArray;
+    }
+
     public function get_client_id()
     {
         return get_option('airwallex_client_id');

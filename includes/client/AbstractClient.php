@@ -153,6 +153,7 @@ abstract class AbstractClient
                 'descriptor' => str_replace('%order%', $orderId, $this->paymentDescriptor),
                 'metadata' => [
                     'wp_order_id' => $orderId,
+                    'wp_instance_key'=>Main::getInstanceKey()
                 ],
                 'merchant_order_id' => $orderNumber,
                 'return_url' => WC()->api_request_url(Main::ROUTE_SLUG_CONFIRMATION),

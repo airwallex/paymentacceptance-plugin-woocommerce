@@ -66,15 +66,16 @@ class Card extends WC_Payment_Gateway
                     if ($paymentMethodType['name'] === 'card' && empty($logos)) {
                         foreach ($paymentMethodType['card_schemes'] as $cardType) {
                             if (isset($cardType['resources']['logos']['svg'])) {
-                                $logos[] = $cardType['resources']['logos']['svg'];
+                                $logos['card_'.$cardType['name']] = $cardType['resources']['logos']['svg'];
                             }
                         }
                     }
                 }
+                $logos = $this->sort_icons($logos);
                 $cacheService->set('cardLogos', $logos);
             }
         }
-        return $logos;
+        return array_reverse($logos);
     }
 
     public function get_icon()
