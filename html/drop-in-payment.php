@@ -68,6 +68,7 @@ $merchantCountry = strtoupper(substr($paymentIntentId, 4, 2));
 $elementConfiguration = json_encode([
         'intent_id' => $paymentIntentId,
         'client_secret' => $paymentIntentClientSecret,
+        'autoCapture' => true,
         'currency' => $order->get_currency(),
         'country_code' => $order->get_billing_country(),
         'applePayRequestOptions' => [
