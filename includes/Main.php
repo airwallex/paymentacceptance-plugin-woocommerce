@@ -30,6 +30,11 @@ class Main
         return self::$instance;
     }
 
+    public static function getInstanceKey()
+    {
+        return md5(AUTH_KEY);
+    }
+
     public function init()
     {
         $this->registerEvents();

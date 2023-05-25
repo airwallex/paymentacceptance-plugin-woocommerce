@@ -49,9 +49,9 @@ class Main extends WC_Payment_Gateway
         $this->init_settings();
         $this->description = $this->get_option('description');
         if (($logos = $this->getActivePaymentLogosArray()) && count($logos) > $this->max_number_of_logos) {
-            $logoHtml = '<div class="airwallex-logo-list">'.implode('', $logos).'</div>';
+            $logoHtml = '<div class="airwallex-logo-list">' . implode('', $logos) . '</div>';
             $logoHtml = apply_filters('airwallex_description_logo_html', $logoHtml, $logos);
-            $this->description = $logoHtml.$this->description;
+            $this->description = $logoHtml . $this->description;
         }
         if ($this->get_client_id() && $this->get_api_key()) {
             $this->form_fields = $this->get_form_fields();
@@ -91,12 +91,14 @@ class Main extends WC_Payment_Gateway
             return parent::get_icon();
         }
     }
+
     public function getActivePaymentLogosArray()
     {
         $returnArray = [];
         if ($logos = $this->getPaymentLogos()) {
-            foreach ((array)$this->get_option('icons') as $logoKey) {
-                if (isset($logos[$logoKey])) {
+            $chosenLogos = (array)$this->get_option('icons');
+            foreach ($logos as $logoKey => $logoValue) {
+                if (in_array($logoKey, $chosenLogos)) {
                     $returnArray[] = '<img src="' . $logos[$logoKey] . '" class="airwallex-card-icon" alt="' . esc_attr($this->get_title()) . '" />';
                 }
             }
@@ -107,31 +109,32 @@ class Main extends WC_Payment_Gateway
     public function getPaymentLogos()
     {
         try {
-        $cacheService = new CacheService($this->get_api_key());
-        $logos = $cacheService->get('paymentLogos', 86400);
-        if (empty($logos)) {
-            $apiClient = CardClient::getInstance();
-            if ($paymentMethodTypes = $apiClient->getPaymentMethodTypes()) {
-                $logos = [];
-                foreach ($paymentMethodTypes as $paymentMethodType) {
-                    if ($paymentMethodType['name'] === 'card') {
-                        $prefix = $paymentMethodType['name'] . '_';
-                        $subMethods = $paymentMethodType['card_schemes'];
-                    } else {
-                        $prefix = '';
-                        $subMethods = [$paymentMethodType];
-                    }
-                    foreach ($subMethods as $subMethod) {
-                        if (isset($subMethod['resources']['logos']['svg'])) {
-                            $logos[$prefix . $subMethod['name']] = $subMethod['resources']['logos']['svg'];
+            $cacheService = new CacheService($this->get_api_key());
+            $logos = $cacheService->get('paymentLogos', 86400);
+            if (empty($logos)) {
+                $apiClient = CardClient::getInstance();
+                if ($paymentMethodTypes = $apiClient->getPaymentMethodTypes()) {
+                    $logos = [];
+                    foreach ($paymentMethodTypes as $paymentMethodType) {
+                        if ($paymentMethodType['name'] === 'card') {
+                            $prefix = $paymentMethodType['name'] . '_';
+                            $subMethods = $paymentMethodType['card_schemes'];
+                        } else {
+                            $prefix = '';
+                            $subMethods = [$paymentMethodType];
+                        }
+                        foreach ($subMethods as $subMethod) {
+                            if (isset($subMethod['resources']['logos']['svg'])) {
+                                $logos[$prefix . $subMethod['name']] = $subMethod['resources']['logos']['svg'];
+                            }
                         }
                     }
+                    $logos = $this->sort_icons($logos);
+                    $cacheService->set('paymentLogos', $logos);
                 }
-                $cacheService->set('paymentLogos', $logos);
             }
-        }
-        }catch (\Exception $e){
-            (new LogService())->debug('unable to get payment logos', ['exception'=>$e->getMessage()]);
+        } catch (\Exception $e) {
+            (new LogService())->debug('unable to get payment logos', ['exception' => $e->getMessage()]);
             $logos = [];
         }
         return $logos;
@@ -147,7 +150,7 @@ class Main extends WC_Payment_Gateway
                 $apiClient = CardClient::getInstance();
                 if ($paymentMethodTypes = $apiClient->getPaymentMethodTypes()) {
                     foreach ($paymentMethodTypes as $paymentMethodType) {
-                        if(empty($paymentMethodType['name']) || empty($paymentMethodType['display_name'])){
+                        if (empty($paymentMethodType['name']) || empty($paymentMethodType['display_name'])) {
                             continue;
                         }
                         $methods[$paymentMethodType['name']] = $paymentMethodType['display_name'];
@@ -155,9 +158,9 @@ class Main extends WC_Payment_Gateway
                     $cacheService->set('paymentMethods', $methods);
                 }
             }
-        }catch (\Exception $e){
-             (new LogService())->debug('unable to get payment methods', ['exception'=>$e->getMessage()]);
-             $methods = [];
+        } catch (\Exception $e) {
+            (new LogService())->debug('unable to get payment methods', ['exception' => $e->getMessage()]);
+            $methods = [];
         }
         return $methods;
 
@@ -172,7 +175,7 @@ class Main extends WC_Payment_Gateway
         $intro = '';
         if ($isAdmin) {
             $cStatus = $this->getStatus();
-            $statusHtml = '<span style="padding: 3px 8px; font-weight:bold; border-radius:3px; background-color: '.($cStatus === self::STATUS_CONNECTED?'#E0F7E7':'#FFADAD').'">'.$cStatus.'</span>';
+            $statusHtml = '<span style="padding: 3px 8px; font-weight:bold; border-radius:3px; background-color: ' . ($cStatus === self::STATUS_CONNECTED ? '#E0F7E7' : '#FFADAD') . '">' . $cStatus . '</span>';
             $intro .= '<div>
                            ' . sprintf(__('Airwallex API settings %s <a href="%s">edit</a>', AIRWALLEX_PLUGIN_NAME), $statusHtml, admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general'));
         }
@@ -211,7 +214,7 @@ class Main extends WC_Payment_Gateway
                     'title' => __('Icons to display', AIRWALLEX_PLUGIN_NAME),
                     'label' => '',
                     'type' => 'logos',
-                    'desc_tip'=>__('Choose which payment method logos to display before your payer proceeds to checkout.', AIRWALLEX_PLUGIN_NAME),
+                    'desc_tip' => __('Choose which payment method logos to display before your payer proceeds to checkout.', AIRWALLEX_PLUGIN_NAME),
                     'options' => $logos,
                 ],
                 'methods' => [
@@ -225,7 +228,7 @@ class Main extends WC_Payment_Gateway
                     'title' => __('Payment page template', AIRWALLEX_PLUGIN_NAME),
                     'label' => '',
                     'type' => 'radio',
-                    'desc_tip'=>__('Select the way you want to arrange the order details and the payment method list', AIRWALLEX_PLUGIN_NAME),
+                    'desc_tip' => __('Select the way you want to arrange the order details and the payment method list', AIRWALLEX_PLUGIN_NAME),
                     'options' => [
                         '2col-1' => '',
                         '2col-2' => '',
@@ -468,8 +471,8 @@ class Main extends WC_Payment_Gateway
                 <fieldset>
                     <div>
                         <?php
-                        foreach ((array)$data['options'] as $option_key => $option_value){
-                            $toolTip = (in_array($option_key, ['applepay', 'googlepay']))?__('There are additional steps to set up this payment method. Please refer to the installation guide for more details.', AIRWALLEX_PLUGIN_NAME):null;
+                        foreach ((array)$data['options'] as $option_key => $option_value) {
+                            $toolTip = (in_array($option_key, ['applepay', 'googlepay'])) ? __('There are additional steps to set up this payment method. Please refer to the installation guide for more details.', AIRWALLEX_PLUGIN_NAME) : null;
                             ?>
                             <div>
                                 <label>
@@ -481,13 +484,13 @@ class Main extends WC_Payment_Gateway
                                     />
                                     <?php
                                     echo $option_value;
-                                    if($toolTip){
+                                    if ($toolTip) {
                                         echo wc_help_tip($toolTip);
                                     }
                                     ?>
                                 </label>
                             </div>
-                        <?php
+                            <?php
                         }
                         ?>
                     </div>

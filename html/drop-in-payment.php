@@ -14,7 +14,7 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-wp_enqueue_style('airwallex-css', AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex.css');
+wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex.css');
 
 //prevent errors when using Avada theme and Fusion Builder
 if(class_exists('Fusion_Template_Builder')){
@@ -68,6 +68,7 @@ $merchantCountry = strtoupper(substr($paymentIntentId, 4, 2));
 $elementConfiguration = json_encode([
         'intent_id' => $paymentIntentId,
         'client_secret' => $paymentIntentClientSecret,
+        'autoCapture' => true,
         'currency' => $order->get_currency(),
         'country_code' => $order->get_billing_country(),
         'applePayRequestOptions' => [
