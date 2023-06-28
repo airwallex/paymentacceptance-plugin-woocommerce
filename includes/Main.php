@@ -363,6 +363,7 @@ class Main
         $environment = $cardGateway->is_sandbox() ? 'demo' : 'prod';
         $autoCapture = $cardGateway->is_capture_immediately() ? 'true' : 'false';
         $airwallexOrderId = absint(get_query_var('order-pay'));
+        $locale = \Airwallex\Services\Util::getLocale();
         $inlineScript .= <<<AIRWALLEX
 
     const airwallexCheckoutProcessingAction = function (msg) {
@@ -396,6 +397,7 @@ class Main
     
     Airwallex.init({
         env: '$environment',
+        locale: '$locale',
         origin: window.location.origin, // Setup your event target to receive the browser events message
     });
     
