@@ -60,7 +60,7 @@ if (defined('AIRWALLEX_INLINE_JS')) {
     wp_add_inline_script('airwallex-local-js', AIRWALLEX_INLINE_JS);
 }
 $environment = $isSandbox ? 'demo' : 'prod';
-$locale = substr(get_bloginfo('language'), 0, 2);
+$locale = \Airwallex\Services\Util::getLocale();
 $methods = $gateway->get_option('methods');
 $airwallexMain = \Airwallex\Main::getInstance();
 $merchantCountry = strtoupper(substr($paymentIntentId, 4, 2));
@@ -68,7 +68,6 @@ $merchantCountry = strtoupper(substr($paymentIntentId, 4, 2));
 $elementConfiguration = json_encode([
         'intent_id' => $paymentIntentId,
         'client_secret' => $paymentIntentClientSecret,
-        'autoCapture' => true,
         'currency' => $order->get_currency(),
         'country_code' => $order->get_billing_country(),
         'applePayRequestOptions' => [
@@ -103,6 +102,9 @@ $elementConfiguration = json_encode([
 );
 
 $inlineJs = <<<AIRWALLEX
+        [].forEach.call(document.querySelectorAll('.elementor-menu-cart__container'), function (el) {
+          el.style.visibility = 'hidden';
+        });
         Airwallex.init({
             env: '$environment',
             locale: '$locale',

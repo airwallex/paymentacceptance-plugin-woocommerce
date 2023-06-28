@@ -5,7 +5,7 @@
  * Description: Official Airwallex Plugin
  * Author: Airwallex
  * Author URI: https://www.airwallex.com
- * Version: 1.2.4
+ * Version: 1.2.5
  * Requires at least: 4.5
  * Tested up to:
  * WC requires at least: 3.0
@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 /**
  * Required minimums and constants
  */
-define('AIRWALLEX_VERSION', '1.2.4');
+define('AIRWALLEX_VERSION', '1.2.5');
 define('AIRWALLEX_PLUGIN_URL', untrailingslashit(plugins_url(basename(plugin_dir_path(__FILE__)), basename(__FILE__))));
 define('AIRWALLEX_PLUGIN_PATH', __DIR__ . '/');
 define('AIRWALLEX_PLUGIN_NAME', 'airwallex-online-payments-gateway');

@@ -42,9 +42,12 @@ if(defined('AIRWALLEX_INLINE_JS')){
     wp_add_inline_script( 'airwallex-local-js', AIRWALLEX_INLINE_JS);
 }
 $environment = $isSandbox?'demo':'prod';
+$locale = \Airwallex\Services\Util::getLocale();
+
 $inlineJs = <<<AIRWALLEX
         Airwallex.init({
             env: '$environment',
+            locale: '$locale',
             origin: window.location.origin,
         });
         const fullFeaturedCard = Airwallex.createElement('fullFeaturedCard', {
