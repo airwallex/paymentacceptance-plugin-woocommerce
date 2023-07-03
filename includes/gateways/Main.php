@@ -110,7 +110,7 @@ class Main extends WC_Payment_Gateway
     {
         try {
             $cacheService = new CacheService($this->get_api_key());
-            $logos = $cacheService->get('paymentLogos', 86400);
+            $logos = $cacheService->get('paymentLogos');
             if (empty($logos)) {
                 $apiClient = CardClient::getInstance();
                 if ($paymentMethodTypes = $apiClient->getPaymentMethodTypes()) {
@@ -130,7 +130,7 @@ class Main extends WC_Payment_Gateway
                         }
                     }
                     $logos = $this->sort_icons($logos);
-                    $cacheService->set('paymentLogos', $logos);
+                    $cacheService->set('paymentLogos', $logos, 86400);
                 }
             }
         } catch (\Exception $e) {
@@ -145,7 +145,7 @@ class Main extends WC_Payment_Gateway
     {
         try {
             $cacheService = new CacheService($this->get_api_key());
-            $methods = $cacheService->get('paymentMethods', 14400);
+            $methods = $cacheService->get('paymentMethods');
             if (empty($methods)) {
                 $apiClient = CardClient::getInstance();
                 if ($paymentMethodTypes = $apiClient->getPaymentMethodTypes()) {
@@ -155,7 +155,7 @@ class Main extends WC_Payment_Gateway
                         }
                         $methods[$paymentMethodType['name']] = $paymentMethodType['display_name'];
                     }
-                    $cacheService->set('paymentMethods', $methods);
+                    $cacheService->set('paymentMethods', $methods, 14400);
                 }
             }
         } catch (\Exception $e) {

@@ -55,6 +55,11 @@ Airwallex is a global payments platform with a mission to empower businesses of 
 
 == Changelog ==
 
+= 1.2.6 =
+* Release Date - 03 July 2023*
+
+* Enhanced Caching
+
 = 1.2.5 =
 * Release Date - 28 June 2023*
 
