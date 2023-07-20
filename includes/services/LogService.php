@@ -6,6 +6,9 @@ use Airwallex\LoggingClient;
 
 class LogService
 {
+    const CARD_ELEMENT_TYPE = 'cardElement';
+    const DROP_IN_ELEMENT_TYPE = 'dropInElement';
+    const WECHAT_ELEMENT_TYPE = 'wechatElement';
     private $logDir;
     private $loggingClient;
 
@@ -28,22 +31,24 @@ class LogService
         file_put_contents($this->getLogFile($level), '[' . date('Y-m-d H:i:s') . '] ' . $message . ' | ' . serialize($data) . "\n", 8);
     }
 
-    public function debug($message, $data = null)
+    public function debug($message, $data = null, $type = 'unknown')
     {
         $this->log($message, 'debug', $data);
+        $this->getLoggingClient()->log(LoggingClient::LOG_SEVERITY_INFO, 'wp_info', $message, $data, $type);
     }
 
-    public function warning($message, $data = null)
+    public function warning($message, $data = null, $type = 'unknown')
     {
         $this->log('⚠ ' . $message, 'debug', $data);
         $this->log($message, 'warning', $data);
+        $this->getLoggingClient()->log(LoggingClient::LOG_SEVERITY_WARNING, 'wp_warning', $message, $data, $type);
     }
 
-    public function error($message, $data = null)
+    public function error($message, $data = null, $type = 'unknown')
     {
         $this->log('💣 ' . $message, 'debug', $data);
         $this->log($message, 'error', $data);
-        $this->getLoggingClient()->log(LoggingClient::LOG_SEVERITY_ERROR, 'wp_error', $message, $data);
+        $this->getLoggingClient()->log(LoggingClient::LOG_SEVERITY_ERROR, 'wp_error', $message, $data, $type);
     }
 
     protected function getLoggingClient(){
