@@ -25,7 +25,7 @@ class LoggingClient extends AbstractClient
         return session_id();
     }
 
-    public function log($severity, $eventName, $message, $details = [])
+    public function log($severity, $eventName, $message, $details = [], $type = 'unknown')
     {
         $data = [
             'commonData' => [
@@ -42,6 +42,7 @@ class LoggingClient extends AbstractClient
                     'severity' => $severity,
                     'eventName' => $eventName,
                     'message' => $message,
+                    'type' => $type,
                     'details' => json_encode($details),
                     'trace' => json_encode(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS)),
                 ],
