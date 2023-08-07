@@ -23,7 +23,7 @@ class HttpClient
     {
         $headers['Content-Type'] = 'application/json';
         $headers['x-api-version'] = '2020-04-30';
-        $headers['user-agent']= $_SERVER['HTTP_USER_AGENT'];
+
         if ($method === 'POST') {
             $response = wp_remote_post($url, [
                 'method' => 'POST',
