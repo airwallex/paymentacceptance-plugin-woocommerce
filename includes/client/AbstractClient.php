@@ -44,7 +44,7 @@ abstract class AbstractClient
 
     final public function getAuthUrl($action)
     {
-        (new LogService())->debug('getAuthUrl', ['isSandbox' => $this->isSandbox]);
+        //(new LogService())->debug('getAuthUrl', ['isSandbox' => $this->isSandbox]);
         return ($this->isSandbox ? self::AUTH_URL_SANDBOX : self::AUTH_URL_LIVE) . $action;
     }
 
