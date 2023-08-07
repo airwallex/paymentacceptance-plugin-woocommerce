@@ -54,7 +54,7 @@ class Main
         add_action('woocommerce_api_' . WeChat::ROUTE_SLUG, [new AirwallexController, 'weChatPayment']);
         add_action('woocommerce_api_' . self::ROUTE_SLUG_CONFIRMATION, [new AirwallexController, 'paymentConfirmation']);
         add_action('woocommerce_api_' . self::ROUTE_SLUG_WEBHOOK, [new AirwallexController, 'webhook']);
-        if($this->isJsLoggingActive()){
+        if ($this->isJsLoggingActive()) {
             add_action('woocommerce_api_' . self::ROUTE_SLUG_JS_LOGGER, [new AirwallexController, 'jsLog']);
         }
         add_action('woocommerce_api_' . Card::ROUTE_SLUG_ASYNC_INTENT, [new AirwallexController, 'asyncIntent']);
@@ -64,11 +64,13 @@ class Main
         add_action('requests-requests.before_request', [$this, 'modifyRequestsForLogging'], 10, 5);
     }
 
-    public function modifyRequestsForLogging($url, $headers, $data, $type, &$options){
-        if(!$options['blocking'] && strpos($url, 'airwallex')){
+    public function modifyRequestsForLogging($url, $headers, $data, $type, &$options)
+    {
+        if (!$options['blocking'] && strpos($url, 'airwallex')) {
             $options['transport'] = 'Requests_Transport_fsockopen';
         }
     }
+
     public function updateMerchantCountryAfterSave()
     {
         if (empty($_POST['airwallex_client_id']) || empty($_POST['airwallex_api_key'])) {
@@ -127,9 +129,17 @@ class Main
                 'show_in_admin_all_list' => true,
                 'show_in_admin_status_list' => true,
             ]);
+            register_post_status('wc-airwallex-pending', [
+                'label' => __('Airwallex Pending', AIRWALLEX_PLUGIN_NAME),
+                'public' => true,
+                'exclude_from_search' => false,
+                'show_in_admin_all_list' => true,
+                'show_in_admin_status_list' => true,
+            ]);
         });
 
         add_filter('wc_order_statuses', function ($statusList) {
+            $statusList['wc-airwallex-pending'] = __('Airwallex Pending', AIRWALLEX_PLUGIN_NAME);
             $statusList['airwallex-issue'] = __('Airwallex Issue', AIRWALLEX_PLUGIN_NAME);
             return $statusList;
         });
@@ -214,6 +224,22 @@ class Main
                         'failed' => _x('Failed', 'Order status', 'woocommerce'),
                     ],
                     'value' => get_option('airwallex_temporary_order_status_after_decline'),
+                ],
+                'order_status_pending' => [
+                    'title' => __('Order state for pending payments', AIRWALLEX_PLUGIN_NAME),
+                    'id' => 'airwallex_order_status_pending',
+                    'type' => 'select',
+                    'desc' => __('Certain local payment methods have asynchronous payment confirmations that can take up to a few days. Card payments are always instant.', AIRWALLEX_PLUGIN_NAME),
+                    'options' => array_merge(['' => __('[Do not change status]', AIRWALLEX_PLUGIN_NAME)], wc_get_order_statuses()),
+                    'value' => get_option('airwallex_order_status_pending'),
+                ],
+                'order_status_authorized' => [
+                    'title' => __('Order state for authorized payments', AIRWALLEX_PLUGIN_NAME),
+                    'id' => 'airwallex_order_status_authorized',
+                    'type' => 'select',
+                    'desc' => __('Status for orders that are authorized but not captured', AIRWALLEX_PLUGIN_NAME),
+                    'options' => array_merge(['' => __('[Do not change status]', AIRWALLEX_PLUGIN_NAME)], wc_get_order_statuses()),
+                    'value' => get_option('airwallex_order_status_authorized'),
                 ],
                 'cronjob_interval' => [
                     'title' => __('Cronjob Interval', AIRWALLEX_PLUGIN_NAME),
@@ -303,7 +329,8 @@ class Main
         }
     }
 
-    public function isJsLoggingActive(){
+    public function isJsLoggingActive()
+    {
         return in_array(get_option('airwallex_do_js_logging'), ['yes', 1, true, '1'], true);
     }
 
@@ -341,8 +368,8 @@ class Main
             }
         }
 
-        if($this->isJsLoggingActive()){
-            $loggingInlineScript = "\nconst airwallexJsLogUrl = '".WC()->api_request_url(Main::ROUTE_SLUG_JS_LOGGER)."';";
+        if ($this->isJsLoggingActive()) {
+            $loggingInlineScript = "\nconst airwallexJsLogUrl = '" . WC()->api_request_url(Main::ROUTE_SLUG_JS_LOGGER) . "';";
             wp_enqueue_script('airwallex-js-logging-js', AIRWALLEX_PLUGIN_URL . '/assets/js/jsnlog.js', [], false, false);
             wp_add_inline_script('airwallex-js-logging-js', $loggingInlineScript);
 

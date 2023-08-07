@@ -2,7 +2,6 @@
 
 namespace Airwallex\Services;
 
-use Airwallex\CardClient;
 use Airwallex\Gateways\Card;
 use Airwallex\Main;
 use Airwallex\Struct\PaymentIntent;
@@ -50,6 +49,7 @@ class WebhookService
                         $order->update_status('failed', 'Airwallex Webhook');
                         break;
                     case 'payment_intent.capture_required':
+                        $orderService->setAuthorizedStatus($order);
                         if ($order->get_payment_method() === Card::GATEWAY_ID) {
                             $cardGateway = new Card();
                             if (!$cardGateway->is_capture_immediately()) {
@@ -60,6 +60,13 @@ class WebhookService
                     case 'payment_intent.succeeded':
                         $orderService->setPaymentSuccess($order, $paymentIntent);
                         break;
+                    default:
+                        $attempt = $paymentIntent->getLatestPaymentAttempt();
+                        if (in_array($attempt[''], array_map('strtolower', PaymentIntent::PENDING_STATUSES))) {
+                            $logService->debug('🖧 detected pending status from webhook', $eventType);
+                            $orderService->setPendingStatus($order);
+                        }
+
                 }
 
                 $order->add_order_note('Airwallex Webhook notification: ' . $eventType . "\n\n" . 'Amount: ' . $paymentIntent->getAmount() . "\n\nCaptured amount: " . $paymentIntent->getCapturedAmount());
@@ -99,7 +106,6 @@ class WebhookService
     }
 
 
-
     /**
      * @param array $headers
      * @param string $msg
@@ -114,7 +120,7 @@ class WebhookService
         $calculatedSignature = hash_hmac('sha256', $timestamp . $msg, $secret);
 
         if ($calculatedSignature !== $signature) {
-            throw new Exception('Invalid signature: '.$signature.' vs. '.$calculatedSignature);
+            throw new Exception('Invalid signature: ' . $signature . ' vs. ' . $calculatedSignature);
         }
     }
 
@@ -125,8 +131,8 @@ class WebhookService
     private function getOrderIdForPaymentIntent(PaymentIntent $paymentIntent)
     {
         $metaData = $paymentIntent->getMetadata();
-        if(isset($metaData['wp_instance_key'])){
-            if($metaData['wp_instance_key'] !== Main::getInstanceKey()){
+        if (isset($metaData['wp_instance_key'])) {
+            if ($metaData['wp_instance_key'] !== Main::getInstanceKey()) {
                 return 0;
             }
         }

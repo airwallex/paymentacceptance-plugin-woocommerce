@@ -12,6 +12,17 @@ use Airwallex\WeChatClient;
 
 class AirwallexController
 {
+
+    /**
+     * @var LogService
+     */
+    protected $logService;
+
+    public function __construct()
+    {
+        $this->logService = new LogService();
+    }
+
     public function cardPayment()
     {
         try {
@@ -31,7 +42,7 @@ class AirwallexController
             $confirmationUrl = $gateway->get_payment_confirmation_url();
             $isSandbox = $gateway->is_sandbox();
             WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
-            (new LogService())->debug('cardPayment()', [
+            $this->logService->debug('cardPayment()', [
                 'orderId' => $orderId,
                 'paymentIntent' => $paymentIntentId,
             ], LogService::CARD_ELEMENT_TYPE);
@@ -63,7 +74,7 @@ class AirwallexController
             $airwallexCustomerId = null;
             $orderService = new OrderService();
             $isSubscription = $orderService->containsSubscription($order->get_id());
-            if($order->get_customer_id('') || $isSubscription) {
+            if ($order->get_customer_id('') || $isSubscription) {
                 $airwallexCustomerId = $orderService->getAirwallexCustomerId($order->get_customer_id(''), $apiClient);
             }
 
@@ -73,7 +84,7 @@ class AirwallexController
             $confirmationUrl = $gateway->get_payment_confirmation_url();
             $isSandbox = $gateway->is_sandbox();
             WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
-            (new LogService())->debug('dropInPayment()', [
+            $this->logService->debug('dropInPayment()', [
                 'orderId' => $orderId,
                 'paymentIntent' => $paymentIntentId,
             ], LogService::CARD_ELEMENT_TYPE);
@@ -108,7 +119,7 @@ class AirwallexController
             $confirmationUrl = $gateway->get_payment_confirmation_url();
             $isSandbox = $gateway->is_sandbox();
             WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
-            (new LogService())->debug('weChatPayment()', [
+            $this->logService->debug('weChatPayment()', [
                 'orderId' => $orderId,
                 'paymentIntent' => $paymentIntentId,
             ], LogService::WECHAT_ELEMENT_TYPE);
@@ -129,7 +140,6 @@ class AirwallexController
      */
     public function asyncIntent()
     {
-        $logService = new LogService();
         try {
             $apiClient = CardClient::getInstance();
             if (!empty($_GET['airwallexOrderId'])) {
@@ -145,7 +155,7 @@ class AirwallexController
             $gateway = new Card();
             $order = wc_get_order($orderId);
             if (empty($order)) {
-                $logService->debug('asyncIntent() can not find order', ['orderId' => $orderId]);
+                $this->logService->debug('asyncIntent() can not find order', ['orderId' => $orderId]);
                 throw new Exception('Order not found: ' . $orderId);
             }
             $orderService = new OrderService();
@@ -153,7 +163,7 @@ class AirwallexController
             if ($orderService->containsSubscription($order->get_id())) {
                 $airwallexCustomerId = $orderService->getAirwallexCustomerId($order->get_customer_id(''), $apiClient);
             }
-            $logService->debug('asyncIntent() before create payment intent', ['orderId' => $orderId]);
+            $this->logService->debug('asyncIntent() before create', ['orderId' => $orderId]);
             $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $gateway->is_submit_order_details(), $airwallexCustomerId);
             WC()->session->set('airwallex_payment_intent_id', $paymentIntent->getId());
 
@@ -169,7 +179,7 @@ class AirwallexController
                 'currency' => $order->get_currency(''),
                 'clientSecret' => $paymentIntent->getClientSecret(),
             ];
-            $logService->debug('asyncIntent() receive payment intent response', [
+            $this->logService->debug('asyncIntent() receive payment intent response', [
                 'response' => $response,
                 'session' => [
                     'cookie' => WC()->session->get_session_cookie(),
@@ -179,7 +189,7 @@ class AirwallexController
             echo json_encode($response);
             die;
         } catch (Exception $e) {
-            $logService->error('async intent controller action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE);
+            $this->logService->error('async intent controller action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE);
             http_response_code(200);
             echo json_encode([
                 'error' => 1,
@@ -190,18 +200,17 @@ class AirwallexController
 
     private function getOrderAndPaymentIntentForConfirmation()
     {
-        $logService = new LogService();
         $orderId = (int)WC()->session->get('airwallex_order');
         if (empty($orderId)) {
             $orderId = (int)WC()->session->get('order_awaiting_payment');
         }
         if (empty($orderId) && !empty($_GET['order_id'])) {
-            $logService->debug('detected order id from URL', ['get' => $_GET]);
+            $this->logService->debug('detected order id from URL', ['get' => $_GET]);
             $orderId = (int)$_GET['order_id'];
         }
 
         if (empty($orderId)) {
-            $logService->debug('getOrderAndPaymentIntentForConfirmation() do not have order id', ['orderId' => $orderId]);
+            $this->logService->debug('getOrderAndPaymentIntentForConfirmation() do not have order id', ['orderId' => $orderId]);
             throw new Exception('I tried hard, but no order was found for confirmation');
         }
 
@@ -213,7 +222,7 @@ class AirwallexController
         if (!empty($_GET['intent_id'])) {
             $intentIdFromUrl = $_GET['intent_id'];
             if (!empty($paymentIntentId) && $paymentIntentId !== $intentIdFromUrl) {
-                $logService->warning('different intent ids from url and session', ['from_session' => $paymentIntentId, 'from_url' => $intentIdFromUrl]);
+                $this->logService->warning('different intent ids from url and session', ['from_session' => $paymentIntentId, 'from_url' => $intentIdFromUrl]);
                 if (!empty($_GET['order_id'])) {
                     throw new Exception('different intent ids from url and session - fraud suspected');
                 }
@@ -229,14 +238,13 @@ class AirwallexController
 
     public function paymentConfirmation()
     {
-        $logService = new LogService();
-
         try {
             $orderInformation = $this->getOrderAndPaymentIntentForConfirmation();
             $orderId = $orderInformation['order_id'];
             $paymentIntentId = $orderInformation['payment_intent_id'];
+            $orderService = new OrderService();
 
-            $logService->debug('paymentConfirmation() init', [
+            $this->logService->debug('paymentConfirmation() init', [
                 'paymentIntent' => $paymentIntentId,
                 'orderId' => $orderId,
                 'session' => [
@@ -247,7 +255,9 @@ class AirwallexController
 
             $apiClient = CardClient::getInstance();
             $paymentIntent = $apiClient->getPaymentIntent($paymentIntentId);
-
+            $this->logService->debug('paymentConfirmation() payment intent', [
+                'paymentIntent' => $paymentIntent->toArray(),
+            ]);
             $order = wc_get_order($orderId);
 
             if (empty($order)) {
@@ -255,25 +265,17 @@ class AirwallexController
             }
 
             if ($paymentIntent->getPaymentConsentId()) {
-                $logService->debug('paymentConfirmation() save consent id', [$paymentIntent->toArray()]);
+                $this->logService->debug('paymentConfirmation() save consent id', [$paymentIntent->toArray()]);
                 $order->add_meta_data('airwallex_consent_id', $paymentIntent->getPaymentConsentId());
                 $order->add_meta_data('airwallex_customer_id', $paymentIntent->getCustomerId());
                 $order->save();
             }
 
-
-            if (!in_array($paymentIntent->getStatus(), [PaymentIntent::STATUS_REQUIRES_CAPTURE, PaymentIntent::STATUS_SUCCEEDED], true)) {
-                $logService->warning('paymentConfirmation() invalid status', [$paymentIntent->toArray()]);
-                //no valid payment intent
-                $this->setTemporaryOrderStateAfterDecline($order);
-                wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
-                wp_redirect(wc_get_checkout_url());
-                die;
-            }
+            $this->handleStatusForConfirmation($paymentIntent, $order);
 
             if (number_format($paymentIntent->getAmount(), 2) !== number_format($order->get_total(), 2)) {
                 //amount mismatch
-                $logService->error('paymentConfirmation() payment amounts did not match', [number_format($paymentIntent->getAmount(), 2), number_format($order->get_total(), 2), $paymentIntent->toArray()]);
+                $this->logService->error('paymentConfirmation() payment amounts did not match', [number_format($paymentIntent->getAmount(), 2), number_format($order->get_total(), 2), $paymentIntent->toArray()]);
                 $this->setTemporaryOrderStateAfterDecline($order);
                 wc_add_notice('Airwallex payment error', 'error');
                 wp_redirect(wc_get_checkout_url());
@@ -284,34 +286,38 @@ class AirwallexController
                 $order->payment_complete($paymentIntentId);
                 (new LogService())->debug('paymentConfirmation() payment success during checkout', $paymentIntent->toArray());
                 $order->add_order_note('Airwallex payment complete');
-            } else {
-                //handle REQUIRES_CAPTURE state (card payments only)
-                $cardGateway = new Card();
-                if ($cardGateway->is_capture_immediately()) {
-                    $logService->debug('paymentConfirmation() start capture', [$paymentIntent->toArray()]);
-                    $paymentIntentAfterCapture = $apiClient->capture($paymentIntentId, $paymentIntent->getAmount());
-                    if ($paymentIntentAfterCapture->getStatus() === PaymentIntent::STATUS_SUCCEEDED) {
-                        $order->payment_complete($paymentIntentId);
-                        $order->add_order_note('Airwallex payment captured');
-                        (new LogService())->debug('paymentConfirmation() payment success during checkout', $paymentIntent->toArray());
+            } elseif ($paymentIntent->getStatus() === PaymentIntent::STATUS_REQUIRES_CAPTURE) {
+                $orderService->setAuthorizedStatus($order);
+                $paymentGateway = wc_get_payment_gateway_by_order($order);
+                if ($paymentGateway instanceof Card) {
+                    if ($paymentGateway->is_capture_immediately()) {
+                        $this->logService->debug('paymentConfirmation() start capture', [$paymentIntent->toArray()]);
+                        $paymentIntentAfterCapture = $apiClient->capture($paymentIntentId, $paymentIntent->getAmount());
+                        if ($paymentIntentAfterCapture->getStatus() === PaymentIntent::STATUS_SUCCEEDED) {
+                            $order->payment_complete($paymentIntentId);
+                            $order->add_order_note('Airwallex payment captured');
+                            (new LogService())->debug('paymentConfirmation() payment success during checkout', $paymentIntent->toArray());
+                        } else {
+                            (new LogService())->error('paymentConfirmation() payment capture failed during checkout', $paymentIntentAfterCapture->toArray());
+                            $this->setTemporaryOrderStateAfterDecline($order);
+                            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+                            wp_redirect(wc_get_checkout_url());
+                            die;
+                        }
                     } else {
-                        (new LogService())->error('paymentConfirmation() payment capture failed during checkout', $paymentIntentAfterCapture->toArray());
-                        $this->setTemporaryOrderStateAfterDecline($order);
-                        wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
-                        wp_redirect(wc_get_checkout_url());
-                        die;
+                        $this->logService->debug('paymentConfirmation() payment complete', []);
+                        $order->payment_complete($paymentIntentId);
+                        $order->add_order_note('Airwallex payment authorized');
                     }
-                } else {
-                    $logService->debug('paymentConfirmation() payment complete', []);
-                    $order->payment_complete($paymentIntentId);
-                    $order->add_order_note('Airwallex payment authorized');
                 }
+            } elseif (in_array($paymentIntent->getStatus(), PaymentIntent::PENDING_STATUSES)) {
+                $orderService->setPendingStatus($order);
             }
             WC()->cart->empty_cart();
             wp_redirect($order->get_checkout_order_received_url());
             die;
         } catch (Exception $e) {
-            $logService->error('paymentConfirmation() payment confirmation controller action failed', $e->getMessage());
+            $this->logService->error('paymentConfirmation() payment confirmation controller action failed', $e->getMessage());
             if (!empty($order)) {
                 $this->setTemporaryOrderStateAfterDecline($order);
             }
@@ -327,16 +333,13 @@ class AirwallexController
      */
     private function setTemporaryOrderStateAfterDecline($order)
     {
-        if ($orderStatus = get_option('airwallex_temporary_order_status_after_decline')) {
-            $order->update_status($orderStatus, 'Airwallex Webhook');
-        }
+        (new OrderService())->setTemporaryOrderStateAfterDecline($order);
     }
 
     public function webhook()
     {
-        $logService = new LogService();
         $body = file_get_contents('php://input');
-        $logService->debug('🖧 webhook body', ['body' => $body]);
+        $this->logService->debug('🖧 webhook body', ['body' => $body]);
         $webhookService = new WebhookService();
         try {
             $webhookService->process($this->getRequestHeaders(), $body);
@@ -345,7 +348,7 @@ class AirwallexController
             echo json_encode(['success' => 1]);
             die;
         } catch (Exception $exception) {
-            $logService->warning('webhook exception', ['msg' => $exception->getMessage()]);
+            $this->logService->warning('webhook exception', ['msg' => $exception->getMessage()]);
             http_response_code(401);
             header('Content-Type: application/json');
             echo json_encode(['success' => 0]);
@@ -369,5 +372,30 @@ class AirwallexController
             }
         }
         return $headers;
+    }
+
+    protected function handleStatusForConfirmation(PaymentIntent $paymentIntent, WC_Order $order)
+    {
+        $validStatuses = array_merge(
+            [
+                PaymentIntent::STATUS_SUCCEEDED,
+                PaymentIntent::STATUS_REQUIRES_CAPTURE,
+            ],
+            PaymentIntent::PENDING_STATUSES
+        );
+
+        if (!in_array($paymentIntent->getStatus(), $validStatuses, true)) {
+            $this->logService->warning('paymentConfirmation() invalid status', [$paymentIntent->toArray()]);
+            //no valid payment intent
+            $this->setTemporaryOrderStateAfterDecline($order);
+            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wp_redirect(wc_get_checkout_url());
+            die;
+        }
+        if (in_array($paymentIntent->getStatus(), PaymentIntent::PENDING_STATUSES, true)) {
+            $this->logService->debug('paymentConfirmation() pending status', [$paymentIntent->toArray()]);
+            (new OrderService())->setPendingStatus($order);
+        }
+
     }
 }

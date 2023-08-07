@@ -7,6 +7,10 @@ class PaymentIntent extends AbstractBase
     const STATUS_REQUIRES_CAPTURE = 'REQUIRES_CAPTURE';
     const STATUS_SUCCEEDED = 'SUCCEEDED';
 
+    const PENDING_STATUSES = [
+        'REQUIRES_CUSTOMER_ACTION',
+    ];
+
     protected $id;
     protected $requestId;
     protected $amount;
