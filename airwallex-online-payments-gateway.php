@@ -7,9 +7,9 @@
  * Author URI: https://www.airwallex.com
  * Version: 1.2.8
  * Requires at least: 4.5
- * Tested up to:
+ * Tested up to: 6.2
  * WC requires at least: 3.0
- * WC tested up to:
+ * WC tested up to: 7.9 
  * Text Domain: airwallex-online-payments-gateway
  *
  */
