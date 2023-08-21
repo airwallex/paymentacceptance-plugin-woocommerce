@@ -9,6 +9,7 @@ use Airwallex\Struct\Customer;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
 use Exception;
+use Airwallex\Services\Util;
 
 abstract class AbstractClient
 {
@@ -20,6 +21,7 @@ abstract class AbstractClient
     const GENERAL_URL_SANDBOX = 'https://api-demo.airwallex.com/api/v1/';
     const LOG_URL_LIVE = 'https://api.airwallex.com/';
     const LOG_URL_SANDBOX = 'https://api-demo.airwallex.com/';
+    const PRODUCT_TYPE_SHIPPING = 'shipping';
 
     public static $instance;
     protected $clientId;
@@ -217,6 +219,18 @@ abstract class AbstractClient
                 'sku' => $sku,
                 'type' => 'physical',
                 'unit_price' => round($price, 2),
+            ];
+        }
+
+        // add shipping items into the product list
+        foreach ($order->get_shipping_methods() as $shipping) {
+            $orderData['products'][] = [
+                'desc' => Util::truncateString($shipping->get_method_title(), 125, '...'),
+                'name' => Util::truncateString($shipping->get_method_title(), 125, '...'),
+                'quantity' => 1,
+                'sku' => $shipping->get_method_id(),
+                'type' => self::PRODUCT_TYPE_SHIPPING,
+                'unit_price' => $this->round($shipping->get_total(), wc_get_price_decimals()),
             ];
         }
 
@@ -572,5 +586,13 @@ abstract class AbstractClient
                 'version' => AIRWALLEX_VERSION,
             ],
         ];
+    }
+
+    protected function round($val, $precision = 0, $mode = PHP_ROUND_HALF_UP)
+    {
+        if (! is_numeric($val)) {
+            $val = floatval($val);
+        }
+        return round($val, $precision, $mode);
     }
 }

@@ -22,4 +22,18 @@ class Util
         }
         return $locale;
     }
+    
+    /**
+     * Truncate string to given length
+     * 
+     * @param string $str    Original string.
+     * @param int    $len    [optional] Maximum Length of the returned string, exclude the length of the surfix(if applicable).
+     * @param string $surfix [optional] Surfix to be attached to the end of the string.
+     * @return string
+     */
+    public static function truncateString($str, $len = 128, $surfix = '') {
+        if (strlen($str) <= $len) return $str;
+
+        return mb_substr($str, 0, $len) . $surfix;
+    }
 }
