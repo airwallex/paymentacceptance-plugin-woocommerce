@@ -21,7 +21,6 @@ abstract class AbstractClient
     const GENERAL_URL_SANDBOX = 'https://api-demo.airwallex.com/api/v1/';
     const LOG_URL_LIVE = 'https://api.airwallex.com/';
     const LOG_URL_SANDBOX = 'https://api-demo.airwallex.com/';
-    const PRODUCT_TYPE_SHIPPING = 'shipping';
 
     public static $instance;
     protected $clientId;
@@ -229,7 +228,7 @@ abstract class AbstractClient
                 'name' => Util::truncateString($shipping->get_method_title(), 125, '...'),
                 'quantity' => 1,
                 'sku' => $shipping->get_method_id(),
-                'type' => self::PRODUCT_TYPE_SHIPPING,
+                'type' => 'shipping',
                 'unit_price' => $this->round($shipping->get_total(), wc_get_price_decimals()),
             ];
         }
