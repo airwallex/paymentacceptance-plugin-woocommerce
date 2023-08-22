@@ -74,6 +74,16 @@
     }
 }
 
+body {
+    font-family: 'Avenir', -apple-system, BlinkMacSystemFont, 'Cross Yu Gothic', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Helvetica Neue', 'Helvetica', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Roboto', 'Droid Sans', '游ゴシック Medium', meiryo, sans-serif;
+    font-size: 1.4em;
+    color: #000;
+    background-color: #fff;
+    line-height: 1.75;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    -webkit-font-smoothing: subpixel-antialiased;
+}
 
 .airwallex-content {
     max-width: 1600px;
@@ -81,10 +91,73 @@
     margin: 0 auto;
 }
 
+.airwallex-checkout-header {
+    position: fixed;
+    z-index: 2000;
+    width: 100%;
+    top: 0px;
+    left: 0px;
+    background: #ffffff;
+}
+
+.airwallex-checkout-header-inner {
+    position: relative;
+    padding: 16px 32px 16px 40px;
+    flex-shrink: 0;
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: justify;
+    justify-content: space-between;
+    box-shadow: #E8EAED 0px -1px 0px 0px inset;
+}
+
+.airwallex-checkout-header-content {
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+}
+
+.airwallex-checkout-header-logo {
+    display: flex;
+}
+
+.airwallex-checkout-header-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.airwallex-checkout-header-text h1 {
+    font-family: AxLLCircular, Helvetica, Arial, sans-serif;
+    color: #1A1D21;
+    font-weight: 700;
+    line-height: 1.25;
+    font-size: 18px;
+    margin: 2px 0px 0px;
+}
+
+.airwallex-checkout-header-pipe {
+    display: inline-flex;
+    height: 18px;
+    border-right: 1px solid #E8EAED;
+    margin: 0px 12px;
+}
+
+.airwallex-checkout-header-shop-logo img {
+    max-height: 40px;
+}
+
+.airwallex-checkout-header-space {
+    height: 72px;
+}
+
 .airwallex-checkout {
+    position: relative;
     display: flex;
     width: 100%;
-    margin-top: 3em;
+    padding: 40px;
 }
 
 .airwallex-checkout.airwallex-tpl-2col-1 .airwallex-col-1 {
@@ -113,6 +186,15 @@
 
 .airwallex-checkout .product-image {
     width: 30%;
+}
+
+.airwallex-checkout .product-image img {
+    height: auto;
+    max-width: 100%;
+}
+
+.airwallex-checkout .product-info {
+    width: 70%;
 }
 
 .airwallex-checkout .price {
@@ -181,3 +263,32 @@
     }
 }
 
+/* table base style */
+table {
+	width: 100%;
+	margin: 1em 0;
+}
+
+thead {
+	background-color: #999;
+	color: #FFF;
+}
+tr {
+
+	&:nth-child(2n) {
+		background-color: #f2f2f2;
+	}
+}
+
+th,
+td {
+	padding: 1em;
+	text-align: center;
+	white-space: normal;
+    line-break: anywhere;
+	border: 1px solid #fff;
+}
+
+th {
+	font-weight: bold;
+}
