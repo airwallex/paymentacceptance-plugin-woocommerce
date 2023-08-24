@@ -9,6 +9,7 @@ use Airwallex\Struct\Customer;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
 use Exception;
+use Airwallex\Services\Util;
 
 abstract class AbstractClient
 {
@@ -217,6 +218,18 @@ abstract class AbstractClient
                 'sku' => $sku,
                 'type' => 'physical',
                 'unit_price' => round($price, 2),
+            ];
+        }
+
+        // add shipping items into the product list
+        foreach ($order->get_shipping_methods() as $shipping) {
+            $orderData['products'][] = [
+                'desc' => Util::truncateString($shipping->get_method_title(), 120, '...'),
+                'name' => Util::truncateString($shipping->get_method_title(), 120, '...'),
+                'quantity' => 1,
+                'sku' => $shipping->get_method_id(),
+                'type' => 'shipping',
+                'unit_price' => Util::round($shipping->get_total(), wc_get_price_decimals()),
             ];
         }
 
