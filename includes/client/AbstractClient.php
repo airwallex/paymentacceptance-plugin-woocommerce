@@ -224,12 +224,12 @@ abstract class AbstractClient
         // add shipping items into the product list
         foreach ($order->get_shipping_methods() as $shipping) {
             $orderData['products'][] = [
-                'desc' => Util::truncateString($shipping->get_method_title(), 125, '...'),
-                'name' => Util::truncateString($shipping->get_method_title(), 125, '...'),
+                'desc' => Util::truncateString($shipping->get_method_title(), 120, '...'),
+                'name' => Util::truncateString($shipping->get_method_title(), 120, '...'),
                 'quantity' => 1,
                 'sku' => $shipping->get_method_id(),
                 'type' => 'shipping',
-                'unit_price' => $this->round($shipping->get_total(), wc_get_price_decimals()),
+                'unit_price' => Util::round($shipping->get_total(), wc_get_price_decimals()),
             ];
         }
 
@@ -585,13 +585,5 @@ abstract class AbstractClient
                 'version' => AIRWALLEX_VERSION,
             ],
         ];
-    }
-
-    protected function round($val, $precision = 0, $mode = PHP_ROUND_HALF_UP)
-    {
-        if (! is_numeric($val)) {
-            $val = floatval($val);
-        }
-        return round($val, $precision, $mode);
     }
 }
