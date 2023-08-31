@@ -166,6 +166,7 @@ class Card extends WC_Payment_Gateway
                     'type' => 'select',
                     'description' => __('When this status is assigned to an order, the funds will be captured', AIRWALLEX_PLUGIN_NAME),
                     'options' => array_merge(['' => ''], wc_get_order_statuses()),
+                    'default' => ''
                 ],
             ]
         );
