@@ -74,6 +74,20 @@ class WebhookService
         } elseif ($eventType === 'refund.processing' || $eventType === 'refund.succeeded') {
             $logService->debug('🖧 received refund webhook');
             $refund = new Refund($messageData['data']['object']);
+
+            $order = $orderService->getOrderByAirwallexRefundId($refund->getId());
+            if (!empty($order)) {
+                $order->add_order_note(sprintf(
+                    __('Airwallex Webhook notification: %s \n\n Amount:  (%s).'),
+                    $eventType,
+                    $refund->getAmount()
+                ));
+                $logService->debug(__METHOD__ . " - Order {$order->get_id()}, refund id {$refund->getId()}, event type {$messageData['name']}, event id {$messageData['id']}");
+                return;
+            }
+            
+            // leave the old logic for now in case there are some unprocessed refund created before the release
+            // need to be removed later
             $paymentIntentId = $refund->getPaymentIntentId();
             $order = $orderService->getOrderByPaymentIntentId($paymentIntentId);
 

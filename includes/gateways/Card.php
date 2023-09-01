@@ -5,7 +5,9 @@ namespace Airwallex\Gateways;
 use Airwallex\CardClient;
 use Airwallex\Services\CacheService;
 use Airwallex\Services\LogService;
+use Airwallex\Services\OrderService;
 use Airwallex\Struct\PaymentIntent;
+use Airwallex\Struct\Refund;
 use Exception;
 use WC_HTTPS;
 use WC_Order;
@@ -35,6 +37,7 @@ class Card extends WC_Payment_Gateway
         'products',
         'refunds',
     ];
+    public $logService;
 
     public function __construct()
     {
@@ -51,7 +54,7 @@ class Card extends WC_Payment_Gateway
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         $this->title = $this->get_option('title');
-
+        $this->logService = new LogService();
     }
 
     public function getCardLogos()
@@ -190,14 +193,25 @@ class Card extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
         $paymentIntentId = $order->get_transaction_id();
         $apiClient = CardClient::getInstance();
+        $orderService = new OrderService();
         try {
             $refund = $apiClient->createRefund($paymentIntentId, $amount, $reason);
-            $order->add_order_note('Airwallex refund initiated: ' . $refund->getId());
-            (new LogService())->debug('refund initiated', $refund->toArray());
-            return true;
+            if (!$orderService->getOrderByAirwallexRefundId($refund->getId())) {
+                $order->add_order_note(sprintf(
+                    __('Airwallex refund initiated: %s', AIRWALLEX_PLUGIN_NAME),
+                    $refund->getId()
+                ));
+                add_post_meta($order->id, Refund::META_REFUND_ID, $refund->getId());
+            } else {
+                throw new Exception("refund {$refund->getId()} already exist.", '1');
+            }
+            $this->logService->debug(__METHOD__ . " - Order: {$order_id}, refund initiated, {$refund->getId()}");
         } catch (\Exception $e) {
-            return new WP_Error($e->getCode(), 'refund failed', $e->getMessage());
+            $this->logService->debug(__METHOD__ . " - Order: {$order_id}, refund failed, {$e->getMessage()}");
+            return new WP_Error($e->getCode(), 'Refund failed, ' . $e->getMessage());
         }
+
+        return true;
     }
 
     /**

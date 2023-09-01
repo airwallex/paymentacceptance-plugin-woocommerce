@@ -6,7 +6,10 @@ use Airwallex\CardClient;
 use Airwallex\MainClient;
 use Airwallex\Services\CacheService;
 use Airwallex\Services\LogService;
+use Airwallex\Services\OrderService;
 use Airwallex\Struct\PaymentIntent;
+use Airwallex\Struct\Refund;
+use Exception;
 use WC_Payment_Gateway;
 use WP_Error;
 
@@ -41,6 +44,7 @@ class Main extends WC_Payment_Gateway
         'subscription_date_changes',
     ];
     public static $status = null;
+    public $logService;
 
     public function __construct()
     {
@@ -59,6 +63,7 @@ class Main extends WC_Payment_Gateway
             $this->method_description = '<div class="error" style="padding:10px;">' . sprintf(__('To start using Airwallex payment methods, please enter your credentials first. <br><a href="%s" class="button-primary">API settings</a>', AIRWALLEX_PLUGIN_NAME), admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general')) . '</div>';
         }
         $this->title = $this->get_option('title');
+        $this->logService = new LogService();
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
 
         if (class_exists('WC_Subscriptions_Order')) {
@@ -255,14 +260,25 @@ class Main extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
         $paymentIntentId = $order->get_transaction_id();
         $apiClient = MainClient::getInstance();
+        $orderService = new OrderService();
         try {
             $refund = $apiClient->createRefund($paymentIntentId, $amount, $reason);
-            $order->add_order_note('Airwallex refund initiated: ' . $refund->getId());
-            (new LogService())->debug('refund initiated', $refund->toArray());
-            return true;
+            if (!$orderService->getOrderByAirwallexRefundId($refund->getId())) {
+                $order->add_order_note(sprintf(
+                    __('Airwallex refund initiated: %s', AIRWALLEX_PLUGIN_NAME),
+                    $refund->getId()
+                ));
+                add_post_meta($order->id, Refund::META_REFUND_ID, $refund->getId());
+            } else {
+                throw new Exception("refund {$refund->getId()} already exist.", '1');
+            }
+            $this->logService->debug(__METHOD__ . " - Order: {$order_id}, refund initiated, {$refund->getId()}");
         } catch (\Exception $e) {
-            return new WP_Error($e->getCode(), 'refund failed', $e->getMessage());
+            $this->logService->debug(__METHOD__ . " - Order: {$order_id}, refund failed, {$e->getMessage()}");
+            return new WP_Error($e->getCode(), 'Refund failed, ' . $e->getMessage());
         }
+
+        return true;
     }
 
     public function subscription_payment_information($paymentMethodName, $subscription)
