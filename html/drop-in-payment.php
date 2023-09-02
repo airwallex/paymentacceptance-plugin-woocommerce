@@ -64,6 +64,24 @@ $locale = \Airwallex\Services\Util::getLocale();
 $methods = $gateway->get_option('methods');
 $airwallexMain = \Airwallex\Main::getInstance();
 $merchantCountry = strtoupper(substr($paymentIntentId, 4, 2));
+if ($order->has_billing_address()) {
+    $airwallexBillingAddress = [
+        'city' => $order->get_billing_city(),
+        'country_code' => $order->get_billing_country(),
+        'postcode' => $order->get_billing_postcode(),
+        'state' => $order->get_shipping_state(),
+        'street' => $order->get_billing_address_1(),
+    ];
+    $airwallexBilling['billing'] = [
+        'first_name' => $order->get_billing_first_name(),
+        'last_name' => $order->get_billing_last_name(),
+        'email' => $order->get_billing_email(),
+        'phone_number' => $order->get_billing_phone,
+    ];
+    if (!empty($airwallexBillingAddress['city']) && !empty($airwallexBillingAddress['country_code']) && !empty($airwallexBillingAddress['street'])) {
+        $airwallexBilling['billing']['address'] = $airwallexBillingAddress;
+    }
+}
 
 $elementConfiguration = json_encode([
         'intent_id' => $paymentIntentId,
@@ -100,6 +118,12 @@ $elementConfiguration = json_encode([
     + (!empty($methods) && is_array($methods) ? [
         'methods' => $methods,
     ] : [])
+    + (isset($airwallexBilling) ? $airwallexBilling : [])
+    + [
+        'shopper_name' => $order->get_formatted_billing_full_name(),
+        'shopper_phone' => $order->get_billing_phone(),
+        'shopper_email' => $order->get_billing_email(),
+    ]
 );
 
 $inlineJs = <<<AIRWALLEX
