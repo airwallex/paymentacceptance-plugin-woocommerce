@@ -103,6 +103,9 @@ $elementConfiguration = json_encode([
               'color' => 'black',
             ],
         ],
+        'shopper_name' => $order->get_formatted_billing_full_name(),
+        'shopper_phone' => $order->get_billing_phone(),
+        'shopper_email' => $order->get_billing_email(),
     ]
     + ($airwallexCustomerId?['customer_id' => $airwallexCustomerId]:[])
     + ($isSubscription ? [
@@ -119,11 +122,6 @@ $elementConfiguration = json_encode([
         'methods' => $methods,
     ] : [])
     + (isset($airwallexBilling) ? $airwallexBilling : [])
-    + [
-        'shopper_name' => $order->get_formatted_billing_full_name(),
-        'shopper_phone' => $order->get_billing_phone(),
-        'shopper_email' => $order->get_billing_email(),
-    ]
 );
 
 $inlineJs = <<<AIRWALLEX
