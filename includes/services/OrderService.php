@@ -115,10 +115,9 @@ class OrderService
                 SELECT wc_order.id
                 FROM {$wpdb->posts} wc_order
                 INNER JOIN {$wpdb->postmeta} order_meta ON wc_order.id = order_meta.post_id
-                WHERE wc_order.post_type = 'shop_order' AND order_meta.meta_key = %s AND order_meta.meta_value = %s
+                WHERE wc_order.post_type = 'shop_order' AND order_meta.meta_key = %s
             ",
-            Refund::META_REFUND_ID,
-            $refundId
+            Refund::META_REFUND_ID . $refundId
         ));
 
         return empty($orderId) ? false : wc_get_order($orderId);

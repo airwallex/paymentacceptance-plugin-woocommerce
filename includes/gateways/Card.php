@@ -5,7 +5,6 @@ namespace Airwallex\Gateways;
 use Airwallex\CardClient;
 use Airwallex\Services\CacheService;
 use Airwallex\Services\LogService;
-use Airwallex\Services\OrderService;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
 use Exception;
@@ -193,15 +192,15 @@ class Card extends WC_Payment_Gateway
         $order = wc_get_order($order_id);
         $paymentIntentId = $order->get_transaction_id();
         $apiClient = CardClient::getInstance();
-        $orderService = new OrderService();
         try {
             $refund = $apiClient->createRefund($paymentIntentId, $amount, $reason);
-            if (!$orderService->getOrderByAirwallexRefundId($refund->getId())) {
+            $metaKey = $refund->getMetaKey();
+            if (!$order->meta_exists($metaKey)) {
                 $order->add_order_note(sprintf(
                     __('Airwallex refund initiated: %s', AIRWALLEX_PLUGIN_NAME),
                     $refund->getId()
                 ));
-                add_post_meta($order->id, Refund::META_REFUND_ID, $refund->getId());
+                add_post_meta($order->get_id(), $metaKey, ['status' => Refund::STATUS_CREATED]);
             } else {
                 throw new Exception("refund {$refund->getId()} already exist.", '1');
             }
