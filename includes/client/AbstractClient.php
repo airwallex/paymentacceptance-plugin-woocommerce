@@ -417,7 +417,7 @@ abstract class AbstractClient
     final public function createRefund($paymentIntentId, $amount = null, $reason = '')
     {
         if (empty($paymentIntentId)) {
-            throw new Exception('payment intent id empty');
+            throw new Exception('payment intent id empty', '1');
         }
         $client = $this->getHttpClient();
         if ($amount === null) {
@@ -443,7 +443,7 @@ abstract class AbstractClient
         );
 
         if (empty($response->data['id'])) {
-            throw new Exception('refund creation failed: ' . json_encode($response));
+            throw new Exception('refund creation failed: ' . json_encode($response), '1');
         }
 
         return new Refund($response->data);

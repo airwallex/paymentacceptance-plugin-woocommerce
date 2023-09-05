@@ -7,6 +7,7 @@ use Airwallex\AbstractClient;
 use Airwallex\CardClient;
 use Airwallex\Gateways\Card;
 use Airwallex\Struct\PaymentIntent;
+use Airwallex\Struct\Refund;
 use Exception;
 use WC_Order;
 
@@ -100,6 +101,26 @@ class OrderService
             return $row->ID;
         }
         return null;
+    }
+
+    /**
+     * @param string $refundId
+     * @return bool|WC_Order
+     */
+    public function getOrderByAirwallexRefundId($refundId) {
+        global $wpdb;
+
+        $orderId = $wpdb->get_var($wpdb->prepare(
+            "
+                SELECT wc_order.id
+                FROM {$wpdb->posts} wc_order
+                INNER JOIN {$wpdb->postmeta} order_meta ON wc_order.id = order_meta.post_id
+                WHERE wc_order.post_type = 'shop_order' AND order_meta.meta_key = %s
+            ",
+            Refund::META_REFUND_ID . $refundId
+        ));
+
+        return empty($orderId) ? false : wc_get_order($orderId);
     }
 
     /**

@@ -4,7 +4,10 @@ namespace Airwallex\Struct;
 
 class Refund extends AbstractBase
 {
+    const META_REFUND_ID = '_airwallex_refund_id_';
+    const STATUS_CREATED = 'CREATED';
     const STATUS_RECEIVED = 'RECEIVED';
+    const STATUS_SUCCEEDED = 'SUCCEEDED';
 
     protected $id;
     protected $requestId;
@@ -195,5 +198,9 @@ class Refund extends AbstractBase
     {
         $this->updatedAt = $updatedAt;
         return $this;
+    }
+
+    public function getMetaKey() {
+        return self::META_REFUND_ID . $this->id;
     }
 }

@@ -74,31 +74,57 @@ class WebhookService
         } elseif ($eventType === 'refund.processing' || $eventType === 'refund.succeeded') {
             $logService->debug('🖧 received refund webhook');
             $refund = new Refund($messageData['data']['object']);
-            $paymentIntentId = $refund->getPaymentIntentId();
-            $order = $orderService->getOrderByPaymentIntentId($paymentIntentId);
 
-            if (empty($order)) {
-                $logService->warning('no order found for refund', ['paymentIntent' => $paymentIntentId]);
-                throw new Exception('no order found for refund on payment_intent ' . $paymentIntentId);
+            $order = $orderService->getOrderByAirwallexRefundId($refund->getId());
+            if (!empty($order)) {
+                $refundInfo = get_post_meta($order->get_id(), $refund->getMetaKey(), true);
+                if ($refundInfo['status'] != Refund::STATUS_SUCCEEDED) {
+                    $order->add_order_note(sprintf(
+                        __("Airwallex Webhook notification: %s \n\n Amount:  (%s)."),
+                        $eventType,
+                        $refund->getAmount()
+                    ));
+                    $refundInfo['status'] = Refund::STATUS_SUCCEEDED;
+                    update_post_meta($order->get_id(), $refund->getMetaKey(), $refundInfo);
+                }
+                $logService->debug(__METHOD__ . " - Order {$order->get_id()}, refund id {$refund->getId()}, event type {$messageData['name']}, event id {$messageData['id']}");
+            } else {
+                $paymentIntentId = $refund->getPaymentIntentId();
+                $order = $orderService->getOrderByPaymentIntentId($paymentIntentId);
+                if (empty($order)) {
+                    $logService->warning(__METHOD__ . ' - no order found for refund', ['paymentIntent' => $paymentIntentId]);
+                    throw new Exception('no order found for refund on payment_intent ' . $paymentIntentId);
+                }
+                $order->add_order_note(sprintf(
+                    __("Airwallex Webhook notification: %s \n\n Amount:  (%s)."),
+                    $eventType,
+                    $refund->getAmount()
+                ));
 
-            }
-            $order->add_order_note('Airwallex Webhook notification: ' . $eventType . "\n\n" . 'Amount: ' . $refund->getAmount());
-
-            if (!$orderService->getRefundIdByAirwallexRefundId($refund->getId())) {
-                if ($wcRefundId = $orderService->getRefundByAmountAndTime($order->get_id(), $refund->getAmount(), date('Y-m-d H:i:s'))) {
-                    update_post_meta($wcRefundId, '_airwallex_refund_id', $refund->getId());
-                } else {
-                    $wcRefund = wc_create_refund([
-                        'amount' => $refund->getAmount(),
-                        'reason' => $refund->getReason(),
-                        'order_id' => $order->get_id(),
-                        'refund_payment' => false,
-                        'restock_items' => false,
-                    ]);
-                    if ($wcRefund instanceof WC_Order_Refund) {
-                        update_post_meta($wcRefund->get_id(), '_airwallex_refund_id', $refund->getId());
+                /*
+                    Retain some of the old logic temporarily to account for any unprocessed refunds created prior to the release.
+                    The old logic should be removed at a later stage.
+                */
+                if (!$orderService->getRefundIdByAirwallexRefundId($refund->getId())) {
+                    if ($orderService->getRefundByAmountAndTime($order->get_id(), $refund->getAmount(), date('Y-m-d H:i:s'))) {
+                        add_post_meta($order->get_id(), $refund->getMetaKey(), ['status' => Refund::STATUS_SUCCEEDED]);
                     } else {
-                        $logService->error('failed to create WC refund from webhook notification', $wcRefund);
+                        $wcRefund = wc_create_refund([
+                            'amount' => $refund->getAmount(),
+                            'reason' => $refund->getReason(),
+                            'order_id' => $order->get_id(),
+                            'refund_payment' => false,
+                            'restock_items' => false,
+                        ]);
+                        if ($wcRefund instanceof WC_Order_Refund) {
+                            add_post_meta($order->get_id(), $refund->getMetaKey(), ['status' => Refund::STATUS_SUCCEEDED]);
+                        } else {
+                            $order->add_order_note(sprintf(
+                                __('Failed to create WC refund from webhook notification for refund (%s).'),
+                                $refund->getId()
+                            ));
+                            $logService->error(__METHOD__ . ' failed to create WC refund from webhook notification', $wcRefund);
+                        }
                     }
                 }
             }
