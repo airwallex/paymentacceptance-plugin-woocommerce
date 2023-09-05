@@ -37,9 +37,16 @@ class Main
 
     public function init()
     {
+        $this->registerConstants();
         $this->registerEvents();
         $this->registerOrderStatus();
         $this->registerCron();
+    }
+
+    public function registerConstants() {
+        if (!defined('AIRWALLEX_REMOTE_LOGGING_ENABLED')) {
+            define('AIRWALLEX_REMOTE_LOGGING_ENABLED', LoggingClient::isActive());
+        }
     }
 
     public function registerEvents()
@@ -208,7 +215,7 @@ class Main
                 ],
                 'enable_sandbox' => [
                     'title' => __('Enable sandbox', AIRWALLEX_PLUGIN_NAME),
-                    'desc' => __('yes', AIRWALLEX_PLUGIN_NAME),
+                    'desc' => __('Yes', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'checkbox',
                     'default' => 'yes',
                     'id' => 'airwallex_enable_sandbox',
@@ -256,11 +263,19 @@ class Main
                 ],
                 'do_js_logging' => [
                     'title' => __('Activate JS logging', AIRWALLEX_PLUGIN_NAME),
-                    'desc' => __('yes (only for special cases after contacting Airwallex)', AIRWALLEX_PLUGIN_NAME),
+                    'desc' => __('Yes (only for special cases after contacting Airwallex)', AIRWALLEX_PLUGIN_NAME),
                     'type' => 'checkbox',
                     'default' => 'yes',
                     'id' => 'airwallex_do_js_logging',
                     'value' => get_option('airwallex_do_js_logging'),
+                ],
+                'do_remote_logging' => [
+                    'title' => __('Activate Remote logging', 'airwallex-online-payments-gateway'),
+                    'desc' => __('Send diagnostic data to Airwallex', 'airwallex-online-payments-gateway') . '<br/><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . __('Help Airwallex easily resolve your issues and improve your experience by automatically sending diagnostic data. Diagnostic data may include order details.', 'airwallex-online-payments-gateway') . '</small>',
+                    'type' => 'checkbox',
+                    'default' => '',
+                    'id' => 'airwallex_do_remote_logging',
+                    'value' => get_option('airwallex_do_remote_logging'),
                 ],
                 'sectionend' => [
                     'type' => 'sectionend',

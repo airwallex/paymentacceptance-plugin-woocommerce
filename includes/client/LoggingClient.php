@@ -27,6 +27,8 @@ class LoggingClient extends AbstractClient
 
     public function log($severity, $eventName, $message, $details = [], $type = 'unknown')
     {
+        if (!AIRWALLEX_REMOTE_LOGGING_ENABLED) return;
+
         $data = [
             'commonData' => [
                 'appName' => 'pa_plugin',
@@ -79,5 +81,9 @@ class LoggingClient extends AbstractClient
         }else {
             return 'other';
         }
+    }
+
+    public static function isActive() {
+        return in_array(get_option('airwallex_do_remote_logging'), ['yes', 1, true, '1'], true);
     }
 }
