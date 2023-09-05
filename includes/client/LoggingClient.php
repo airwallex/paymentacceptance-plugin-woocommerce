@@ -10,11 +10,14 @@ class LoggingClient extends AbstractClient
     const LOG_SEVERITY_WARNING = 'warn';
     const LOG_SEVERITY_ERROR = 'error';
 
+	private $isActiv = false;
+
     public function __construct($clientId, $apiKey, $isSandbox)
     {
         $this->clientId = $clientId;
         $this->apiKey = $apiKey;
         $this->isSandbox = $isSandbox;
+        $this->isActiv = self::isActive();
     }
 
     protected function getSessionId()
@@ -27,7 +30,7 @@ class LoggingClient extends AbstractClient
 
     public function log($severity, $eventName, $message, $details = [], $type = 'unknown')
     {
-        if (!AIRWALLEX_REMOTE_LOGGING_ENABLED) return;
+        if (!$this->isActiv) return;
 
         $data = [
             'commonData' => [

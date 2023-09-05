@@ -37,16 +37,9 @@ class Main
 
     public function init()
     {
-        $this->registerConstants();
         $this->registerEvents();
         $this->registerOrderStatus();
         $this->registerCron();
-    }
-
-    public function registerConstants() {
-        if (!defined('AIRWALLEX_REMOTE_LOGGING_ENABLED')) {
-            define('AIRWALLEX_REMOTE_LOGGING_ENABLED', LoggingClient::isActive());
-        }
     }
 
     public function registerEvents()
@@ -413,11 +406,11 @@ class Main
             confirmSlimCardPayment();
         }
     }
-    
+
     jQuery(document.body).on('checkout_error', function (e, msg) {
         airwallexCheckoutProcessingAction(msg);
     });
-    
+
     //for plugin CheckoutWC
     window.addEventListener('cfw-checkout-failed-before-error-message', function (event) {
         if (typeof event.detail.response.messages === 'undefined') {
@@ -425,7 +418,7 @@ class Main
         }
         airwallexCheckoutProcessingAction(event.detail.response.messages);
     });
-    
+
     //this is for payment changes after order placement
     jQuery('#order_review').on('submit', function (e) {
         let airwallexCardPaymentOption = jQuery('#payment_method_airwallex_card');
@@ -436,26 +429,26 @@ class Main
             }
         }
     });
-    
+
     Airwallex.init({
         env: '$environment',
         locale: '$locale',
         origin: window.location.origin, // Setup your event target to receive the browser events message
     });
-    
+
     const airwallexSlimCard = Airwallex.createElement('card');
-    
+
     airwallexSlimCard.mount('airwallex-card');
     setInterval(function(){
         if(document.getElementById('airwallex-card') && !document.querySelector('#airwallex-card iframe')){
             try{
                 airwallexSlimCard.mount('airwallex-card')
             }catch{
-            
+
             }
         }
     }, 1000);
-    
+
     function confirmSlimCardPayment(orderId) {
         //timeout necessary because of event order in plugin CheckoutWC
         setTimeout(function(){
@@ -467,12 +460,12 @@ class Main
                     }
             });
         }, 50);
-        
+
         let asyncIntentUrl = AirwallexParameters.asyncIntentUrl;
         if(orderId){
             asyncIntentUrl += (asyncIntentUrl.indexOf('?') !== -1 ? '&' : '?') + 'airwallexOrderId=' + orderId;
         }
-        
+
         AirwallexClient.ajaxGet(asyncIntentUrl, function (data) {
             if (!data || data.error) {
                 AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', ''));
@@ -517,10 +510,10 @@ class Main
                     AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', err.message || ''));
                 })
             }
-            
+
         });
     }
-    
+
     window.addEventListener('onError', (event) => {
         if (!event.detail) {
             return;
