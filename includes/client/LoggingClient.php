@@ -10,7 +10,7 @@ class LoggingClient extends AbstractClient
     const LOG_SEVERITY_WARNING = 'warn';
     const LOG_SEVERITY_ERROR = 'error';
 
-	private $isActiv = false;
+    private $isActiv = false;
 
     public function __construct($clientId, $apiKey, $isSandbox)
     {
