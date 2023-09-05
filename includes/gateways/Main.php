@@ -188,6 +188,7 @@ class Main extends WC_Payment_Gateway
                     'html' => '
                         <img src="' . AIRWALLEX_PLUGIN_URL . '/assets/images/logo.svg" width="150" alt="Airwallex" /><br><br>
                         ' . $intro,
+                    'default' => '',
                 ],
                 'enabled' => [
                     'title' => __('Enable/Disable', AIRWALLEX_PLUGIN_NAME),
@@ -216,6 +217,7 @@ class Main extends WC_Payment_Gateway
                     'type' => 'logos',
                     'desc_tip' => __('Choose which payment method logos to display before your payer proceeds to checkout.', AIRWALLEX_PLUGIN_NAME),
                     'options' => $logos,
+                    'default' => '',
                 ],
                 'methods' => [
                     'title' => __('Payment methods', AIRWALLEX_PLUGIN_NAME),
@@ -223,6 +225,7 @@ class Main extends WC_Payment_Gateway
                     'type' => 'methods',
                     'description' => sprintf(__('Shoppers with different shipping address countries may see different payment methods in their list. (<a href="%s" target="_blank">See details</a>)', AIRWALLEX_PLUGIN_NAME), 'https://www.airwallex.com/docs/online-payments__overview'),
                     'options' => $this->getPaymentMethods(),
+                    'default' => '',
                 ],
                 'template' => [
                     'title' => __('Payment page template', AIRWALLEX_PLUGIN_NAME),
@@ -233,8 +236,8 @@ class Main extends WC_Payment_Gateway
                         '2col-1' => '',
                         '2col-2' => '',
                         '2row' => '',
-                    ]
-                    ,
+                    ],
+                    'default' => '2col-1',
                 ],
             ]
         );
