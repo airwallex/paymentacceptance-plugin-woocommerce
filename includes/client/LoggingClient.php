@@ -86,7 +86,8 @@ class LoggingClient extends AbstractClient
         }
     }
 
-    public static function isActive() {
+    public static function isActive()
+    {
         return in_array(get_option('airwallex_do_remote_logging'), ['yes', 1, true, '1'], true);
     }
 }
