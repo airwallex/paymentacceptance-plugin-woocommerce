@@ -3,7 +3,7 @@ Contributors: airwallex
 Tags: credit card, airwallex, payments, wechat, alipay, apple pay
 Requires at least: 4.5
 Tested up to: 6.2 
-Stable tag: 1.2.9
+Stable tag: 1.2.10
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Author URI: https://www.airwallex.com
@@ -54,6 +54,14 @@ If you encounter any unexpected behavior, first check your configuration against
 Airwallex is a global payments platform with a mission to empower businesses of all sizes to grow without borders, and by doing so, contribute to the global economy. With technology at its core, Airwallex has built a financial infrastructure and platform to help businesses manage online payments, treasury and payout globally, without the constraints of the traditional financial system. Airwallex has raised over US$900 million since it was established in 2015, and is backed by world-leading investors. Today, the business operates with a team of over 1,200 employees across 19 locations globally.
 
 == Changelog ==
+
+= 1.2.10 =
+* Release Date - 06 September 2023*
+
+* Add - Option to toggle remote logging on or off
+* Fix - Waring message when debug mode is on
+* Fix - When using Klarna as the payment method, the email field is missing and needs to be provided
+* Fix - Creation of duplicate refund items during the refund process
 
 = 1.2.9 =
 * Release Date - 25 August 2023*
