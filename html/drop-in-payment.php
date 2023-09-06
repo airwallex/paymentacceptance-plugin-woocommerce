@@ -76,7 +76,7 @@ if ($order->has_billing_address()) {
         'first_name' => $order->get_billing_first_name(),
         'last_name' => $order->get_billing_last_name(),
         'email' => $order->get_billing_email(),
-        'phone_number' => $order->get_billing_phone,
+        'phone_number' => $order->get_billing_phone(),
     ];
     if (!empty($airwallexBillingAddress['city']) && !empty($airwallexBillingAddress['country_code']) && !empty($airwallexBillingAddress['street'])) {
         $airwallexBilling['billing']['address'] = $airwallexBillingAddress;
