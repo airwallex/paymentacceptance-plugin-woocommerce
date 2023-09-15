@@ -2,9 +2,9 @@ const AirwallexClient = {
     getCustomerInformation: function (fieldId, parameterName) {
         const $inputField = jQuery('#' + fieldId);
         if ($inputField.length) {
-            return $inputField.val();
+            return $inputField.val().toString().trim();
         } else if (typeof AirwallexParameters[parameterName] !== 'undefined') {
-            return AirwallexParameters[parameterName];
+            return AirwallexParameters[parameterName].trim();
         } else {
             return '';
         }
@@ -19,7 +19,7 @@ const AirwallexClient = {
                 country_code: AirwallexClient.getCustomerInformation('billing_country', 'billingCountry'),
                 postcode: AirwallexClient.getCustomerInformation('billing_postcode', 'billingPostcode'),
                 state: AirwallexClient.getCustomerInformation('billing_state', 'billingState'),
-                street: String(AirwallexClient.getCustomerInformation('billing_address_1', 'billingAddress1') + ' ' + AirwallexClient.getCustomerInformation('billing_address_2', 'billingAddress2')),
+                street: String(AirwallexClient.getCustomerInformation('billing_address_1', 'billingAddress1') + ' ' + AirwallexClient.getCustomerInformation('billing_address_2', 'billingAddress2')).trim(),
             },
             first_name: AirwallexClient.getCustomerInformation('billing_first_name', 'billingFirstName'),
             last_name: AirwallexClient.getCustomerInformation('billing_last_name', 'billingLastName'),
