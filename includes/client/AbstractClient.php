@@ -198,39 +198,40 @@ abstract class AbstractClient
             'products' => [],
         ];
 
-        foreach ($order->get_items() as $item) {
+        $orderItemTypes = ['line_item', 'shipping', 'fee', 'tax'];
+        foreach ($orderItemTypes as $type) {
+            foreach ($order->get_items($type) as $item) {
+                $itemDetail = [
+                    'name' => (mb_strlen($item->get_name()) <= 120 ? $item->get_name() : mb_substr($item->get_name(), 0, 117) . '...'),
+                    'desc' => $item->get_name(),
+                    'quantity' => $item->get_quantity(),
+                    'sku' => '',
+                    'type' => $item->get_type(),
+                    'unit_price' => is_callable([$item, 'get_total']) ? $item->get_total() : 0,
+                ];
 
-            $price = 0;
-            if (is_callable([$item, 'get_total'])) {
-                $price = $item->get_quantity() ? $item->get_total() / $item->get_quantity() : 0;
+                if ($item->is_type('line_item')) {
+                    $product = $item->get_product();
+                    if (!empty($product)) {
+                        $itemDetail['name'] = Util::truncateString($product->get_name(), 117, '...');
+                        $itemDetail['desc'] = $product->get_name();
+                        $itemDetail['sku'] = Util::truncateString($product->get_sku(), 117, '...');
+                        $itemDetail['type'] = $product->is_virtual() ? 'virtual' : 'physical';
+                        $itemDetail['unit_price'] = $product->get_price();
+                    } else {
+                        if ($itemDetail['quantity'] > 0) {
+                            $itemDetail['unit_price'] /= $itemDetail['quantity'];
+                        }
+                    }
+                } else if ($item->is_type('shipping')) {
+                    $itemDetail['sku'] = $item->get_method_id();
+                } else if ($item->is_type('tax')) {
+                    $itemDetail['unit_price'] = $item->get_tax_total() + $item->get_shipping_tax_total();
+                }
+
+                $itemDetail['unit_price'] = Util::round($itemDetail['unit_price'], wc_get_price_decimals());
+                $orderData['products'][] = $itemDetail;
             }
-
-            if (is_callable([$item, 'get_product'])) {
-                $sku = $item->get_product() ? $item->get_product()->get_sku() : null;
-            } else {
-                $sku = uniqid();
-            }
-
-            $orderData['products'][] = [
-                'desc' => $item->get_name(),
-                'name' => (mb_strlen($item->get_name()) <= 120 ? $item->get_name() : mb_substr($item->get_name(), 0, 117) . '...'),
-                'quantity' => $item->get_quantity(),
-                'sku' => $sku,
-                'type' => 'physical',
-                'unit_price' => round($price, 2),
-            ];
-        }
-
-        // add shipping items into the product list
-        foreach ($order->get_shipping_methods() as $shipping) {
-            $orderData['products'][] = [
-                'desc' => Util::truncateString($shipping->get_method_title(), 120, '...'),
-                'name' => Util::truncateString($shipping->get_method_title(), 120, '...'),
-                'quantity' => 1,
-                'sku' => $shipping->get_method_id(),
-                'type' => 'shipping',
-                'unit_price' => Util::round($shipping->get_total(), wc_get_price_decimals()),
-            ];
         }
 
         if ($order->has_shipping_address()) {
