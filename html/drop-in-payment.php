@@ -15,8 +15,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex.css');
-// load JS legacy 
-wp_enqueue_scripts();
 
 //prevent errors when using Avada theme and Fusion Builder
 //if (class_exists('Fusion_Template_Builder')) {
@@ -24,14 +22,11 @@ wp_enqueue_scripts();
     $post = 0;
     do_action('wp');
 //}
-?>
 
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body>
+get_header('shop');
+
+?>
     <div class="airwallex-content">
-        <?php include __DIR__ . '/inc/header.php'; ?>
         <div class="airwallex-checkout airwallex-tpl-<?php echo $gateway->get_option('template'); ?>">
             <div class="airwallex-col-1">
                 <div class="cart-heading"><?php echo __('Summary', AIRWALLEX_PLUGIN_NAME); ?></div>
@@ -159,7 +154,4 @@ $inlineJs = <<<AIRWALLEX
         });
 AIRWALLEX;
 wp_add_inline_script('airwallex-local-js', $inlineJs);
-wp_print_footer_scripts();
-?>
-<noscript><?php __("You need to enable JavaScript to run this app.", AIRWALLEX_PLUGIN_NAME) ?></noscript>
-</body>
+get_footer('shop');

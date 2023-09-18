@@ -74,7 +74,7 @@ defined( 'ABSPATH' ) || exit;
 
         <?php do_action( 'woocommerce_review_order_before_shipping' ); ?>
 
-        <?php //wc_cart_totals_shipping_html(); ?>
+        <?php wc_cart_totals_shipping_html(); ?>
 
         <?php do_action( 'woocommerce_review_order_after_shipping' ); ?>
 
@@ -101,14 +101,6 @@ defined( 'ABSPATH' ) || exit;
                 <td><?php wc_cart_totals_taxes_total_html(); ?></td>
             </tr>
         <?php endif; ?>
-    <?php endif; ?>
-
-    <?php
-    if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) : ?>
-    <tr class="shipping-total">
-        <th><?php esc_html_e( 'Shipping', 'woocommerce' ); ?></th>
-        <td><?php echo wc_price(WC()->cart->get_shipping_total()); ?></td>
-    </tr>
     <?php endif; ?>
 
     <?php do_action( 'woocommerce_review_order_before_order_total' ); ?>
