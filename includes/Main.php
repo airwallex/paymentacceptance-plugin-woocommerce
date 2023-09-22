@@ -216,7 +216,7 @@ class Main
     /**
      * Create pages that the plugin relies on, storing page IDs in variables.
      */
-    protected function createPages() {
+    public function createPages() {
         // Set the locale to the store locale to ensure pages are created in the correct language.
         wc_switch_to_site_locale();
 
