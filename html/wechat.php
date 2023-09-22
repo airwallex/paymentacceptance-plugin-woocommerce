@@ -9,18 +9,11 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL.'/assets/css/airwallex.css');
 
-//prevent errors when using Avada theme and Fusion Builder
-if(class_exists('Fusion_Template_Builder')){
-    global $post;
-    $post = 0;
-    do_action('wp');
-}
+wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL.'/assets/css/airwallex.css', [], AIRWALLEX_VERSION);
 
-get_header('shop');
 ?>
-    <div style="max-width:800px; padding:10px; margin: 0 auto; text-align: center;">
+    <div class="airwallex-content-wechat" style="<?php echo esc_attr($style) ?>">
         <h2><?php echo __('Your WeChat Payment', AIRWALLEX_PLUGIN_NAME); ?></h2>
         <div id="airwallex-error-message" class="woocommerce-error" style="display:none;">
             <?php echo __('Your payment could not be authenticated', AIRWALLEX_PLUGIN_NAME); ?>
@@ -37,7 +30,7 @@ get_header('shop');
 <?php
 
 wp_enqueue_script('airwallex-lib-js', 'https://checkout.airwallex.com/assets/elements.bundle.min.js');
-wp_enqueue_script('airwallex-local-js', AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-local.js');
+wp_enqueue_script('airwallex-local-js', AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-local.js', [], AIRWALLEX_VERSION);
 if(defined('AIRWALLEX_INLINE_JS')){
     wp_add_inline_script( 'airwallex-local-js', AIRWALLEX_INLINE_JS);
 }
@@ -76,4 +69,3 @@ $inlineJs = <<<AIRWALLEX
         });
 AIRWALLEX;
 wp_add_inline_script('airwallex-local-js', $inlineJs);
-get_footer('shop');

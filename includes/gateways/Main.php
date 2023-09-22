@@ -11,6 +11,7 @@ use Airwallex\Struct\Refund;
 use Exception;
 use WC_Payment_Gateway;
 use WP_Error;
+use Airwallex\Services\OrderService;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -24,6 +25,7 @@ class Main extends WC_Payment_Gateway
     const STATUS__NOT_CONNECTED = 'not connected';
     const STATUS_ERROR = 'error';
     const ROUTE_SLUG = 'airwallex_main';
+
     public $method_title = 'Airwallex - All Payment Methods';
     public $method_description = 'Accepts all available payment methods with your Airwallex account, including cards, Apple Pay, Google Pay, and other local payment methods. ';
     public $title = 'Airwallex - All Payment Methods';
@@ -253,7 +255,7 @@ class Main extends WC_Payment_Gateway
             'result' => 'success',
         ];
         WC()->session->set('airwallex_order', $order_id);
-        $return['redirect'] = $this->get_payment_url();
+        $return['redirect'] = $this->getPaymentPageUrl('airwallex_payment_method_all');
         return $return;
     }
 
@@ -519,5 +521,58 @@ class Main extends WC_Payment_Gateway
         <?php
 
         return ob_get_clean();
+    }
+
+    public function output($attrs) {
+        if (is_admin() || empty(WC()->session)) {
+            $this->logService->debug('Update all payment methods shortcode.', [], LogService::DROP_IN_ELEMENT_TYPE);
+            return;
+        }
+
+        extract(shortcode_atts(
+            [
+                'style' => ''
+            ],
+            $attrs,
+            'airwallex_payment_method_all'
+        ));
+
+        try {
+            $orderId = (int)WC()->session->get('airwallex_order');
+            if (empty($orderId)) {
+                $orderId = (int)WC()->session->get('order_awaiting_payment');
+            }
+            $order = wc_get_order($orderId);
+            if (empty($order)) {
+                throw new Exception('Order not found: ' . $orderId);
+            }
+
+            $apiClient = MainClient::getInstance();
+            $airwallexCustomerId = null;
+            $orderService = new OrderService();
+            $isSubscription = $orderService->containsSubscription($order->get_id());
+            if ($order->get_customer_id('') || $isSubscription) {
+                $airwallexCustomerId = $orderService->getAirwallexCustomerId($order->get_customer_id(''), $apiClient);
+            }
+
+            $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $this->is_submit_order_details(), $airwallexCustomerId);
+            $paymentIntentId = $paymentIntent->getId();
+            $paymentIntentClientSecret = $paymentIntent->getClientSecret();
+            $confirmationUrl = $this->get_payment_confirmation_url();
+            $isSandbox = $this->is_sandbox();
+            WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
+
+            $this->logService->debug('Redirect to the dropIn payment page', [
+                'orderId' => $orderId,
+                'paymentIntent' => $paymentIntentId,
+            ], LogService::CARD_ELEMENT_TYPE);
+
+            include_once(AIRWALLEX_PLUGIN_PATH . '/html/drop-in-payment.php');
+        } catch (Exception $e) {
+            $this->logService->error('Drop in payment action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE);
+            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wp_redirect(wc_get_checkout_url());
+            die;
+        }
     }
 }

@@ -68,4 +68,15 @@ trait AirwallexGatewayTrait
         parent::init_settings();
         $this->enabled = !empty($this->settings['enabled']) && 'yes' === $this->settings['enabled'] ? 'yes' : 'no';
     }
+
+    public function getPaymentPageUrl($type, $fallback = '') {
+        $pageId = get_option($type . '_page_id');
+        $permalink = !empty($pageId) ? get_permalink( $pageId ) : '';
+
+        if (empty($permalink)) {
+            $permalink = empty($fallback) ? get_home_url() : $fallback;
+        }
+
+	    return $permalink;
+    }
 }
