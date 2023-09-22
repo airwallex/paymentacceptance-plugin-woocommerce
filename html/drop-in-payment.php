@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex.css', [], time());
+wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex.css', [], AIRWALLEX_VERSION);
 
 ?>
     <div class="airwallex-content-drop-in" style="<?php echo esc_attr($style) ?>">
