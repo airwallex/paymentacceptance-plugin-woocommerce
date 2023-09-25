@@ -86,7 +86,7 @@ class WeChat extends WC_Payment_Gateway
             'result' => 'success'
         ];
         WC()->session->set('airwallex_order', $order_id);
-        $return['redirect'] = $this->get_payment_url();
+        $return['redirect'] = $this->get_payment_url('airwallex_payment_method_wechat');
         return $return;
     }
 
@@ -114,5 +114,52 @@ class WeChat extends WC_Payment_Gateway
         }
 
         return true;
+    }
+
+    public function output($attrs) {
+        if (is_admin() || empty(WC()->session)) {
+            $this->logService->debug('Update wechat payment shortcode.', [], LogService::WECHAT_ELEMENT_TYPE);
+            return;
+        }
+
+        extract(shortcode_atts(
+            [
+                'style' => '',
+                'class' => '',
+            ],
+            $attrs,
+            'airwallex_payment_method_wechat'
+        ));
+
+        try {
+            $orderId = (int)WC()->session->get('airwallex_order');
+            if (empty($orderId)) {
+                $orderId = (int)WC()->session->get('order_awaiting_payment');
+            }
+            $order = wc_get_order($orderId);
+            if (empty($order)) {
+                throw new Exception('Order not found: ' . $orderId);
+            }
+
+            $apiClient = WeChatClient::getInstance();
+            $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $this->is_submit_order_details());
+            $paymentIntentId = $paymentIntent->getId();
+            $paymentIntentClientSecret = $paymentIntent->getClientSecret();
+            $confirmationUrl = $this->get_payment_confirmation_url();
+            $isSandbox = $this->is_sandbox();
+            WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
+
+            $this->logService->debug('Redirect to the wechat payment page', [
+                'orderId' => $orderId,
+                'paymentIntent' => $paymentIntentId,
+            ], LogService::WECHAT_ELEMENT_TYPE);
+
+            include AIRWALLEX_PLUGIN_PATH . '/html/wechat-shortcode.php';
+        } catch (Exception $e) {
+            $this->logService->error('Wechat payment action failed', $e->getMessage(), LogService::WECHAT_ELEMENT_TYPE);
+            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wp_redirect(wc_get_checkout_url());
+            die;
+        }
     }
 }

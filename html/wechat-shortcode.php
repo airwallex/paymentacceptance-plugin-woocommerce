@@ -12,15 +12,8 @@ if (!defined('ABSPATH')) {
 
 wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL.'/assets/css/airwallex.css', [], AIRWALLEX_VERSION);
 
-if(class_exists('Fusion_Template_Builder')){
-    global $post;
-    $post = 0;
-    do_action('wp');
-}
-
-get_header('shop');
 ?>
-    <div class="airwallex-content-wechat">
+    <div class="airwallex-content-wechat <?php echo esc_attr($class) ?>" style="<?php echo esc_attr($style) ?>">
         <h2><?php echo __('Your WeChat Payment', AIRWALLEX_PLUGIN_NAME); ?></h2>
         <div id="airwallex-error-message" class="woocommerce-error" style="display:none;">
             <?php echo __('Your payment could not be authenticated', AIRWALLEX_PLUGIN_NAME); ?>
@@ -76,4 +69,3 @@ $inlineJs = <<<AIRWALLEX
         });
 AIRWALLEX;
 wp_add_inline_script('airwallex-local-js', $inlineJs);
-get_footer('shop');

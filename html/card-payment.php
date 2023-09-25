@@ -9,7 +9,8 @@
 if (!defined('ABSPATH')) {
     exit;
 }
-wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL.'/assets/css/airwallex.css');
+
+wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL.'/assets/css/airwallex.css', [], AIRWALLEX_VERSION);
 
 //prevent errors when using Avada theme and Fusion Builder
 if(class_exists('Fusion_Template_Builder')){
@@ -20,7 +21,7 @@ if(class_exists('Fusion_Template_Builder')){
 
 get_header('shop');
 ?>
-    <div style="max-width:800px; padding:10px; margin: 0 auto; text-align: center;">
+    <div class="airwallex-content-card">
         <h2><?php echo __('Enter your credit card details to pay your order', AIRWALLEX_PLUGIN_NAME); ?></h2>
         <div id="airwallex-error-message" class="woocommerce-error" style="display:none;">
             <?php echo __('Your payment could not be authenticated', AIRWALLEX_PLUGIN_NAME); ?>
@@ -37,7 +38,7 @@ get_header('shop');
 <?php
 
 wp_enqueue_script('airwallex-lib-js', 'https://checkout.airwallex.com/assets/elements.bundle.min.js', [], false, true);
-wp_enqueue_script('airwallex-local-js', AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-local.js', [], false, true);
+wp_enqueue_script('airwallex-local-js', AIRWALLEX_PLUGIN_URL.'/assets/js/airwallex-local.js', [], AIRWALLEX_VERSION, true);
 if(defined('AIRWALLEX_INLINE_JS')){
     wp_add_inline_script( 'airwallex-local-js', AIRWALLEX_INLINE_JS);
 }

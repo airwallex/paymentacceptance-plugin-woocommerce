@@ -6,6 +6,7 @@ use Airwallex\Gateways\Card;
 use Airwallex\Gateways\CardSubscriptions;
 use Airwallex\Gateways\Main as MainGateway;
 use Airwallex\Gateways\WeChat;
+use Airwallex\Services\CacheService;
 use Airwallex\Services\LogService;
 use Airwallex\Services\OrderService;
 use AirwallexController;
@@ -19,6 +20,8 @@ class Main
     const ROUTE_SLUG_JS_LOGGER = 'airwallex_js_log';
 
     const OPTION_KEY_MERCHANT_COUNTRY = 'airwallex_merchant_country';
+
+    const AWX_PAGE_ID_CACHE_KEY = 'airwallex_page_ids';
 
     public static $instance;
 
@@ -62,6 +65,17 @@ class Main
         add_action('airwallex_check_pending_transactions', [$this, 'checkPendingTransactions']);
         add_action('woocommerce_settings_saved', [$this, 'updateMerchantCountryAfterSave']);
         add_action('requests-requests.before_request', [$this, 'modifyRequestsForLogging'], 10, 5);
+        add_action('wp_loaded', [$this, 'createPages']);
+        add_action('wp_loaded', function() {
+            add_shortcode('airwallex_payment_method_card', [new Card, 'output']);
+            add_shortcode('airwallex_payment_method_wechat', [new WeChat, 'output']);
+            add_shortcode('airwallex_payment_method_all', [new MainGateway, 'output']);
+        });
+        add_filter('display_post_states', [$this, 'addDisplayPostStates'], 10, 2);
+        if (!is_admin()) {
+            add_filter('wp_get_nav_menu_items', [$this, 'excludePagesFromMenu'], 10, 3);
+            add_filter('wp_list_pages_excludes', [$this, 'excludePagesFromList'], 10, 1);   
+        }
     }
 
     public function modifyRequestsForLogging($url, $headers, $data, $type, &$options)
@@ -161,6 +175,111 @@ class Main
                 }
             }
         });
+    }
+  
+    /**
+     * Exclude airwallex payment pages from menu
+     *
+     * @param  array  $items An array of menu item post objects.
+	 * @param  object $menu  The menu object.
+	 * @param  array  $args  An array of arguments used to retrieve menu item objects.
+     * @return array  Menu item list exclude airwallex payment pages
+     */
+    public function excludePagesFromMenu($items, $menu, $args) {
+        $cacheService = new CacheService();
+        $excludePageIds = explode(',', $cacheService->get(self::AWX_PAGE_ID_CACHE_KEY));
+        foreach ($items as $key => $item) {
+            if (in_array($item->object_id, $excludePageIds)) {
+                unset($items[$key]);
+            }
+        }
+
+        return $items;
+    }
+    
+    /**
+     * Exclude airwallex payment pages from default menu
+     *
+     * @param  array $exclude_array An array of page IDs to exclude.
+     * @return array Page list exclude airwallex payment pages
+     */
+    public function excludePagesFromList($excludeArray) {
+        $cacheService = new CacheService();
+        $excludePageIds = explode(',', $cacheService->get(self::AWX_PAGE_ID_CACHE_KEY));
+        if (is_array($excludePageIds)) {
+            $excludeArray += $excludePageIds;
+        }
+
+        return $excludeArray;
+    }
+        
+    /**
+     * Create pages that the plugin relies on, storing page IDs in variables.
+     */
+    public function createPages() {
+        // Set the locale to the store locale to ensure pages are created in the correct language.
+        wc_switch_to_site_locale();
+
+        include_once WC()->plugin_path() . '/includes/admin/wc-admin-functions.php';
+
+        $cardShortcode = 'airwallex_payment_method_card';
+        $wechatShortcode = 'airwallex_payment_method_wechat';
+        $allShortcode = 'airwallex_payment_method_all';
+
+		$pages = [
+				'payment_method_card' => [
+					'name' => _x('airwallex_payment_method_card', 'Page slug', 'airwallex-online-payments-gateway'),
+					'title' => _x('Payment', 'Page title', 'airwallex-online-payments-gateway'),
+					'content' => '<!-- wp:shortcode -->[' . $cardShortcode . ']<!-- /wp:shortcode -->',
+                ],
+				'payment_method_wechat'           => [
+					'name' => _x('airwallex_payment_method_wechat', 'Page slug', 'airwallex-online-payments-gateway'),
+					'title' => _x('Payment', 'Page title', 'airwallex-online-payments-gateway'),
+					'content' => '<!-- wp:shortcode -->[' . $wechatShortcode . ']<!-- /wp:shortcode -->',
+                ],
+				'payment_method_all'       => [
+					'name' => _x('airwallex_payment_method_all', 'Page slug', 'airwallex-online-payments-gateway'),
+					'title' => _x('Payment', 'Page title', 'airwallex-online-payments-gateway'),
+					'content' => '<!-- wp:shortcode -->[' . $allShortcode . ']<!-- /wp:shortcode -->',
+                ],
+            ];
+        
+        $pageIds = [];
+		foreach ( $pages as $key => $page ) {
+            $pageIds[] = wc_create_page(
+                esc_sql( $page['name'] ),
+                'airwallex_' . $key . '_page_id',
+                $page['title'],
+                $page['content']
+            );
+		}
+        
+        $pageIdStr = implode(',', $pageIds);
+        $cacheService = new CacheService();
+        if ($cacheService->get(self::AWX_PAGE_ID_CACHE_KEY) != $pageIdStr) {
+            $cacheService->set(self::AWX_PAGE_ID_CACHE_KEY, $pageIdStr, 0);
+        }
+
+		// Restore the locale to the default locale.
+		wc_restore_locale();
+    }
+
+    /**
+	 * Add a post display state for special Airwallex pages in the page list table.
+	 *
+	 * @param array   $post_states An array of post display states.
+	 * @param WP_Post $post        The current post object.
+	 */
+    public function addDisplayPostStates($post_states, $post) {
+        if (get_option('airwallex_payment_method_card_page_id') == $post->ID) {
+            $post_states['awx_page_for_card_method'] = __('Airwallex - Cards', 'airwallex-online-payments-gateway');
+        } elseif (get_option('airwallex_payment_method_wechat_page_id') == $post->ID) {
+            $post_states['awx_page_for_wechat_method'] = __('Airwallex - WeChat Pay', 'airwallex-online-payments-gateway');
+        } elseif (get_option('airwallex_payment_method_all_page_id') == $post->ID) {
+            $post_states['awx_page_for_all_method'] = __('Airwallex - All Payment Methods', 'airwallex-online-payments-gateway');
+        }
+
+        return $post_states;
     }
 
     public function addPluginSettingsLink($links)
@@ -269,6 +388,17 @@ class Main
                     'default' => '',
                     'id' => 'airwallex_do_remote_logging',
                     'value' => get_option('airwallex_do_remote_logging'),
+                ],
+                'payment_page_template' => [
+                    'title' => __('Payment Form Template', 'airwallex-online-payments-gateway'),
+                    'id' => 'airwallex_payment_page_template',
+                    'type' => 'select',
+                    'desc' => '',
+                    'options' => [
+                        'default' => __('Default', 'airwallex-online-payments-gateway'),
+                        'wordpress_page' => __('WordPress Page Shortcodes', 'airwallex-online-payments-gateway'),
+                    ],
+                    'value' => get_option('airwallex_payment_page_template'),
                 ],
                 'sectionend' => [
                     'type' => 'sectionend',
@@ -390,9 +520,9 @@ class Main
         }
 
         wp_enqueue_script('airwallex-lib-js', $jsUrl, [], false, true);
-        wp_enqueue_script('airwallex-local-js', $jsUrlLocal, [], false, true);
+        wp_enqueue_script('airwallex-local-js', $jsUrlLocal, [], AIRWALLEX_VERSION, true);
 
-        wp_enqueue_style('airwallex-css', $cssUrl);
+        wp_enqueue_style('airwallex-css', $cssUrl, [], AIRWALLEX_VERSION);
         $errorMessage = __('An error has occurred. Please check your payment details (%s)', AIRWALLEX_PLUGIN_NAME);
         $incompleteMessage = __('Your credit card details are incomplete', AIRWALLEX_PLUGIN_NAME);
         $environment = $cardGateway->is_sandbox() ? 'demo' : 'prod';

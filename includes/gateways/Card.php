@@ -181,7 +181,7 @@ class Card extends WC_Payment_Gateway
         ];
         WC()->session->set('airwallex_order', $order_id);
         if ($this->get_option('checkout_form_type') === 'redirect') {
-            $return['redirect'] = $this->get_payment_url();
+            $return['redirect'] = $this->get_payment_url('airwallex_payment_method_card');
         } else {
             $return['messages'] = '<!--Airwallex payment processing-->';
         }
@@ -257,5 +257,52 @@ class Card extends WC_Payment_Gateway
     public function is_capture_immediately()
     {
         return in_array($this->get_option('capture_immediately'), [true, 'yes'], true);
+    }
+
+    public function output($attrs) {
+        if (is_admin() || empty(WC()->session)) {
+            $this->logService->debug('Update card payment shortcode.', [], LogService::CARD_ELEMENT_TYPE);
+            return;
+        }
+
+        extract(shortcode_atts(
+            [
+                'style' => '',
+                'class' => '',
+            ],
+            $attrs,
+            'airwallex_payment_method_card'
+        ));
+
+        try {
+            $orderId = (int)WC()->session->get('airwallex_order');
+            if (empty($orderId)) {
+                $orderId = (int)WC()->session->get('order_awaiting_payment');
+            }
+            $order = wc_get_order($orderId);
+            if (empty($order)) {
+                throw new Exception('Order not found: ' . $orderId);
+            }
+
+            $apiClient = CardClient::getInstance();
+            $paymentIntent = $apiClient->createPaymentIntent($order->get_total(), $order->get_id(), $this->is_submit_order_details());
+            $paymentIntentId = $paymentIntent->getId();
+            $paymentIntentClientSecret = $paymentIntent->getClientSecret();
+            $confirmationUrl = $this->get_payment_confirmation_url();
+            $isSandbox = $this->is_sandbox();
+            WC()->session->set('airwallex_payment_intent_id', $paymentIntentId);
+
+            $this->logService->debug('Redirect to the card payment page', [
+                'orderId' => $orderId,
+                'paymentIntent' => $paymentIntentId,
+            ], LogService::CARD_ELEMENT_TYPE);
+
+            include AIRWALLEX_PLUGIN_PATH . '/html/card-payment-shortcode.php';
+        } catch (Exception $e) {
+            $this->logService->error('Card payment action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE);
+            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wp_redirect(wc_get_checkout_url());
+            die;
+        }
     }
 }

@@ -74,10 +74,11 @@
     }
 }
 
+/*------Drop In------*/
 
-.airwallex-content {
+.airwallex-content-drop-in {
     max-width: 1600px;
-    padding: 0 6vw;
+    padding: 1vh 1vw;
     margin: 0 auto;
 }
 
@@ -181,3 +182,18 @@
     }
 }
 
+/*------Card------*/
+.airwallex-content-card {
+    max-width: 800px;
+    padding: 1vh 1vw;
+    margin: 0 auto;
+    text-align: center;
+}
+
+/*------WeChat------*/
+.airwallex-content-wechat {
+    max-width: 800px;
+    padding: 1vh 1vw;
+    margin: 0 auto;
+    text-align: center;
+}

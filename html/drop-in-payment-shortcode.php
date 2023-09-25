@@ -5,7 +5,6 @@
  * @var $paymentIntentClientSecret
  * @var $confirmationUrl
  * @var $isSandbox
- * @var $gateway
  * @var $order
  * @var $isSubscription
  * @var $airwallexCustomerId
@@ -17,17 +16,9 @@ if (!defined('ABSPATH')) {
 
 wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex.css', [], AIRWALLEX_VERSION);
 
-//prevent errors when using Avada theme and Fusion Builder
-//if (class_exists('Fusion_Template_Builder')) {
-    global $post;
-    $post = 0;
-    do_action('wp');
-//}
-
-get_header('shop');
 ?>
-    <div class="airwallex-content-drop-in">
-        <div class="airwallex-checkout airwallex-tpl-<?php echo $gateway->get_option('template'); ?>">
+    <div class="airwallex-content-drop-in <?php echo esc_attr($class) ?>" style="<?php echo esc_attr($style) ?>">
+        <div class="airwallex-checkout airwallex-tpl-<?php echo $this->get_option('template'); ?>">
             <div class="airwallex-col-1">
                 <div class="cart-heading"><?php echo __('Summary', AIRWALLEX_PLUGIN_NAME); ?></div>
                 <?php
@@ -61,7 +52,7 @@ if (defined('AIRWALLEX_INLINE_JS')) {
 }
 $environment = $isSandbox ? 'demo' : 'prod';
 $locale = \Airwallex\Services\Util::getLocale();
-$methods = $gateway->get_option('methods');
+$methods = $this->get_option('methods');
 $airwallexMain = \Airwallex\Main::getInstance();
 $merchantCountry = strtoupper(substr($paymentIntentId, 4, 2));
 if ($order->has_billing_address()) {
@@ -154,4 +145,3 @@ $inlineJs = <<<AIRWALLEX
         });
 AIRWALLEX;
 wp_add_inline_script('airwallex-local-js', $inlineJs);
-get_footer('shop');
