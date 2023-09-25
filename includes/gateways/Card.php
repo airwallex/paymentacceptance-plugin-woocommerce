@@ -181,7 +181,7 @@ class Card extends WC_Payment_Gateway
         ];
         WC()->session->set('airwallex_order', $order_id);
         if ($this->get_option('checkout_form_type') === 'redirect') {
-            $return['redirect'] = $this->getPaymentPageUrl('airwallex_payment_method_card');
+            $return['redirect'] = $this->get_payment_url('airwallex_payment_method_card');
         } else {
             $return['messages'] = '<!--Airwallex payment processing-->';
         }
@@ -267,7 +267,8 @@ class Card extends WC_Payment_Gateway
 
         extract(shortcode_atts(
             [
-                'style' => ''
+                'style' => '',
+                'class' => '',
             ],
             $attrs,
             'airwallex_payment_method_card'
@@ -296,7 +297,7 @@ class Card extends WC_Payment_Gateway
                 'paymentIntent' => $paymentIntentId,
             ], LogService::CARD_ELEMENT_TYPE);
 
-            include AIRWALLEX_PLUGIN_PATH . '/html/card-payment.php';
+            include AIRWALLEX_PLUGIN_PATH . '/html/card-payment-shortcode.php';
         } catch (Exception $e) {
             $this->logService->error('Card payment action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE);
             wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');

@@ -48,8 +48,13 @@ trait AirwallexGatewayTrait
         return in_array(get_option('airwallex_enable_sandbox'), [true, 'yes'], true);
     }
 
-    public function get_payment_url()
-    {
+    public function get_payment_url($type)
+    {   
+        $template = get_option('airwallex_payment_page_template');
+        if ($template == 'wordpress_page') {
+            return $this->getPaymentPageUrl($type);
+        }
+
         return WC()->api_request_url(static::ROUTE_SLUG);
     }
 

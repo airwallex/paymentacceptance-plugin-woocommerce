@@ -255,7 +255,7 @@ class Main extends WC_Payment_Gateway
             'result' => 'success',
         ];
         WC()->session->set('airwallex_order', $order_id);
-        $return['redirect'] = $this->getPaymentPageUrl('airwallex_payment_method_all');
+        $return['redirect'] = $this->get_payment_url('airwallex_payment_method_all');
         return $return;
     }
 
@@ -531,7 +531,8 @@ class Main extends WC_Payment_Gateway
 
         extract(shortcode_atts(
             [
-                'style' => ''
+                'style' => '',
+                'class' => '',
             ],
             $attrs,
             'airwallex_payment_method_all'
@@ -567,7 +568,7 @@ class Main extends WC_Payment_Gateway
                 'paymentIntent' => $paymentIntentId,
             ], LogService::CARD_ELEMENT_TYPE);
 
-            include_once(AIRWALLEX_PLUGIN_PATH . '/html/drop-in-payment.php');
+            include_once(AIRWALLEX_PLUGIN_PATH . '/html/drop-in-payment-shortcode.php');
         } catch (Exception $e) {
             $this->logService->error('Drop in payment action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE);
             wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');

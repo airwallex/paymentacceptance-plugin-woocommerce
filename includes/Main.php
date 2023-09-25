@@ -389,6 +389,17 @@ class Main
                     'id' => 'airwallex_do_remote_logging',
                     'value' => get_option('airwallex_do_remote_logging'),
                 ],
+                'payment_page_template' => [
+                    'title' => __('Payment Form Template', 'airwallex-online-payments-gateway'),
+                    'id' => 'airwallex_payment_page_template',
+                    'type' => 'select',
+                    'desc' => '',
+                    'options' => [
+                        'default' => __('Default', 'airwallex-online-payments-gateway'),
+                        'wordpress_page' => __('WordPress Page Shortcodes', 'airwallex-online-payments-gateway'),
+                    ],
+                    'value' => get_option('airwallex_payment_page_template'),
+                ],
                 'sectionend' => [
                     'type' => 'sectionend',
                 ],
