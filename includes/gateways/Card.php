@@ -45,10 +45,10 @@ class Card extends WC_Payment_Gateway
         $this->init_settings();
         $this->description = $this->get_option('description') ?: ($this->get_option('checkout_form_type') === 'inline' ? '<!-- -->' : '');
         if ($this->get_client_id() && $this->get_api_key()) {
-            $this->method_description = __('Accept only credit and debit card payments with your Airwallex account.', AIRWALLEX_PLUGIN_NAME);
+            $this->method_description = __('Accept only credit and debit card payments with your Airwallex account.', 'airwallex-online-payments-gateway');
             $this->form_fields = $this->get_form_fields();
         } else {
-            $this->method_description = '<div class="error" style="padding:10px;">' . sprintf(__('To start using Airwallex payment methods, please enter your credentials first. <br><a href="%s" class="button-primary">API settings</a>', AIRWALLEX_PLUGIN_NAME), admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general')) . '</div>';
+            $this->method_description = '<div class="error" style="padding:10px;">' . sprintf(__('To start using Airwallex payment methods, please enter your credentials first. <br><a href="%s" class="button-primary">API settings</a>', 'airwallex-online-payments-gateway'), admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general')) . '</div>';
         }
 
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
@@ -97,7 +97,7 @@ class Card extends WC_Payment_Gateway
     public function payment_fields()
     {
         if ($this->get_option('checkout_form_type') === 'inline') {
-            echo '<p>' . $this->description . '</p>';
+            echo '<p>' . esc_html($this->description) . '</p>';
             echo '<div id="airwallex-card"></div>';
         } else {
             parent::payment_fields();
@@ -119,54 +119,54 @@ class Card extends WC_Payment_Gateway
             [
 
                 'enabled' => [
-                    'title' => __('Enable/Disable', AIRWALLEX_PLUGIN_NAME),
-                    'label' => __('Enable Airwallex Card Payments', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Enable/Disable', 'airwallex-online-payments-gateway'),
+                    'label' => __('Enable Airwallex Card Payments', 'airwallex-online-payments-gateway'),
                     'type' => 'checkbox',
                     'description' => '',
                     'default' => 'no',
                 ],
                 'title' => [
-                    'title' => __('Title', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Title', 'airwallex-online-payments-gateway'),
                     'type' => 'text',
-                    'description' => __('This controls the title which the user sees during checkout.', AIRWALLEX_PLUGIN_NAME),
-                    'default' => __('Credit Card', AIRWALLEX_PLUGIN_NAME),
+                    'description' => __('This controls the title which the user sees during checkout.', 'airwallex-online-payments-gateway'),
+                    'default' => __('Credit Card', 'airwallex-online-payments-gateway'),
                 ],
                 'description' => [
-                    'title' => __('Description', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Description', 'airwallex-online-payments-gateway'),
                     'type' => 'text',
-                    'description' => __('This controls the description which the user sees during checkout.', AIRWALLEX_PLUGIN_NAME),
+                    'description' => __('This controls the description which the user sees during checkout.', 'airwallex-online-payments-gateway'),
                     'default' => '',
                 ],
                 'checkout_form_type' => [
-                    'title' => __('Checkout Form', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Checkout form', 'airwallex-online-payments-gateway'),
                     'type' => 'select',
-                    'description' => (!$isEmbeddedFieldsAllowed?' '.__('Please upgrade WooCommerce to 4.8.0+ to use embedded credit card input fields', AIRWALLEX_PLUGIN_NAME):''),
+                    'description' => (!$isEmbeddedFieldsAllowed?' '.__('Please upgrade WooCommerce to 4.8.0+ to use embedded credit card input fields', 'airwallex-online-payments-gateway') : ''),
                     'default' => $isEmbeddedFieldsAllowed?'inline':'redirect',
                     'options' =>
-                        ($isEmbeddedFieldsAllowed?['inline' => __('Embedded', AIRWALLEX_PLUGIN_NAME)]:[])
-                        +['redirect' => __('On separate page', AIRWALLEX_PLUGIN_NAME)],
+                        ($isEmbeddedFieldsAllowed?['inline' => __('Embedded', 'airwallex-online-payments-gateway')]:[])
+                        +['redirect' => __('On separate page', 'airwallex-online-payments-gateway')],
                 ],
                 'payment_descriptor' => [
-                    'title' => __('Statement descriptor', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Statement descriptor', 'airwallex-online-payments-gateway'),
                     'type' => 'text',
                     'custom_attributes' => [
                         'maxlength' => 28,
                     ],
-                    'description' => __('Descriptor that will be displayed to the customer. For example, in customer\'s credit card statement. Use %order% as a placeholder for the order\'s ID.', AIRWALLEX_PLUGIN_NAME),
-                    'default' => __('Your order %order%', AIRWALLEX_PLUGIN_NAME),
+                    'description' => __('Descriptor that will be displayed to the customer. For example, in customer\'s credit card statement. Use %order% as a placeholder for the order\'s ID.', 'airwallex-online-payments-gateway'),
+                    'default' => __('Your order %order%', 'airwallex-online-payments-gateway'),
                 ],
                 'capture_immediately' => [
-                    'title' => __('Capture immediately', AIRWALLEX_PLUGIN_NAME),
-                    'label' => __('yes', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Capture immediately', 'airwallex-online-payments-gateway'),
+                    'label' => __('yes', 'airwallex-online-payments-gateway'),
                     'type' => 'checkbox',
-                    'description' => __('Choose this option if you do not want to rely on status changes for capturing the payment', AIRWALLEX_PLUGIN_NAME),
+                    'description' => __('Choose this option if you do not want to rely on status changes for capturing the payment', 'airwallex-online-payments-gateway'),
                     'default' => 'yes',
                 ],
                 'capture_trigger_order_status' => [
-                    'title' => __('Capture status', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Capture status', 'airwallex-online-payments-gateway'),
                     'label' => '',
                     'type' => 'select',
-                    'description' => __('When this status is assigned to an order, the funds will be captured', AIRWALLEX_PLUGIN_NAME),
+                    'description' => __('When this status is assigned to an order, the funds will be captured', 'airwallex-online-payments-gateway'),
                     'options' => array_merge(['' => ''], wc_get_order_statuses()),
                     'default' => ''
                 ],
@@ -198,7 +198,7 @@ class Card extends WC_Payment_Gateway
             $metaKey = $refund->getMetaKey();
             if (!$order->meta_exists($metaKey)) {
                 $order->add_order_note(sprintf(
-                    __('Airwallex refund initiated: %s', AIRWALLEX_PLUGIN_NAME),
+                    __('Airwallex refund initiated: %s', 'airwallex-online-payments-gateway'),
                     $refund->getId()
                 ));
                 add_post_meta($order->get_id(), $metaKey, ['status' => Refund::STATUS_CREATED]);
@@ -300,7 +300,7 @@ class Card extends WC_Payment_Gateway
             include AIRWALLEX_PLUGIN_PATH . '/html/card-payment-shortcode.php';
         } catch (Exception $e) {
             $this->logService->error('Card payment action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE);
-            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wc_add_notice(__('Airwallex payment error', 'airwallex-online-payments-gateway'), 'error');
             wp_redirect(wc_get_checkout_url());
             die;
         }

@@ -51,7 +51,7 @@ class AirwallexController
             die;
         } catch (Exception $e) {
             (new LogService())->error('card payment controller action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE);
-            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wc_add_notice(__('Airwallex payment error', 'airwallex-online-payments-gateway'), 'error');
             wp_redirect(wc_get_checkout_url());
             die;
         }
@@ -93,7 +93,7 @@ class AirwallexController
             die;
         } catch (Exception $e) {
             (new LogService())->error('drop in payment controller action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE);
-            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wc_add_notice(__('Airwallex payment error', 'airwallex-online-payments-gateway'), 'error');
             wp_redirect(wc_get_checkout_url());
             die;
         }
@@ -128,7 +128,7 @@ class AirwallexController
             die;
         } catch (Exception $e) {
             (new LogService())->error('wechat payment controller action failed', $e->getMessage(), LogService::WECHAT_ELEMENT_TYPE);
-            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wc_add_notice(__('Airwallex payment error', 'airwallex-online-payments-gateway'), 'error');
             wp_redirect(wc_get_checkout_url());
             die;
         }
@@ -300,7 +300,7 @@ class AirwallexController
                         } else {
                             (new LogService())->error('paymentConfirmation() payment capture failed during checkout', $paymentIntentAfterCapture->toArray());
                             $this->setTemporaryOrderStateAfterDecline($order);
-                            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+                            wc_add_notice(__('Airwallex payment error', 'airwallex-online-payments-gateway'), 'error');
                             wp_redirect(wc_get_checkout_url());
                             die;
                         }
@@ -321,7 +321,7 @@ class AirwallexController
             if (!empty($order)) {
                 $this->setTemporaryOrderStateAfterDecline($order);
             }
-            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wc_add_notice(__('Airwallex payment error', 'airwallex-online-payments-gateway'), 'error');
             wp_redirect(wc_get_checkout_url());
             die;
         }
@@ -388,7 +388,7 @@ class AirwallexController
             $this->logService->warning('paymentConfirmation() invalid status', [$paymentIntent->toArray()]);
             //no valid payment intent
             $this->setTemporaryOrderStateAfterDecline($order);
-            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wc_add_notice(__('Airwallex payment error', 'airwallex-online-payments-gateway'), 'error');
             wp_redirect(wc_get_checkout_url());
             die;
         }

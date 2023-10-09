@@ -80,7 +80,7 @@ class WebhookService
                 $refundInfo = get_post_meta($order->get_id(), $refund->getMetaKey(), true);
                 if ($refundInfo['status'] != Refund::STATUS_SUCCEEDED) {
                     $order->add_order_note(sprintf(
-                        __("Airwallex Webhook notification: %s \n\n Amount:  (%s)."),
+                        __("Airwallex Webhook notification: %s \n\n Amount:  (%s).", 'airwallex-online-payments-gateway'),
                         $eventType,
                         $refund->getAmount()
                     ));
@@ -96,7 +96,7 @@ class WebhookService
                     throw new Exception('no order found for refund on payment_intent ' . $paymentIntentId);
                 }
                 $order->add_order_note(sprintf(
-                    __("Airwallex Webhook notification: %s \n\n Amount:  (%s)."),
+                    __("Airwallex Webhook notification: %s \n\n Amount:  (%s).", 'airwallex-online-payments-gateway'),
                     $eventType,
                     $refund->getAmount()
                 ));
@@ -120,7 +120,7 @@ class WebhookService
                             add_post_meta($order->get_id(), $refund->getMetaKey(), ['status' => Refund::STATUS_SUCCEEDED]);
                         } else {
                             $order->add_order_note(sprintf(
-                                __('Failed to create WC refund from webhook notification for refund (%s).'),
+                                __('Failed to create WC refund from webhook notification for refund (%s).', 'airwallex-online-payments-gateway'),
                                 $refund->getId()
                             ));
                             $logService->error(__METHOD__ . ' failed to create WC refund from webhook notification', $wcRefund);

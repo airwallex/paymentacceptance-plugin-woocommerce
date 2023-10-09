@@ -21,9 +21,9 @@ if(class_exists('Fusion_Template_Builder')){
 get_header('shop');
 ?>
     <div class="airwallex-content-wechat">
-        <h2><?php echo __('Your WeChat Payment', AIRWALLEX_PLUGIN_NAME); ?></h2>
+        <h2><?php echo __('Your WeChat Payment', 'airwallex-online-payments-gateway'); ?></h2>
         <div id="airwallex-error-message" class="woocommerce-error" style="display:none;">
-            <?php echo __('Your payment could not be authenticated', AIRWALLEX_PLUGIN_NAME); ?>
+            <?php echo __('Your payment could not be authenticated', 'airwallex-online-payments-gateway'); ?>
         </div>
         <div id='wechat'></div>
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130.2 130.2" id="success-check" style="display:none;">
@@ -31,7 +31,7 @@ get_header('shop');
             <polyline class="path check" fill="none" stroke="#73AF55" stroke-width="6" stroke-linecap="round" stroke-miterlimit="10" points="100.2,40.2 51.5,88.8 29.8,67.5 "/>
         </svg>
         <div id="success-message" style="display:none;">
-            <?php echo __('Please hold on while your order is completed', AIRWALLEX_PLUGIN_NAME); ?>
+            <?php echo __('Please hold on while your order is completed', 'airwallex-online-payments-gateway'); ?>
         </div>
     </div>
 <?php
@@ -72,7 +72,7 @@ $inlineJs = <<<AIRWALLEX
         })
         window.addEventListener('onError', (event) => {
             document.getElementById('airwallex-error-message').style.display = 'block';
-            console.warning(event.detail);
+            console.warn(event.detail);
         });
 AIRWALLEX;
 wp_add_inline_script('airwallex-local-js', $inlineJs);

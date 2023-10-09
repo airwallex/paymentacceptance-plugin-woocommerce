@@ -14,9 +14,9 @@ wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL.'/assets/css/a
 
 ?>
     <div class="airwallex-content-card <?php echo esc_attr($class) ?>" style="<?php echo esc_attr($style) ?>">
-        <h2><?php echo __('Enter your credit card details to pay your order', AIRWALLEX_PLUGIN_NAME); ?></h2>
+        <h2><?php echo __('Enter your credit card details to pay your order', 'airwallex-online-payments-gateway'); ?></h2>
         <div id="airwallex-error-message" class="woocommerce-error" style="display:none;">
-            <?php echo __('Your payment could not be authenticated', AIRWALLEX_PLUGIN_NAME); ?>
+            <?php echo __('Your payment could not be authenticated', 'airwallex-online-payments-gateway'); ?>
         </div>
         <div id="full-featured-card" style="max-width:500px;margin:0 auto;"></div>
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130.2 130.2" id="success-check" style="display:none;">
@@ -24,7 +24,7 @@ wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL.'/assets/css/a
             <polyline class="path check" fill="none" stroke="#73AF55" stroke-width="6" stroke-linecap="round" stroke-miterlimit="10" points="100.2,40.2 51.5,88.8 29.8,67.5 "/>
         </svg>
         <div id="success-message" style="display:none;">
-            <?php echo __('Please hold on while your order is completed', AIRWALLEX_PLUGIN_NAME); ?>
+            <?php echo __('Please hold on while your order is completed', 'airwallex-online-payments-gateway'); ?>
         </div>
     </div>
 <?php

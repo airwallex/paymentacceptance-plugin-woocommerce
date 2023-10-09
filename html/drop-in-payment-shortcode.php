@@ -18,9 +18,9 @@ wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL . '/assets/css
 
 ?>
     <div class="airwallex-content-drop-in <?php echo esc_attr($class) ?>" style="<?php echo esc_attr($style) ?>">
-        <div class="airwallex-checkout airwallex-tpl-<?php echo $this->get_option('template'); ?>">
+        <div class="airwallex-checkout airwallex-tpl-<?php echo esc_attr($this->get_option('template')); ?>">
             <div class="airwallex-col-1">
-                <div class="cart-heading"><?php echo __('Summary', AIRWALLEX_PLUGIN_NAME); ?></div>
+                <div class="cart-heading"><?php echo __('Summary', 'airwallex-online-payments-gateway'); ?></div>
                 <?php
                 include __DIR__ . '/inc/cart.php';
                 ?>
@@ -28,7 +28,7 @@ wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL . '/assets/css
             <div class="airwallex-col-2">
                 <div class="payment-section">
                     <div id="airwallex-error-message" class="woocommerce-error" style="display:none;">
-                        <?php echo __('Your payment could not be authenticated', AIRWALLEX_PLUGIN_NAME); ?>
+                        <?php echo __('Your payment could not be authenticated', 'airwallex-online-payments-gateway'); ?>
                     </div>
                     <div id="airwallex-drop-in"></div>
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130.2 130.2" id="success-check" style="display:none;">
@@ -36,7 +36,7 @@ wp_enqueue_style('airwallex-standalone-css', AIRWALLEX_PLUGIN_URL . '/assets/css
                         <polyline class="path check" fill="none" stroke="#73AF55" stroke-width="6" stroke-linecap="round" stroke-miterlimit="10" points="100.2,40.2 51.5,88.8 29.8,67.5 "/>
                     </svg>
                     <div id="success-message" style="display:none;">
-                        <?php echo __('Please hold on while your order is completed', AIRWALLEX_PLUGIN_NAME); ?>
+                        <?php echo __('Please hold on while your order is completed', 'airwallex-online-payments-gateway'); ?>
                     </div>
                 </div>
             </div>
@@ -141,7 +141,7 @@ $inlineJs = <<<AIRWALLEX
         })
         window.addEventListener('onError', (event) => {
             document.getElementById('airwallex-error-message').style.display = 'block';
-            console.warning(event.detail);
+            console.warn(event.detail);
         });
 AIRWALLEX;
 wp_add_inline_script('airwallex-local-js', $inlineJs);

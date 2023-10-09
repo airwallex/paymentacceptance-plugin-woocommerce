@@ -21,3 +21,14 @@ label[for="payment_method_airwallex_card"] > img, .airwallex-card-icon{
 .airwallex-card-icon{
     margin:0 2px;
 }
+
+.airwallex-checkout-loading-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #fff;
+    opacity: 0.25;
+    z-index: 1000;
+}

@@ -31,7 +31,7 @@ function airwallex_init()
 
     if (!class_exists('WooCommerce')) {
         add_action('admin_notices', function () {
-            echo '<div class="error"><p><strong>' . __('Airwallex requires WooCommerce to be installed and active.', AIRWALLEX_PLUGIN_NAME) . '</strong></p></div>';
+            echo '<div class="error"><p><strong>' . __('Airwallex requires WooCommerce to be installed and active.', 'airwallex-online-payments-gateway') . '</strong></p></div>';
         });
         return;
     }
@@ -39,6 +39,10 @@ function airwallex_init()
     require_once AIRWALLEX_PLUGIN_PATH . 'includes/struct/AbstractBase.php';
     require_once AIRWALLEX_PLUGIN_PATH . 'includes/client/AbstractClient.php';
     require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/AirwallexGatewayTrait.php';
+    require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexWCBlockSupport.php';
+    require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexMainWCBlockSupport.php';
+    require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexCardWCBlockSupport.php';
+    require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexWeChatWCBlockSupport.php';
     foreach (glob(AIRWALLEX_PLUGIN_PATH . 'includes/*/*.php') as $includeFile) {
         require_once $includeFile;
     }

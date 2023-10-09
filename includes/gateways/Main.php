@@ -61,7 +61,7 @@ class Main extends WC_Payment_Gateway
         if ($this->get_client_id() && $this->get_api_key()) {
             $this->form_fields = $this->get_form_fields();
         } else {
-            $this->method_description = '<div class="error" style="padding:10px;">' . sprintf(__('To start using Airwallex payment methods, please enter your credentials first. <br><a href="%s" class="button-primary">API settings</a>', AIRWALLEX_PLUGIN_NAME), admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general')) . '</div>';
+            $this->method_description = '<div class="error" style="padding:10px;">' . sprintf(__('To start using Airwallex payment methods, please enter your credentials first. <br><a href="%s" class="button-primary">API settings</a>', 'airwallex-online-payments-gateway'), admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general')) . '</div>';
         }
         $this->title = $this->get_option('title');
         $this->logService = new LogService();
@@ -105,7 +105,7 @@ class Main extends WC_Payment_Gateway
             $chosenLogos = (array)$this->get_option('icons');
             foreach ($logos as $logoKey => $logoValue) {
                 if (in_array($logoKey, $chosenLogos)) {
-                    $returnArray[] = '<img src="' . $logos[$logoKey] . '" class="airwallex-card-icon" alt="' . esc_attr($this->get_title()) . '" />';
+                    $returnArray[] = '<img src="' . esc_url($logoValue) . '" class="airwallex-card-icon" alt="' . esc_attr($this->get_title()) . '" />';
                 }
             }
         }
@@ -183,7 +183,7 @@ class Main extends WC_Payment_Gateway
             $cStatus = $this->getStatus();
             $statusHtml = '<span style="padding: 3px 8px; font-weight:bold; border-radius:3px; background-color: ' . ($cStatus === self::STATUS_CONNECTED ? '#E0F7E7' : '#FFADAD') . '">' . $cStatus . '</span>';
             $intro .= '<div>
-                           ' . sprintf(__('Airwallex API settings %s <a href="%s">edit</a>', AIRWALLEX_PLUGIN_NAME), $statusHtml, admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general'));
+                           ' . sprintf(__('Airwallex API settings %s <a href="%s">edit</a>', 'airwallex-online-payments-gateway'), $statusHtml, admin_url('admin.php?page=wc-settings&tab=checkout&section=airwallex_general'));
         }
         $logos = $this->getPaymentLogos();
         return apply_filters(
@@ -197,47 +197,47 @@ class Main extends WC_Payment_Gateway
                     'default' => '',
                 ],
                 'enabled' => [
-                    'title' => __('Enable/Disable', AIRWALLEX_PLUGIN_NAME),
-                    'label' => __('Enable Airwallex Payments', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Enable/Disable', 'airwallex-online-payments-gateway'),
+                    'label' => __('Enable Airwallex Payments', 'airwallex-online-payments-gateway'),
                     'type' => 'checkbox',
                     'description' => '',
                     'default' => 'no',
                 ],
                 'title' => [
-                    'title' => __('Title', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Title', 'airwallex-online-payments-gateway'),
                     'type' => 'text',
-                    'description' => __('What title to display for this payment method', AIRWALLEX_PLUGIN_NAME),
-                    'default' => __('Pay with cards and more', AIRWALLEX_PLUGIN_NAME),
+                    'description' => __('What title to display for this payment method', 'airwallex-online-payments-gateway'),
+                    'default' => __('Pay with cards and more', 'airwallex-online-payments-gateway'),
                     'desc_tip' => true,
                 ],
                 'description' => [
-                    'title' => __('Description', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Description', 'airwallex-online-payments-gateway'),
                     'type' => 'text',
-                    'description' => __('What subtext to display for this payment method. Can be left blank.', AIRWALLEX_PLUGIN_NAME),
+                    'description' => __('What subtext to display for this payment method. Can be left blank.', 'airwallex-online-payments-gateway'),
                     'default' => '',
                     'desc_tip' => true,
                 ],
                 'icons' => [
-                    'title' => __('Icons to display', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Icons to display', 'airwallex-online-payments-gateway'),
                     'label' => '',
                     'type' => 'logos',
-                    'desc_tip' => __('Choose which payment method logos to display before your payer proceeds to checkout.', AIRWALLEX_PLUGIN_NAME),
+                    'desc_tip' => __('Choose which payment method logos to display before your payer proceeds to checkout.', 'airwallex-online-payments-gateway'),
                     'options' => $logos,
                     'default' => '',
                 ],
                 'methods' => [
-                    'title' => __('Payment methods', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Payment methods', 'airwallex-online-payments-gateway'),
                     'label' => '',
                     'type' => 'methods',
-                    'description' => sprintf(__('Shoppers with different shipping address countries may see different payment methods in their list. (<a href="%s" target="_blank">See details</a>)', AIRWALLEX_PLUGIN_NAME), 'https://www.airwallex.com/docs/online-payments__overview'),
+                    'description' => sprintf(__('Shoppers with different shipping address countries may see different payment methods in their list. (<a href="%s" target="_blank">See details</a>)', 'airwallex-online-payments-gateway'), 'https://www.airwallex.com/docs/online-payments__overview'),
                     'options' => $this->getPaymentMethods(),
                     'default' => '',
                 ],
                 'template' => [
-                    'title' => __('Payment page template', AIRWALLEX_PLUGIN_NAME),
+                    'title' => __('Payment page template', 'airwallex-online-payments-gateway'),
                     'label' => '',
                     'type' => 'radio',
-                    'desc_tip' => __('Select the way you want to arrange the order details and the payment method list', AIRWALLEX_PLUGIN_NAME),
+                    'desc_tip' => __('Select the way you want to arrange the order details and the payment method list', 'airwallex-online-payments-gateway'),
                     'options' => [
                         '2col-1' => '',
                         '2col-2' => '',
@@ -269,7 +269,7 @@ class Main extends WC_Payment_Gateway
             $metaKey = $refund->getMetaKey();
             if (!$order->meta_exists($metaKey)) {
                 $order->add_order_note(sprintf(
-                    __('Airwallex refund initiated: %s', AIRWALLEX_PLUGIN_NAME),
+                    __('Airwallex refund initiated: %s', 'airwallex-online-payments-gateway'),
                     $refund->getId()
                 ));
                 add_post_meta($order->get_id(), $metaKey, ['status' => Refund::STATUS_CREATED]);
@@ -374,7 +374,7 @@ class Main extends WC_Payment_Gateway
                             <div style="width:120px; margin-right:10px; text-align:center;">
                                 <label>
                                     <div>
-                                        <img style="max-width:100%;" src="<?php echo AIRWALLEX_PLUGIN_URL . '/assets/images/layout/' . $option_key . '.png'; ?>"/>
+                                        <img style="max-width:100%;" src="<?php echo AIRWALLEX_PLUGIN_URL . '/assets/images/layout/' . esc_attr($option_key) . '.png'; ?>"/>
                                     </div>
                                     <input
                                             type="radio"
@@ -433,7 +433,7 @@ class Main extends WC_Payment_Gateway
                             <div style="width:60px; margin-right:10px; text-align:center;">
                                 <label>
                                     <div>
-                                        <img style="max-width:100%;" src="<?php echo $option_value; ?>"/>
+                                        <img style="max-width:100%;" src="<?php echo esc_url($option_value); ?>"/>
                                     </div>
                                     <input
                                             type="checkbox"
@@ -492,7 +492,7 @@ class Main extends WC_Payment_Gateway
                     <div>
                         <?php
                         foreach ((array)$data['options'] as $option_key => $option_value) {
-                            $toolTip = (in_array($option_key, ['applepay', 'googlepay'])) ? __('There are additional steps to set up this payment method. Please refer to the installation guide for more details.', AIRWALLEX_PLUGIN_NAME) : null;
+                            $toolTip = (in_array($option_key, ['applepay', 'googlepay'])) ? __('There are additional steps to set up this payment method. Please refer to the installation guide for more details.', 'airwallex-online-payments-gateway') : null;
                             ?>
                             <div>
                                 <label>
@@ -503,7 +503,7 @@ class Main extends WC_Payment_Gateway
                                         <?php checked(in_array((string)$option_key, $value, true), true); ?>
                                     />
                                     <?php
-                                    echo $option_value;
+                                    echo esc_html($option_value);
                                     if ($toolTip) {
                                         echo wc_help_tip($toolTip);
                                     }
@@ -571,7 +571,7 @@ class Main extends WC_Payment_Gateway
             include_once(AIRWALLEX_PLUGIN_PATH . '/html/drop-in-payment-shortcode.php');
         } catch (Exception $e) {
             $this->logService->error('Drop in payment action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE);
-            wc_add_notice(__('Airwallex payment error', AIRWALLEX_PLUGIN_NAME), 'error');
+            wc_add_notice(__('Airwallex payment error', 'airwallex-online-payments-gateway'), 'error');
             wp_redirect(wc_get_checkout_url());
             die;
         }

@@ -103,6 +103,14 @@
     border: 0;
 }
 
+.airwallex-checkout .totals-table tr {
+    text-align: left;
+}
+
+.airwallex-checkout .totals-table td {
+    text-align: right;
+}
+
 .airwallex-checkout .cart-contents {
     margin-top: 0;
 }
