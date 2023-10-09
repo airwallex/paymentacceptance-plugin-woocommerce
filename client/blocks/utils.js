@@ -1,5 +1,4 @@
 export const getCardHolderName = (billingData) => {
-    console.log(billingData);
     return billingData.first_name.concat(' ', billingData.last_name).trim();
 }
 
