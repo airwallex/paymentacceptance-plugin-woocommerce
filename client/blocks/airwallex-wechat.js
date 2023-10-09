@@ -7,24 +7,24 @@ const title = settings?.title ?? __('WeChat Pay', 'airwallex-online-payments-gat
 const description = settings?.description ?? '';
 
 const AirwallexLabel = (props) => {
-	const { PaymentMethodLabel } = props.components;
+    const { PaymentMethodLabel } = props.components;
 
-	return <PaymentMethodLabel text={title} />;
+    return <PaymentMethodLabel text={title} />;
 }
 
 const AirwallexContent = (props) => {
-	return <div>{description}</div>;
+    return <div>{description}</div>;
 };
 
 const canMakePayment = () => {
-	return settings?.enabled ?? false;
+    return settings?.enabled ?? false;
 }
 
 export const airwallexWeChatInOption = {
-	name: settings?.name ?? 'airwallex_wechat',
-	label: <AirwallexLabel />,
-	content: <AirwallexContent />,
-	edit: <AirwallexContent />,
-	canMakePayment: () => canMakePayment,
-	ariaLabel: title,
+    name: settings?.name ?? 'airwallex_wechat',
+    label: <AirwallexLabel />,
+    content: <AirwallexContent />,
+    edit: <AirwallexContent />,
+    canMakePayment: () => canMakePayment,
+    ariaLabel: title,
 };

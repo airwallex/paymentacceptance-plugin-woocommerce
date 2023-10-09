@@ -9,52 +9,52 @@ const logos = settings?.icons ?? {};
 const maxInlineLogoCount = 5;
 
 const AirwallexLabelDropIn = (props) => {
-	const { PaymentMethodLabel } = props.components;
+    const { PaymentMethodLabel } = props.components;
 
-	return Object.keys(logos).length <= maxInlineLogoCount ? (
-		<>
-			<PaymentMethodLabel text={title} />
-			<span style={{ marginLeft: 'auto', display: 'flex' }}>
-				{Object.entries(logos).map(([name, src]) => {
-					return (
-						<img key={name} src={src} alt={title} className='airwallex-card-icon' />
-					);
-				})}
-			</span>
-		</>
-	) : (
-		<PaymentMethodLabel text={title} />
-	);
+    return Object.keys(logos).length <= maxInlineLogoCount ? (
+        <>
+            <PaymentMethodLabel text={title} />
+            <span style={{ marginLeft: 'auto', display: 'flex' }}>
+                {Object.entries(logos).map(([name, src]) => {
+                    return (
+                        <img key={name} src={src} alt={title} className='airwallex-card-icon' />
+                    );
+                })}
+            </span>
+        </>
+    ) : (
+        <PaymentMethodLabel text={title} />
+    );
 }
 
 const AirwallexContentDropIn = (props) => {
-	return Object.keys(logos).length > maxInlineLogoCount ? (
-		<>
-			<div className='airwallex-logo-list' style={{ display: 'flex' }}>
-				{Object.entries(logos).map(([name, src]) => {
-					return (
-						<img key={name} src={src} alt={title} className='airwallex-card-icon' />
-					);
-				})}
-			</div>
-			<div>{description}</div>
-		</>
-	) : (
-		<>
-			<div>{description}</div>
-		</>
-	);
+    return Object.keys(logos).length > maxInlineLogoCount ? (
+        <>
+            <div className='airwallex-logo-list' style={{ display: 'flex' }}>
+                {Object.entries(logos).map(([name, src]) => {
+                    return (
+                        <img key={name} src={src} alt={title} className='airwallex-card-icon' />
+                    );
+                })}
+            </div>
+            <div>{description}</div>
+        </>
+    ) : (
+        <>
+            <div>{description}</div>
+        </>
+    );
 };
 
 const canMakePayment = () => {
-	return settings?.enabled ?? false;
+    return settings?.enabled ?? false;
 }
 
 export const airwallexDropInOption = {
-	name: settings?.name ?? 'airwallex_main',
-	label: <AirwallexLabelDropIn />,
-	content: <AirwallexContentDropIn />,
-	edit: <AirwallexContentDropIn />,
-	canMakePayment: () => canMakePayment,
-	ariaLabel: title,
+    name: settings?.name ?? 'airwallex_main',
+    label: <AirwallexLabelDropIn />,
+    content: <AirwallexContentDropIn />,
+    edit: <AirwallexContentDropIn />,
+    canMakePayment: () => canMakePayment,
+    ariaLabel: title,
 };
