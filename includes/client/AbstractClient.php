@@ -229,7 +229,7 @@ abstract class AbstractClient
                     $itemDetail['unit_price'] = $item->get_tax_total() + $item->get_shipping_tax_total();
                 }
 
-                if ($itemDetail['unit_price'] > 0) {
+                if ($itemDetail['unit_price'] >= 0) {
                     $itemDetail['unit_price'] = Util::round($itemDetail['unit_price'], wc_get_price_decimals());
                     $orderData['products'][] = $itemDetail;
                 }
