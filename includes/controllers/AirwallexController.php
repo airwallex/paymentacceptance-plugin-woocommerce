@@ -413,4 +413,24 @@ class AirwallexController {
 			( new OrderService() )->setPendingStatus( $order );
 		}
 	}
+
+	/**
+	 * Log js errors on the server side
+	 */
+	public function jsLog() {
+		$body = json_decode( file_get_contents( 'php://input' ), true );
+		if ( empty( $body['lg'] ) ) {
+			return;
+		}
+
+		foreach ( $body['lg'] as $log ) {
+			if ( $log['l'] <= 3000 ) {
+				$this->logService->debug( $log['m'] );
+			} elseif ( $log['lg'] <= 4000 ) {
+				$this->logService->warning( $log['m'] );
+			} else {
+				$this->logService->error( $log['m'] );
+			}
+		}
+	}
 }

@@ -77,7 +77,11 @@ class HttpClient {
 	public function call( $method, $url, $data, $headers, $authorizationRetryClosure = null, $noResponse = false ) {
 		$startTime = microtime( true );
 
-		$rawResponse  = $this->httpSend( $method, $url, $data, $headers, $noResponse );
+		$rawResponse = $this->httpSend( $method, $url, $data, $headers, $noResponse );
+		if ( $noResponse ) {
+			return $rawResponse;
+		}
+
 		$responseData = json_decode( $rawResponse, true );
 		if ( ! $responseData ) {
 			if ( 'ok' === $rawResponse ) {

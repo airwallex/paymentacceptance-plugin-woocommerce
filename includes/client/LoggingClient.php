@@ -66,7 +66,7 @@ class LoggingClient extends AbstractClient {
 			);
 		} catch ( Exception $e ) {
 			//silent
-			wc_get_logger()->error( 'An error occurred while attempting to send logs to Airwallex.', $e->getTrace() );
+			wc_get_logger()->error( 'An error occurred while attempting to send logs to Airwallex. ' . $e->getMessage() );
 		}
 	}
 	protected function getClientPlatform() {

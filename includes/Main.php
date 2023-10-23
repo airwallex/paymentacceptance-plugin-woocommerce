@@ -56,6 +56,9 @@ class Main {
 		add_action( 'woocommerce_api_' . WeChat::ROUTE_SLUG, array( new AirwallexController(), 'weChatPayment' ) );
 		add_action( 'woocommerce_api_' . self::ROUTE_SLUG_CONFIRMATION, array( new AirwallexController(), 'paymentConfirmation' ) );
 		add_action( 'woocommerce_api_' . self::ROUTE_SLUG_WEBHOOK, array( new AirwallexController(), 'webhook' ) );
+		if ( $this->isJsLoggingActive() ) {
+			add_action( 'woocommerce_api_' . self::ROUTE_SLUG_JS_LOGGER, array( new AirwallexController(), 'jsLog' ) );
+		}
 		add_action( 'woocommerce_api_' . Card::ROUTE_SLUG_ASYNC_INTENT, array( new AirwallexController(), 'asyncIntent' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( AIRWALLEX_PLUGIN_PATH . AIRWALLEX_PLUGIN_NAME . '.php' ), array( $this, 'addPluginSettingsLink' ) );
 		add_action( 'airwallex_check_pending_transactions', array( $this, 'checkPendingTransactions' ) );
