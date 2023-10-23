@@ -185,7 +185,7 @@ class WebhookService {
 	private function getOrderIdForPaymentIntent( PaymentIntent $paymentIntent ) {
 		$metaData = $paymentIntent->getMetadata();
 		if ( isset( $metaData['wp_instance_key'] ) ) {
-			if ( Main::getInstanceKey() === $metaData['wp_instance_key'] ) {
+			if ( Main::getInstanceKey() !== $metaData['wp_instance_key'] ) {
 				return 0;
 			}
 		}

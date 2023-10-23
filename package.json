@@ -1,7 +1,7 @@
 {
   "name": "airwallex-online-payments-gateway",
   "title": "Airwallex Online Payments Gateway",
-  "version": "1.2.12",
+  "version": "1.2.13",
   "license": "GPL-3.0",
   "homepage": "https://github.com/airwallex/paymentacceptance-plugin-woocommerce#readme",
   "repository": {
