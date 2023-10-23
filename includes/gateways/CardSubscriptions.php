@@ -10,82 +10,72 @@ use WC_Order;
 use WC_Subscription;
 use WC_Subscriptions_Cart;
 
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-class CardSubscriptions extends Card
-{
-    public function __construct()
-    {
-        parent::__construct();
-        if (class_exists('WC_Subscriptions_Order')) {
-            add_action('woocommerce_scheduled_subscription_payment_' . $this->id, [$this, 'do_subscription_payment'], 10, 2);
-            add_filter('woocommerce_my_subscriptions_payment_method', [$this, 'subscription_payment_information'], 10, 2);
-            add_filter('airwallexMustSaveCard', [$this, 'mustSaveCard']);
-        }
-        $this->supports = array_merge($this->supports, [
-            'subscriptions',
-            'subscription_cancellation',
-            'subscription_suspension',
-            'subscription_reactivation',
-            'subscription_amount_changes',
-            'subscription_date_changes',
-            //'subscription_payment_method_change_customer',
-            //'subscription_payment_method_change_admin',
-        ]);
-    }
+class CardSubscriptions extends Card {
 
-    public function mustSaveCard($mustSaveCard)
-    {
-        if (WC_Subscriptions_Cart::cart_contains_subscription()) {
-            return true;
-        }
+	public function __construct() {
+		parent::__construct();
+		if ( class_exists( 'WC_Subscriptions_Order' ) ) {
+			add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, array( $this, 'do_subscription_payment' ), 10, 2 );
+			add_filter( 'woocommerce_my_subscriptions_payment_method', array( $this, 'subscription_payment_information' ), 10, 2 );
+			add_filter( 'airwallexMustSaveCard', array( $this, 'mustSaveCard' ) );
+		}
+		$this->supports = array_merge(
+			$this->supports,
+			array(
+				'subscriptions',
+				'subscription_cancellation',
+				'subscription_suspension',
+				'subscription_reactivation',
+				'subscription_amount_changes',
+				'subscription_date_changes',
+			)
+		);
+	}
 
-        return $mustSaveCard;
-    }
+	public function mustSaveCard( $mustSaveCard ) {
+		if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return true;
+		}
 
-    public function subscription_payment_information($paymentMethodName, $subscription)
-    {
-        $customerId = $subscription->get_customer_id();
-        if ($subscription->get_payment_method() !== $this->id || !$customerId) {
-            return $paymentMethodName;
-        }
-        //add additional payment details
-        return $paymentMethodName;
-    }
+		return $mustSaveCard;
+	}
 
-    public function do_subscription_payment($amount, $order)
-    {
+	public function subscription_payment_information( $paymentMethodName, $subscription ) {
+		$customerId = $subscription->get_customer_id();
+		if ( $subscription->get_payment_method() !== $this->id || ! $customerId ) {
+			return $paymentMethodName;
+		}
+		//add additional payment details
+		return $paymentMethodName;
+	}
 
-        try {
-            $subscriptionId = $order->get_meta('_subscription_renewal');
-            $subscription = wcs_get_subscription($subscriptionId);
-            $originalOrderId = $subscription->get_parent();
-            $originalOrder = wc_get_order($originalOrderId);
-            $airwallexCustomerId = $originalOrder->get_meta('airwallex_customer_id');
-            $airwallexPaymentConsentId = $originalOrder->get_meta('airwallex_consent_id');
-            $cardClient = new CardClient();
-            $paymentIntent = $cardClient->createPaymentIntent($amount, $order->get_id(), false, $airwallexCustomerId);
-            $paymentIntentAfterConfirm = $paymentIntentAfterCapture = $cardClient->confirmPaymentIntent($paymentIntent->getId(), $airwallexPaymentConsentId);
+	public function do_subscription_payment( $amount, $order ) {
 
-            //if ($paymentIntentAfterConfirm->getStatus() === PaymentIntent::STATUS_REQUIRES_CAPTURE) {
-            //    $paymentIntentAfterCapture = $cardClient->capture($paymentIntent->getId(), $amount);
-            if ($paymentIntentAfterCapture->getStatus() === PaymentIntent::STATUS_SUCCEEDED) {
-                (new LogService())->debug('capture successful', $paymentIntentAfterCapture->toArray());
-                $order->add_order_note('Airwallex payment capture success');
-                $order->payment_complete($paymentIntent->getId());
-            } else {
-                (new LogService())->error('capture failed', $paymentIntentAfterCapture->toArray());
-                $order->add_order_note('Airwallex payment failed capture');
-            }
-            //} else {
-            //    (new LogService())->error('intent confirm failed', $paymentIntentAfterConfirm->toArray());
-            //    $order->add_order_note('Airwallex payment failed intend confirmation');
-            //}
-        } catch (Exception $e) {
-            (new LogService())->error('do_subscription_payment failed', $e->getMessage());
-        }
+		try {
+			$subscriptionId            = $order->get_meta( '_subscription_renewal' );
+			$subscription              = wcs_get_subscription( $subscriptionId );
+			$originalOrderId           = $subscription->get_parent();
+			$originalOrder             = wc_get_order( $originalOrderId );
+			$airwallexCustomerId       = $originalOrder->get_meta( 'airwallex_customer_id' );
+			$airwallexPaymentConsentId = $originalOrder->get_meta( 'airwallex_consent_id' );
+			$cardClient                = new CardClient();
+			$paymentIntent             = $cardClient->createPaymentIntent( $amount, $order->get_id(), false, $airwallexCustomerId );
+			$paymentIntentAfterCapture = $cardClient->confirmPaymentIntent( $paymentIntent->getId(), $airwallexPaymentConsentId );
 
-    }
+			if ( $paymentIntentAfterCapture->getStatus() === PaymentIntent::STATUS_SUCCEEDED ) {
+				( new LogService() )->debug( 'capture successful', $paymentIntentAfterCapture->toArray() );
+				$order->add_order_note( 'Airwallex payment capture success' );
+				$order->payment_complete( $paymentIntent->getId() );
+			} else {
+				( new LogService() )->error( 'capture failed', $paymentIntentAfterCapture->toArray() );
+				$order->add_order_note( 'Airwallex payment failed capture' );
+			}
+		} catch ( Exception $e ) {
+			( new LogService() )->error( 'do_subscription_payment failed', $e->getMessage() );
+		}
+	}
 }

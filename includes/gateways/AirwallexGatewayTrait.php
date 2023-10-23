@@ -4,84 +4,78 @@ namespace Airwallex\Gateways;
 
 use Airwallex\Main;
 
-trait AirwallexGatewayTrait
-{
-    public $iconOrder = [
-        'card_visa' => 1,
-        'card_mastercard' => 2,
-        'card_amex' => 3,
-        'card_jcb' => 4,
-    ];
+trait AirwallexGatewayTrait {
 
-    public function sort_icons($iconArray)
-    {
-        uksort($iconArray, function($a, $b){
-            $orderA = isset($this->iconOrder[$a])? $this->iconOrder[$a] : 999;
-            $orderB = isset($this->iconOrder[$b])? $this->iconOrder[$b] : 999;
-            return $orderA - $orderB;
-        });
-        return $iconArray;
-    }
+	public $iconOrder = array(
+		'card_visa'       => 1,
+		'card_mastercard' => 2,
+		'card_amex'       => 3,
+		'card_jcb'        => 4,
+	);
 
-    public function get_client_id()
-    {
-        return get_option('airwallex_client_id');
-    }
+	public function sort_icons( $iconArray ) {
+		uksort(
+			$iconArray,
+			function ( $a, $b ) {
+				$orderA = isset( $this->iconOrder[ $a ] ) ? $this->iconOrder[ $a ] : 999;
+				$orderB = isset( $this->iconOrder[ $b ] ) ? $this->iconOrder[ $b ] : 999;
+				return $orderA - $orderB;
+			}
+		);
+		return $iconArray;
+	}
 
-    public function get_api_key()
-    {
-        return get_option('airwallex_api_key');
-    }
+	public function get_client_id() {
+		return get_option( 'airwallex_client_id' );
+	}
 
-    public function is_submit_order_details()
-    {
-        return in_array(get_option('airwallex_submit_order_details'), ['yes', 1, true, '1'], true);
-    }
+	public function get_api_key() {
+		return get_option( 'airwallex_api_key' );
+	}
 
-    public function temporary_order_status_after_decline()
-    {
-        return get_option('airwallex_temporary_order_status_after_decline')?:'pending';
-    }
+	public function is_submit_order_details() {
+		return in_array( get_option( 'airwallex_submit_order_details' ), array( 'yes', 1, true, '1' ), true );
+	}
 
-    public function is_sandbox()
-    {
-        return in_array(get_option('airwallex_enable_sandbox'), [true, 'yes'], true);
-    }
+	public function temporary_order_status_after_decline() {
+		$temporaryOrderStatus = get_option( 'airwallex_temporary_order_status_after_decline' );
+		return $temporaryOrderStatus ? $temporaryOrderStatus : 'pending';
+	}
 
-    public function get_payment_url($type)
-    {   
-        $template = get_option('airwallex_payment_page_template');
-        if ($template == 'wordpress_page') {
-            return $this->getPaymentPageUrl($type);
-        }
+	public function is_sandbox() {
+		return in_array( get_option( 'airwallex_enable_sandbox' ), array( true, 'yes' ), true );
+	}
 
-        return WC()->api_request_url(static::ROUTE_SLUG);
-    }
+	public function get_payment_url( $type ) {
+		$template = get_option( 'airwallex_payment_page_template' );
+		if ( 'wordpress_page' === $template ) {
+			return $this->getPaymentPageUrl( $type );
+		}
 
-    public function needs_setup()
-    {
-        return true;
-    }
+		return WC()->api_request_url( static::ROUTE_SLUG );
+	}
 
-    public function get_payment_confirmation_url()
-    {
-        return WC()->api_request_url(Main::ROUTE_SLUG_CONFIRMATION);
-    }
+	public function needs_setup() {
+		return true;
+	}
 
-    public function init_settings()
-    {
-        parent::init_settings();
-        $this->enabled = !empty($this->settings['enabled']) && 'yes' === $this->settings['enabled'] ? 'yes' : 'no';
-    }
+	public function get_payment_confirmation_url() {
+		return WC()->api_request_url( Main::ROUTE_SLUG_CONFIRMATION );
+	}
 
-    public function getPaymentPageUrl($type, $fallback = '') {
-        $pageId = get_option($type . '_page_id');
-        $permalink = !empty($pageId) ? get_permalink( $pageId ) : '';
+	public function init_settings() {
+		parent::init_settings();
+		$this->enabled = ! empty( $this->settings['enabled'] ) && 'yes' === $this->settings['enabled'] ? 'yes' : 'no';
+	}
 
-        if (empty($permalink)) {
-            $permalink = empty($fallback) ? get_home_url() : $fallback;
-        }
+	public function getPaymentPageUrl( $type, $fallback = '' ) {
+		$pageId    = get_option( $type . '_page_id' );
+		$permalink = ! empty( $pageId ) ? get_permalink( $pageId ) : '';
 
-	    return $permalink;
-    }
+		if ( empty( $permalink ) ) {
+			$permalink = empty( $fallback ) ? get_home_url() : $fallback;
+		}
+
+		return $permalink;
+	}
 }
