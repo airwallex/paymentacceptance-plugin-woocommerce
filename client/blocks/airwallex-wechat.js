@@ -27,4 +27,7 @@ export const airwallexWeChatInOption = {
     edit: <AirwallexContent />,
     canMakePayment: () => canMakePayment,
     ariaLabel: title,
+    supports: {
+        features: settings?.supports ?? [],
+    }
 };

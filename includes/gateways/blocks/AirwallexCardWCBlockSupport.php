@@ -5,6 +5,7 @@ namespace Airwallex\Gateways\Blocks;
 use Airwallex\Gateways\Card;
 use Airwallex\Services\Util;
 use Airwallex\CardClient;
+use Airwallex\Gateways\CardSubscriptions;
 use Airwallex\Services\OrderService;
 use Automattic\WooCommerce\Blocks\Payments\PaymentResult;
 use Automattic\WooCommerce\Blocks\Payments\PaymentContext;
@@ -19,7 +20,7 @@ class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 	public function initialize() {
 		$this->settings = get_option( 'airwallex-online-payments-gatewayairwallex_card_settings', array() );
 		$this->enabled  = ! empty( $this->settings['enabled'] ) && in_array( $this->settings['enabled'], array( 'yes', 1, true, '1' ), true ) ? 'yes' : 'no';
-		$this->gateway  = new Card();
+		$this->gateway  = $this->canDoSubscription() ? new CardSubscriptions() : new Card();
 
 		add_action( 'woocommerce_rest_checkout_process_payment_with_context', array( $this, 'addPaymentIntent' ), 9999, 2 );
 	}
@@ -65,6 +66,7 @@ class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 			'environment'         => $this->gateway->is_sandbox() ? 'demo' : 'prod',
 			'locale'              => Util::getLocale(),
 			'confirm_url'         => $this->gateway->get_payment_confirmation_url(),
+			'supports'            => $this->get_supported_features(),
 		);
 
 		return $data;

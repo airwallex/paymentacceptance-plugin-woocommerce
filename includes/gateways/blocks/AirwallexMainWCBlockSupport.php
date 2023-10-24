@@ -28,6 +28,7 @@ class AirwallexMainWCBlockSupport extends AirwallexWCBlockSupport {
 			'description' => $this->settings['description'],
 			'methods'     => $this->settings['methods'],
 			'icons'       => $this->getActivePaymentLogos(),
+			'supports'    => $this->get_supported_features(),
 		);
 
 		return $data;

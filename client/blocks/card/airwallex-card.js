@@ -14,7 +14,7 @@ const AirwallexLabelCard = (props) => {
     return (
         <>
             <PaymentMethodLabel text={title} />
-            <span style={{ marginLeft: 'auto', display: 'flex' }}>
+            <span style={{ marginLeft: 'auto', display: 'flex', direction: 'rtl' }}>
                 {Object.entries(logos).map(([name, src]) => {
                     return (
                         <img key={name} src={src} alt={title} className='airwallex-card-icon' />
@@ -47,4 +47,7 @@ export const airwallexCardOption = {
     edit: <AirwallexContentCard />,
     canMakePayment: canMakePayment,
     ariaLabel: title,
+    supports: {
+        features: settings?.supports ?? [],
+    }
 };

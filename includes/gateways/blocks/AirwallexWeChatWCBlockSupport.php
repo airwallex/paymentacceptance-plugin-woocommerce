@@ -2,6 +2,8 @@
 
 namespace Airwallex\Gateways\Blocks;
 
+use Airwallex\Gateways\WeChat;
+
 class AirwallexWeChatWCBlockSupport extends AirwallexWCBlockSupport {
 
 	protected $name = 'airwallex_wechat';
@@ -12,6 +14,7 @@ class AirwallexWeChatWCBlockSupport extends AirwallexWCBlockSupport {
 	public function initialize() {
 		$this->settings = get_option( 'airwallex-online-payments-gatewayairwallex_wechat_settings', array() );
 		$this->enabled  = ! empty( $this->settings['enabled'] ) && in_array( $this->settings['enabled'], array( 'yes', 1, true, '1' ), true ) ? 'yes' : 'no';
+		$this->gateway  = new WeChat();
 	}
 
 	/**
@@ -23,6 +26,7 @@ class AirwallexWeChatWCBlockSupport extends AirwallexWCBlockSupport {
 			'name'        => $this->name,
 			'title'       => $this->settings['title'],
 			'description' => $this->settings['description'],
+			'supports'    => $this->get_supported_features(),
 		);
 
 		return $data;

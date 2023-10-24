@@ -51,4 +51,22 @@ abstract class AirwallexWCBlockSupport extends AbstractPaymentMethodType {
 
 		return array( 'airwallex-wc-blocks-integration' );
 	}
+
+	/**
+	 * Whether the subscription plugin is installed
+	 *
+	 * @return boolean
+	 */
+	public function canDoSubscription() {
+		return class_exists( 'WC_Subscriptions_Order' ) && function_exists( 'wcs_create_renewal_order' );
+	}
+
+	/**
+	 * Returns an array of supported features.
+	 *
+	 * @return string[]
+	 */
+	public function get_supported_features() {
+		return $this->gateway->supports;
+	}
 }

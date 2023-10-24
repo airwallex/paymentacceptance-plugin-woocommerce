@@ -14,7 +14,7 @@ const AirwallexLabelDropIn = (props) => {
     return Object.keys(logos).length <= maxInlineLogoCount ? (
         <>
             <PaymentMethodLabel text={title} />
-            <span style={{ marginLeft: 'auto', display: 'flex' }}>
+            <span style={{ marginLeft: 'auto', display: 'flex', direction: 'rtl' }}>
                 {Object.entries(logos).map(([name, src]) => {
                     return (
                         <img key={name} src={src} alt={title} className='airwallex-card-icon' />
@@ -57,4 +57,7 @@ export const airwallexDropInOption = {
     edit: <AirwallexContentDropIn />,
     canMakePayment: () => canMakePayment,
     ariaLabel: title,
+    supports: {
+        features: settings?.supports ?? [],
+    }
 };
