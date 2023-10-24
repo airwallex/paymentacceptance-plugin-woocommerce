@@ -1,0 +1,27 @@
+{
+  "name": "airwallex-online-payments-gateway",
+  "title": "Airwallex Online Payments Gateway",
+  "version": "1.2.13",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/airwallex/paymentacceptance-plugin-woocommerce#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/airwallex/paymentacceptance-plugin-woocommerce.git"
+  },
+  "scripts": {
+    "build": "rimraf build/* && npm run build:webpack",
+    "build:webpack": "wp-scripts build",
+    "build:release": "npm run build && node tasks/release.js && mv release/airwallex-online-payments-gateway.zip ."
+  },
+  "dependencies": {
+    "airwallex-payment-elements": "latest"
+  },
+  "devDependencies": {
+    "@woocommerce/dependency-extraction-webpack-plugin": "^2.2.0",
+    "@wordpress/scripts": "^26.13.0",
+    "archiver": "^6.0.1",
+    "rimraf": "^5.0.5",
+    "shelljs": "^0.8.5",
+    "webpack": "^5.76.2"
+  }
+}

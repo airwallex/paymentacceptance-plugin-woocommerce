@@ -15,102 +15,104 @@
  * @version 3.8.0
  */
 
+ // phpcs:ignoreFile
 defined( 'ABSPATH' ) || exit;
 ?>
 <table class="cart-contents">
-    <tbody>
-    <?php
-    do_action( 'woocommerce_review_order_before_cart_contents' );
+	<tbody>
+	<?php
+	do_action( 'woocommerce_review_order_before_cart_contents' );
 
-    foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-        $_product = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
+	foreach ( WC()->cart->get_cart() as $airwallex_cart_item_key => $airwallex_cart_item ) {
+		$airwallex_product = apply_filters( 'woocommerce_cart_item_product', $airwallex_cart_item['data'], $airwallex_cart_item, $airwallex_cart_item_key );
 
-        if ( $_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters( 'woocommerce_checkout_cart_item_visible', true, $cart_item, $cart_item_key ) ) {
-            ?>
-            <tr class="cart-item">
-                <td class="product-image">
-                    <?php
-                    $post_thumbnail_id = $_product->get_image_id();
-                    if ($post_thumbnail_id) {
-                        $html = wc_get_gallery_image_html( $post_thumbnail_id, true );
-                        echo $html;
-                    }
-                    ?>
-                </td>
-                <td class="product-info">
-                    <?php echo apply_filters( 'woocommerce_checkout_cart_item_quantity', ' <strong class="product-quantity">' . sprintf( '%s&nbsp;&times;', $cart_item['quantity'] ) . '</strong>', $cart_item, $cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                    <?php echo apply_filters( 'woocommerce_cart_item_name', $_product->get_name(), $cart_item, $cart_item_key ) . '&nbsp;'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                    <?php echo wc_get_formatted_cart_item_data( $cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                    <div class="price">
-                        <?php echo apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $_product, $cart_item['quantity'] ), $cart_item, $cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-                    </div>
-                </td>
-            </tr>
-            <?php
-        }
-    }
+		if ( $airwallex_product && $airwallex_product->exists() && $airwallex_cart_item['quantity'] > 0 && apply_filters( 'woocommerce_checkout_cart_item_visible', true, $airwallex_cart_item, $airwallex_cart_item_key ) ) {
+			?>
+			<tr class="cart-item">
+				<td class="product-image">
+					<?php
+					$airwallex_post_thumbnail_id = $airwallex_product->get_image_id();
+					if ( $airwallex_post_thumbnail_id ) {
+						$airwallex_html = wc_get_gallery_image_html( $airwallex_post_thumbnail_id, true );
+						echo $airwallex_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					}
+					?>
+				</td>
+				<td class="product-info">
+					<?php echo apply_filters( 'woocommerce_checkout_cart_item_quantity', ' <strong class="product-quantity">' . sprintf( '%s&nbsp;&times;', $airwallex_cart_item['quantity'] ) . '</strong>', $airwallex_cart_item, $airwallex_cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php echo apply_filters( 'woocommerce_cart_item_name', $airwallex_product->get_name(), $airwallex_cart_item, $airwallex_cart_item_key ) . '&nbsp;'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php echo wc_get_formatted_cart_item_data( $airwallex_cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<div class="price">
+						<?php echo apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $airwallex_product, $airwallex_cart_item['quantity'] ), $airwallex_cart_item, $airwallex_cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</div>
+				</td>
+			</tr>
+			<?php
+		}
+	}
 
-    do_action( 'woocommerce_review_order_after_cart_contents' );
-    ?>
-    </tbody>
+	do_action( 'woocommerce_review_order_after_cart_contents' );
+	?>
+	</tbody>
 </table>
 <table class="totals-table">
-    <tfoot>
+	<tfoot>
 
-    <tr class="cart-subtotal">
-        <th><?php esc_html_e( 'Subtotal', 'woocommerce' ); ?></th>
-        <td><?php wc_cart_totals_subtotal_html(); ?></td>
-    </tr>
+	<tr class="cart-subtotal">
+		<th><?php esc_html_e( 'Subtotal', 'woocommerce' ); ?></th>
+		<td><?php wc_cart_totals_subtotal_html(); ?></td>
+	</tr>
 
-    <?php foreach ( WC()->cart->get_coupons() as $code => $coupon ) : ?>
-        <tr class="cart-discount coupon-<?php echo esc_attr( sanitize_title( $code ) ); ?>">
-            <th><?php wc_cart_totals_coupon_label( $coupon ); ?></th>
-            <td><?php wc_cart_totals_coupon_html( $coupon ); ?></td>
-        </tr>
-    <?php endforeach; ?>
+	<?php foreach ( WC()->cart->get_coupons() as $airwallex_code => $airwallex_coupon ) : ?>
+		<tr class="cart-discount coupon-<?php echo esc_attr( sanitize_title( $airwallex_code ) ); ?>">
+			<th><?php wc_cart_totals_coupon_label( $airwallex_coupon ); ?></th>
+			<td><?php wc_cart_totals_coupon_html( $airwallex_coupon ); ?></td>
+		</tr>
+	<?php endforeach; ?>
 
-    <?php
-    if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) : ?>
+	<?php
+	if ( WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) :
+		?>
 
-        <?php do_action( 'woocommerce_review_order_before_shipping' ); ?>
+		<?php do_action( 'woocommerce_review_order_before_shipping' ); ?>
 
-        <?php wc_cart_totals_shipping_html(); ?>
+		<?php wc_cart_totals_shipping_html(); ?>
 
-        <?php do_action( 'woocommerce_review_order_after_shipping' ); ?>
+		<?php do_action( 'woocommerce_review_order_after_shipping' ); ?>
 
-    <?php endif; ?>
+	<?php endif; ?>
 
-    <?php foreach ( WC()->cart->get_fees() as $fee ) : ?>
-        <tr class="fee">
-            <th><?php echo esc_html( $fee->name ); ?></th>
-            <td><?php wc_cart_totals_fee_html( $fee ); ?></td>
-        </tr>
-    <?php endforeach; ?>
+	<?php foreach ( WC()->cart->get_fees() as $airwallex_fee ) : ?>
+		<tr class="fee">
+			<th><?php echo esc_html( $airwallex_fee->name ); ?></th>
+			<td><?php wc_cart_totals_fee_html( $airwallex_fee ); ?></td>
+		</tr>
+	<?php endforeach; ?>
 
-    <?php if ( wc_tax_enabled() && ! WC()->cart->display_prices_including_tax() ) : ?>
-        <?php if ( 'itemized' === get_option( 'woocommerce_tax_total_display' ) ) : ?>
-            <?php foreach ( WC()->cart->get_tax_totals() as $code => $tax ) : // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited ?>
-                <tr class="tax-rate tax-rate-<?php echo esc_attr( sanitize_title( $code ) ); ?>">
-                    <th><?php echo esc_html( $tax->label ); ?></th>
-                    <td><?php echo wp_kses_post( $tax->formatted_amount ); ?></td>
-                </tr>
-            <?php endforeach; ?>
-        <?php else : ?>
-            <tr class="tax-total">
-                <th><?php echo esc_html( WC()->countries->tax_or_vat() ); ?></th>
-                <td><?php wc_cart_totals_taxes_total_html(); ?></td>
-            </tr>
-        <?php endif; ?>
-    <?php endif; ?>
+	<?php if ( wc_tax_enabled() && ! WC()->cart->display_prices_including_tax() ) : ?>
+		<?php if ( 'itemized' === get_option( 'woocommerce_tax_total_display' ) ) : ?>
+			<?php foreach ( WC()->cart->get_tax_totals() as $airwallex_code => $tax ) : // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited ?>
+				<tr class="tax-rate tax-rate-<?php echo esc_attr( sanitize_title( $airwallex_code ) ); ?>">
+					<th><?php echo esc_html( $tax->label ); ?></th>
+					<td><?php echo wp_kses_post( $tax->formatted_amount ); ?></td>
+				</tr>
+			<?php endforeach; ?>
+		<?php else : ?>
+			<tr class="tax-total">
+				<th><?php echo esc_html( WC()->countries->tax_or_vat() ); ?></th>
+				<td><?php wc_cart_totals_taxes_total_html(); ?></td>
+			</tr>
+		<?php endif; ?>
+	<?php endif; ?>
 
-    <?php do_action( 'woocommerce_review_order_before_order_total' ); ?>
+	<?php do_action( 'woocommerce_review_order_before_order_total' ); ?>
 
-    <tr class="order-total">
-        <th><?php esc_html_e( 'Total', 'woocommerce' ); ?></th>
-        <td><?php wc_cart_totals_order_total_html(); ?></td>
-    </tr>
+	<tr class="order-total">
+		<th><?php esc_html_e( 'Total', 'woocommerce' ); ?></th>
+		<td><?php wc_cart_totals_order_total_html(); ?></td>
+	</tr>
 
-    <?php do_action( 'woocommerce_review_order_after_order_total' ); ?>
+	<?php do_action( 'woocommerce_review_order_after_order_total' ); ?>
 
-    </tfoot>
+	</tfoot>
 </table>
