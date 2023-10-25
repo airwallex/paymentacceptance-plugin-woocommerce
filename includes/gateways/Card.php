@@ -175,7 +175,7 @@ class Card extends WC_Payment_Gateway {
 			'result' => 'success',
 		);
 		WC()->session->set( 'airwallex_order', $order_id );
-		if ( $this->get_option( 'checkout_form_type' ) === 'redirect' ) {
+		if ( 'redirect' === $this->get_option( 'checkout_form_type' ) ) {
 			$return['redirect'] = $this->get_payment_url( 'airwallex_payment_method_card' );
 		} else {
 			$return['messages'] = '<!--Airwallex payment processing-->';

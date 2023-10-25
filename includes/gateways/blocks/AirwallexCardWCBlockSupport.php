@@ -9,6 +9,7 @@ use Airwallex\Gateways\CardSubscriptions;
 use Airwallex\Services\OrderService;
 use Automattic\WooCommerce\Blocks\Payments\PaymentResult;
 use Automattic\WooCommerce\Blocks\Payments\PaymentContext;
+use Automattic\WooCommerce\Blocks\Package;
 
 class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 
@@ -23,6 +24,7 @@ class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 		$this->gateway  = $this->canDoSubscription() ? new CardSubscriptions() : new Card();
 
 		add_action( 'woocommerce_rest_checkout_process_payment_with_context', array( $this, 'addPaymentIntent' ), 9999, 2 );
+		add_action( 'woocommerce_rest_checkout_process_payment_with_context', array( $this, 'redirectToSeparatePage' ), 9999, 2 );
 	}
 
 	/**
@@ -59,7 +61,7 @@ class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 			'name'                => $this->name,
 			'title'               => $this->settings['title'],
 			'description'         => $this->settings['description'],
-			'checkout_form_type'  => $this->settings['checkout_form_type'],
+			'checkout_form_type'  => $this->getCheckoutFormType(),
 			'payment_descriptor'  => $this->settings['payment_descriptor'],
 			'capture_immediately' => in_array( $this->settings['capture_immediately'], array( true, 'yes' ), true ),
 			'icons'               => $this->gateway->getCardLogos(),
@@ -106,5 +108,34 @@ class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 			$paymentDetails['airwallexClientSecret']  = $paymentIntent->getClientSecret();
 			$result->set_payment_details( $paymentDetails );
 		}
+	}
+
+	/**
+	 * Redirect the card payment to separate page if the checkout form is set to redirect.
+	 *
+	 * @param PaymentContext $context Holds context for the payment.
+	 * @param PaymentResult  $result  Result object for the payment.
+	 */
+	public function redirectToSeparatePage( PaymentContext $context, PaymentResult &$result ) {
+		if ( $this->name === $context->payment_method && 'redirect' === $this->getCheckoutFormType() ) {
+			$paymentDetails = $result->payment_details;
+			if ( isset( $paymentDetails['messages'] ) && false !== strpos( $paymentDetails['messages'], '<!--Airwallex payment processing-->' ) ) {
+				$result->set_redirect_url( $this->gateway->get_payment_url( 'airwallex_payment_method_card' ) );
+			}
+		}
+	}
+
+	/**
+	 * Get the checkout form type for card element, the embedded card element requires WooCommerce Block >= 9.7.0
+	 *
+	 * @return string
+	 */
+	public function getCheckoutFormType() {
+		if ( class_exists( '\Automattic\WooCommerce\Blocks\Package' )
+			&& version_compare( \Automattic\WooCommerce\Blocks\Package::get_version(), '9.7.0', '<' ) ) {
+				return 'redirect';
+		}
+
+		return $this->settings['checkout_form_type'];
 	}
 }

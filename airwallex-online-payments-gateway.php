@@ -40,13 +40,17 @@ function airwallex_init() {
 	require_once AIRWALLEX_PLUGIN_PATH . 'includes/struct/AbstractBase.php';
 	require_once AIRWALLEX_PLUGIN_PATH . 'includes/client/AbstractClient.php';
 	require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/AirwallexGatewayTrait.php';
-	require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexWCBlockSupport.php';
-	require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexMainWCBlockSupport.php';
-	require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexCardWCBlockSupport.php';
-	require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexWeChatWCBlockSupport.php';
 	foreach ( glob( AIRWALLEX_PLUGIN_PATH . 'includes/*/*.php' ) as $includeFile ) {
 		require_once $includeFile;
 	}
+
+	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+		require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexWCBlockSupport.php';
+		require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexMainWCBlockSupport.php';
+		require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexCardWCBlockSupport.php';
+		require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexWeChatWCBlockSupport.php';
+	}
+
 	$airwallex = \Airwallex\Main::getInstance();
 	$airwallex->init();
 	add_action( 'wp_enqueue_scripts', array( $airwallex, 'addJsLegacy' ) );
