@@ -1,243 +1,243 @@
 import { useEffect, useState } from 'react';
 import {
-    loadAirwallex,
-    createElement as createAirwallexElement,
-    confirmPaymentIntent as confirmAirwallexPaymentIntent,
-    createPaymentConsent as createAirwallexPaymentConsent,
-    getElement as getAirwallexElement,
+	loadAirwallex,
+	createElement as createAirwallexElement,
+	confirmPaymentIntent as confirmAirwallexPaymentIntent,
+	createPaymentConsent as createAirwallexPaymentConsent,
+	getElement as getAirwallexElement,
 } from 'airwallex-payment-elements';
 import { __ } from '@wordpress/i18n';
 import { getCardHolderName, getBillingInformation } from '../utils';
 
-const confirmPayment = ({
-    settings,
-    paymentDetails,
-    billingData,
-    successType,
-    errorType,
-    errorContext,
+const confirmPayment      = ({
+	settings,
+	paymentDetails,
+	billingData,
+	successType,
+	errorType,
+	errorContext,
 }) => {
-    const confirmUrl = settings.confirm_url + (settings.confirm_url.indexOf('?') !== -1 ? '&' : '?')
-        + 'order_id=' + paymentDetails.wcOrderId + '&intent_id=' + paymentDetails.airwallexPaymentIntent;
-    const card = getAirwallexElement('card');
-    const paymentResponse = { type: successType };
+	const confirmUrl      = settings.confirm_url + (settings.confirm_url.indexOf('?') !== -1 ? '&' : '?')
+		+ 'order_id=' + paymentDetails.wcOrderId + '&intent_id=' + paymentDetails.airwallexPaymentIntent;
+	const card            = getAirwallexElement('card');
+	const paymentResponse = { type: successType };
 
-    if (paymentDetails.airwallexCreateConsent) {
-        return createAirwallexPaymentConsent({
-            intent_id: paymentDetails.airwallexPaymentIntent,
-            customer_id: paymentDetails.airwallexCustomerId,
-            client_secret: paymentDetails.airwallexClientSecret,
-            currency: paymentDetails.airwallexCurrency,
-            element: card,
-            next_triggered_by: 'merchant'
-        }).then((response) => {
-            paymentResponse.confirmUrl = confirmUrl;
-            return paymentResponse;
-        }).catch((error) => {
-            paymentResponse.type = errorType;
-            paymentResponse.message = error.message ?? JSON.stringify(error);
-            paymentResponse.messageContext = errorContext;
-            return paymentResponse;
-        });
-    } else {
-        return confirmAirwallexPaymentIntent({
-            element: card,
-            id: paymentDetails.airwallexPaymentIntent,
-            client_secret: paymentDetails.airwallexClientSecret,
-            payment_method: {
-                card: {
-                    name: getCardHolderName(billingData),
-                },
-                billing: getBillingInformation(billingData),
-            },
-            payment_method_options: {
-                card: {
-                    auto_capture: settings.capture_immediately,
-                },
-            }
-        }).then((response) => {
-            paymentResponse.confirmUrl = confirmUrl;
-            return paymentResponse;
-        }).catch((error) => {
-            paymentResponse.type = errorType;
-            paymentResponse.message = error.message ?? JSON.stringify(error);
-            paymentResponse.messageContext = errorContext;
-            return paymentResponse;
-        });
-    }
+	if (paymentDetails.airwallexCreateConsent) {
+		return createAirwallexPaymentConsent({
+			intent_id: paymentDetails.airwallexPaymentIntent,
+			customer_id: paymentDetails.airwallexCustomerId,
+			client_secret: paymentDetails.airwallexClientSecret,
+			currency: paymentDetails.airwallexCurrency,
+			element: card,
+			next_triggered_by: 'merchant'
+		}).then((response) => {
+			paymentResponse.confirmUrl = confirmUrl;
+			return paymentResponse;
+		}).catch((error) => {
+			paymentResponse.type           = errorType;
+			paymentResponse.message        = error.message ?? JSON.stringify(error);
+			paymentResponse.messageContext = errorContext;
+			return paymentResponse;
+		});
+	} else {
+		return confirmAirwallexPaymentIntent({
+			element: card,
+			id: paymentDetails.airwallexPaymentIntent,
+			client_secret: paymentDetails.airwallexClientSecret,
+			payment_method: {
+				card: {
+					name: getCardHolderName(billingData),
+				},
+				billing: getBillingInformation(billingData),
+			},
+			payment_method_options: {
+				card: {
+					auto_capture: settings.capture_immediately,
+				},
+			}
+		}).then((response) => {
+			paymentResponse.confirmUrl = confirmUrl;
+			return paymentResponse;
+		}).catch((error) => {
+			paymentResponse.type           = errorType;
+			paymentResponse.message        = error.message ?? JSON.stringify(error);
+			paymentResponse.messageContext = errorContext;
+			return paymentResponse;
+		});
+	}
 }
 
-export const InlineCard = ({
-    settings: settings,
-    props: props,
+export const InlineCard                             = ({
+	settings: settings,
+	props: props,
 }) => {
-    const [elementShow, setElementShow] = useState(false);
-    const [errorMessage, setErrorMessage] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [inputErrorMessage, setInputErrorMessage] = useState(false);
+	const [elementShow, setElementShow]             = useState(false);
+	const [errorMessage, setErrorMessage]           = useState(false);
+	const [isSubmitting, setIsSubmitting]           = useState(false);
+	const [inputErrorMessage, setInputErrorMessage] = useState(false);
 
-    const {
-        emitResponse,
-        billing,
-    } = props;
-    const {
-        ValidationInputError,
-        LoadingMask,
-    } = props.components;
-    const {
-        onCheckoutSuccess,
-        onPaymentSetup,
-        onCheckoutFail,
-        onCheckoutValidation,
-    } = props.eventRegistration;
+	const {
+		emitResponse,
+		billing,
+	} = props;
+	const {
+		ValidationInputError,
+		LoadingMask,
+	} = props.components;
+	const {
+		onCheckoutSuccess,
+		onPaymentSetup,
+		onCheckoutFail,
+		onCheckoutValidation,
+	} = props.eventRegistration;
 
-    useEffect(() => {
-        loadAirwallex({
-            env: settings.environment,
-            origin: window.location.origin,
-            locale: settings.locale,
-        }).then(() => {
-            const card = createAirwallexElement('card');
-            card.mount('airwallex-card');
-        });
+	useEffect(() => {
+		loadAirwallex({
+			env: settings.environment,
+			origin: window.location.origin,
+			locale: settings.locale,
+		}).then(() => {
+			const card = createAirwallexElement('card');
+			card.mount('airwallex-card');
+		});
 
-        const onReady = (event) => {
-            setElementShow(true);
-            getAirwallexElement('card').focus();
-            console.log('The Card element is ready.');
-        };
+		const onReady = (event) => {
+			setElementShow(true);
+			getAirwallexElement('card').focus();
+			console.log('The Card element is ready.');
+		};
 
-        const onError = (event) => {
-            const { error } = event.detail;
-            setErrorMessage(error.message);
-            console.error('There was an error', error);
-        };
+		const onError       = (event) => {
+			const { error } = event.detail;
+			setErrorMessage(error.message);
+			console.error('There was an error', error);
+		};
 
-        const onFocus = (_event) => {
-            setInputErrorMessage('');
-        };
+		const onFocus = (_event) => {
+			setInputErrorMessage('');
+		};
 
-        const onBlur = (event) => {
-            const { error } = event.detail;
-            setInputErrorMessage(error?.message ?? JSON.stringify(error));
-        };
+		const onBlur        = (event) => {
+			const { error } = event.detail;
+			setInputErrorMessage(error?.message ?? JSON.stringify(error));
+		};
 
-        const domElement = document.getElementById('airwallex-card');
-        domElement.addEventListener('onReady', onReady);
-        domElement.addEventListener('onError', onError);
-        domElement.addEventListener('onBlur', onBlur);
-        domElement.addEventListener('onFocus', onFocus);
-        return () => {
-            domElement.removeEventListener('onReady', onReady);
-            domElement.removeEventListener('onError', onError);
-            domElement.removeEventListener('onFocus', onFocus);
-            domElement.removeEventListener('onBlur', onBlur);
-        };
-    }, []);
+		const domElement = document.getElementById('airwallex-card');
+		domElement.addEventListener('onReady', onReady);
+		domElement.addEventListener('onError', onError);
+		domElement.addEventListener('onBlur', onBlur);
+		domElement.addEventListener('onFocus', onFocus);
+		return () => {
+			domElement.removeEventListener('onReady', onReady);
+			domElement.removeEventListener('onError', onError);
+			domElement.removeEventListener('onFocus', onFocus);
+			domElement.removeEventListener('onBlur', onBlur);
+		};
+	}, []);
 
-    useEffect(() => {
-        const onValidation = () => {
-            if (inputErrorMessage) {
-                return {
-                    errorMessage: __('An error has occurred. Please check your payment details.', 'airwallex-online-payments-gateway') + ` (${inputErrorMessage})`
-                };
-            }
-            return true;
-        };
+	useEffect(() => {
+		const onValidation = () => {
+			if (inputErrorMessage) {
+				return {
+					errorMessage: __('An error has occurred. Please check your payment details.', 'airwallex-online-payments-gateway') + ` (${inputErrorMessage})`
+				};
+			}
+			return true;
+		};
 
-        const unsubscribeAfterProcessing = onCheckoutValidation(onValidation);
-        return () => {
-            unsubscribeAfterProcessing();
-        };
-    }, [
-        inputErrorMessage,
-        onCheckoutValidation,
-    ]);
+		const unsubscribeAfterProcessing = onCheckoutValidation(onValidation);
+		return () => {
+			unsubscribeAfterProcessing();
+		};
+	}, [
+		inputErrorMessage,
+		onCheckoutValidation,
+	]);
 
-    useEffect(() => {
-        const onSubmit = async () => {
-            setErrorMessage('');
+	useEffect(() => {
+		const onSubmit = async () => {
+			setErrorMessage('');
 
-            return {
-                type: emitResponse.responseTypes.SUCCESS,
-                meta: {
-                    paymentMethodData: {
-                        'is-airwallex-card-block': true,
-                    }
-                }
-            };
-        }
+			return {
+				type: emitResponse.responseTypes.SUCCESS,
+				meta: {
+					paymentMethodData: {
+						'is-airwallex-card-block': true,
+					}
+				}
+			};
+		}
 
-        const unsubscribeAfterProcessing = onPaymentSetup(onSubmit);
-        return () => {
-            unsubscribeAfterProcessing();
-        };
-    }, [
-        settings,
-        onPaymentSetup,
-        emitResponse.responseTypes.SUCCESS,
-    ]);
+		const unsubscribeAfterProcessing = onPaymentSetup(onSubmit);
+		return () => {
+			unsubscribeAfterProcessing();
+		};
+	}, [
+		settings,
+		onPaymentSetup,
+		emitResponse.responseTypes.SUCCESS,
+	]);
 
-    useEffect(() => {
-        const onError = ({ processingResponse }) => {
-            if (processingResponse?.paymentDetails?.errorMessage) {
-                return {
-                    type: emitResponse.responseTypes.ERROR,
-                    message: processingResponse.paymentDetails.errorMessage,
-                    messageContext: emitResponse.noticeContexts.PAYMENTS,
-                };
-            }
-            return true;
-        };
+	useEffect(() => {
+		const onError = ({ processingResponse }) => {
+			if (processingResponse?.paymentDetails?.errorMessage) {
+				return {
+					type: emitResponse.responseTypes.ERROR,
+					message: processingResponse.paymentDetails.errorMessage,
+					messageContext: emitResponse.noticeContexts.PAYMENTS,
+				};
+			}
+			return true;
+		};
 
-        const unsubscribeAfterProcessing = onCheckoutFail(onError);
-        return () => {
-            unsubscribeAfterProcessing();
-        };
-    }, [
-        onCheckoutFail,
-        emitResponse.noticeContexts.PAYMENTS,
-        emitResponse.responseTypes.ERROR,
-    ]);
+		const unsubscribeAfterProcessing = onCheckoutFail(onError);
+		return () => {
+			unsubscribeAfterProcessing();
+		};
+	}, [
+		onCheckoutFail,
+		emitResponse.noticeContexts.PAYMENTS,
+		emitResponse.responseTypes.ERROR,
+	]);
 
-    useEffect(() => {
-        const onSuccess = async ({ processingResponse }) => {
-            setIsSubmitting(true);
-            const paymentDetails = processingResponse.paymentDetails || {};
+	useEffect(() => {
+		const onSuccess          = async ({ processingResponse }) => {
+			setIsSubmitting(true);
+			const paymentDetails = processingResponse.paymentDetails || {};
 
-            const response = await confirmPayment({
-                settings,
-                paymentDetails,
-                billingData: billing.billingData,
-                successType: emitResponse.responseTypes.SUCCESS,
-                errorType: emitResponse.responseTypes.ERROR,
-                errorContext: emitResponse.noticeContexts.PAYMENTS,
-            });
+			const response = await confirmPayment({
+				settings,
+				paymentDetails,
+				billingData: billing.billingData,
+				successType: emitResponse.responseTypes.SUCCESS,
+				errorType: emitResponse.responseTypes.ERROR,
+				errorContext: emitResponse.noticeContexts.PAYMENTS,
+			});
 
-            if (response.type === emitResponse.responseTypes.SUCCESS) {
-                location.href = response.confirmUrl;
-            } else {
-                setIsSubmitting(false);
-                return response;
-            }
-        };
+		if (response.type === emitResponse.responseTypes.SUCCESS) {
+			location.href = response.confirmUrl;
+		} else {
+			setIsSubmitting(false);
+			return response;
+		}
+		};
 
-        const unsubscribeAfterProcessing = onCheckoutSuccess(onSuccess);
-        return () => {
-            unsubscribeAfterProcessing();
-        };
-    }, [
-        onCheckoutSuccess,
-        emitResponse.noticeContexts.PAYMENTS,
-        emitResponse.responseTypes.SUCCESS,
-        emitResponse.responseTypes.ERROR,
-    ]);
+		const unsubscribeAfterProcessing = onCheckoutSuccess(onSuccess);
+		return () => {
+			unsubscribeAfterProcessing();
+		};
+	}, [
+		onCheckoutSuccess,
+		emitResponse.noticeContexts.PAYMENTS,
+		emitResponse.responseTypes.SUCCESS,
+		emitResponse.responseTypes.ERROR,
+	]);
 
-    return (
-        <>
-            <div className='airwallex-checkout-loading-mask' style={{ display: isSubmitting ? 'block' : 'none' }}></div>
-            <div id="airwallex-card" style={{ display: elementShow ? 'block' : 'none' }}></div>
-            <ValidationInputError errorMessage={inputErrorMessage} />
-        </>
-    );
+	return (
+		<>
+			<div className                     ='airwallex-checkout-loading-mask' style={{ display: isSubmitting ? 'block' : 'none' }}></div>
+			<div id                            ="airwallex-card" style={{ display: elementShow ? 'block' : 'none' }}></div>
+			<ValidationInputError errorMessage ={inputErrorMessage} />
+		</>
+	);
 };

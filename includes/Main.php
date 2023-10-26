@@ -114,6 +114,7 @@ class Main {
 	}
 
 	public function updateMerchantCountryAfterSave() {
+		// phpcs:ignore WordPress.Security.NonceVerification
 		if ( empty( $_POST['airwallex_client_id'] ) || empty( $_POST['airwallex_api_key'] ) ) {
 			return;
 		}

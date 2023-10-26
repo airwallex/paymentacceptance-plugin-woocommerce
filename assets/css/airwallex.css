@@ -1,207 +1,207 @@
 #success-message {
-    font-size: 1.4em;
-    color: #73AF55;
-    padding: 10px 0;
+	font-size: 1.4em;
+	color: #73AF55;
+	padding: 10px 0;
 }
 
 #success-check {
-    width: 100px;
-    display: block;
-    margin: 40px auto 0;
+	width: 100px;
+	display: block;
+	margin: 40px auto 0;
 }
 
 #success-check .path {
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 0;
+	stroke-dasharray: 1000;
+	stroke-dashoffset: 0;
 }
 
 #success-check .path.circle {
-    -webkit-animation: dash .9s ease-in-out;
-    animation: dash .9s ease-in-out;
+	-webkit-animation: dash .9s ease-in-out;
+	animation: dash .9s ease-in-out;
 }
 
 #success-check .path.line {
-    stroke-dashoffset: 1000;
-    -webkit-animation: dash .9s .35s ease-in-out forwards;
-    animation: dash .9s .35s ease-in-out forwards;
+	stroke-dashoffset: 1000;
+	-webkit-animation: dash .9s .35s ease-in-out forwards;
+	animation: dash .9s .35s ease-in-out forwards;
 }
 
 #success-check .path.check {
-    stroke-dashoffset: -100;
-    -webkit-animation: dash-check .9s .35s ease-in-out forwards;
-    animation: dash-check .9s .35s ease-in-out forwards;
+	stroke-dashoffset: -100;
+	-webkit-animation: dash-check .9s .35s ease-in-out forwards;
+	animation: dash-check .9s .35s ease-in-out forwards;
 }
 
 #airwallex-error-message {
-    padding: 20px;
-    margin-bottom: 20px;
+	padding: 20px;
+	margin-bottom: 20px;
 }
 
 
 @-webkit-keyframes dash {
-    0% {
-        stroke-dashoffset: 1000;
-    }
-    100% {
-        stroke-dashoffset: 0;
-    }
+	0% {
+		stroke-dashoffset: 1000;
+	}
+	100% {
+		stroke-dashoffset: 0;
+	}
 }
 
 @keyframes dash {
-    0% {
-        stroke-dashoffset: 1000;
-    }
-    100% {
-        stroke-dashoffset: 0;
-    }
+	0% {
+		stroke-dashoffset: 1000;
+	}
+	100% {
+		stroke-dashoffset: 0;
+	}
 }
 
 @-webkit-keyframes dash-check {
-    0% {
-        stroke-dashoffset: -100;
-    }
-    100% {
-        stroke-dashoffset: 900;
-    }
+	0% {
+		stroke-dashoffset: -100;
+	}
+	100% {
+		stroke-dashoffset: 900;
+	}
 }
 
 @keyframes dash-check {
-    0% {
-        stroke-dashoffset: -100;
-    }
-    100% {
-        stroke-dashoffset: 900;
-    }
+	0% {
+		stroke-dashoffset: -100;
+	}
+	100% {
+		stroke-dashoffset: 900;
+	}
 }
 
 /*------Drop In------*/
 
 .airwallex-content-drop-in {
-    max-width: 1600px;
-    padding: 1vh 1vw;
-    margin: 0 auto;
+	max-width: 1600px;
+	padding: 1vh 1vw;
+	margin: 0 auto;
 }
 
 .airwallex-checkout {
-    display: flex;
-    width: 100%;
-    margin-top: 3em;
+	display: flex;
+	width: 100%;
+	margin-top: 3em;
 }
 
 .airwallex-checkout.airwallex-tpl-2col-1 .airwallex-col-1 {
-    flex-basis: 35%;
-    padding-right: 1em;
+	flex-basis: 35%;
+	padding-right: 1em;
 }
 
 .airwallex-checkout.airwallex-tpl-2col-1 .airwallex-col-2 {
-    flex-basis: 65%;
+	flex-basis: 65%;
 }
 
 .airwallex-checkout .cart-contents,
 .airwallex-checkout .totals-table {
-    max-width: 100%;
-    border: 0;
+	max-width: 100%;
+	border: 0;
 }
 
 .airwallex-checkout .totals-table tr {
-    text-align: left;
+	text-align: left;
 }
 
 .airwallex-checkout .totals-table td {
-    text-align: right;
+	text-align: right;
 }
 
 .airwallex-checkout .cart-contents {
-    margin-top: 0;
+	margin-top: 0;
 }
 
 .airwallex-checkout .cart-contents *,
 .airwallex-checkout .totals-table * {
-    border: 0;
+	border: 0;
 }
 
 .airwallex-checkout .product-image {
-    width: 30%;
+	width: 30%;
 }
 
 .airwallex-checkout .price {
-    font-size: 0.8em;
+	font-size: 0.8em;
 }
 
 .airwallex-checkout .payment-section {
-    padding: 3em;
-    box-shadow: rgb(0 0 0 / 8%) 0px 0px 16px 0px;
+	padding: 3em;
+	box-shadow: rgb(0 0 0 / 8%) 0px 0px 16px 0px;
 }
 
 .airwallex-checkout .airwallex-info {
-    margin-bottom: 1em;
-    color: #333;
+	margin-bottom: 1em;
+	color: #333;
 }
 
 .airwallex-checkout .cart-heading {
-    margin-bottom: 0.5em;
-    font-weight: bold;
+	margin-bottom: 0.5em;
+	font-weight: bold;
 }
 
 .airwallex-tpl-2col-2 {
-    flex-direction: row-reverse
+	flex-direction: row-reverse
 }
 
 .airwallex-checkout.airwallex-tpl-2col-2 .airwallex-col-1 {
-    flex-basis: 35%;
-    padding-right: 0;
+	flex-basis: 35%;
+	padding-right: 0;
 }
 
 .airwallex-checkout.airwallex-tpl-2col-2 .airwallex-col-2 {
-    flex-basis: 65%;
-    padding-right: 80px;
+	flex-basis: 65%;
+	padding-right: 80px;
 }
 
 .airwallex-tpl-2row {
-    flex-direction: column;
+	flex-direction: column;
 }
 
 .airwallex-checkout.airwallex-tpl-2row .airwallex-col-1 {
-    padding-right: 0;
+	padding-right: 0;
 }
 
 @media (min-width: 801px) {
-    .airwallex-checkout.airwallex-tpl-2row .product-image {
-        width: 15%;
-    }
+	.airwallex-checkout.airwallex-tpl-2row .product-image {
+		width: 15%;
+	}
 }
 
 @media (max-width: 800px) {
-    .airwallex-checkout {
-        flex-direction: column-reverse !important;
-    }
+	.airwallex-checkout {
+		flex-direction: column-reverse !important;
+	}
 
-    .airwallex-checkout.airwallex-tpl-2col-2 .airwallex-col-1 {
-        padding-top: 2em;
-        padding-right: 0;
-    }
+	.airwallex-checkout.airwallex-tpl-2col-2 .airwallex-col-1 {
+		padding-top: 2em;
+		padding-right: 0;
+	}
 
-    .airwallex-checkout.airwallex-tpl-2col-2 .airwallex-col-2 {
-        padding-right: 0;
-    }
+	.airwallex-checkout.airwallex-tpl-2col-2 .airwallex-col-2 {
+		padding-right: 0;
+	}
 
-    .airwallex-checkout.airwallex-tpl-2col-2 .payment-section {
-        padding: 1em;
-    }
+	.airwallex-checkout.airwallex-tpl-2col-2 .payment-section {
+		padding: 1em;
+	}
 }
 
 /*------Card------*/
 .airwallex-content-card {
-    max-width: 800px;
-    padding: 1vh 1vw;
-    margin: 0 auto;
-    text-align: center;
+	max-width: 800px;
+	padding: 1vh 1vw;
+	margin: 0 auto;
+	text-align: center;
 }
 
 /*------WeChat------*/
 .airwallex-content-wechat {
-    max-width: 800px;
-    padding: 1vh 1vw;
-    margin: 0 auto;
-    text-align: center;
+	max-width: 800px;
+	padding: 1vh 1vw;
+	margin: 0 auto;
+	text-align: center;
 }
