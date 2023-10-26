@@ -1,5 +1,5 @@
-const path = require('path');
-const defaultConfig = require('@wordpress/scripts/config/webpack.config');
+const path                              = require('path');
+const defaultConfig                     = require('@wordpress/scripts/config/webpack.config');
 const DependencyExtractionWebpackPlugin = require('@woocommerce/dependency-extraction-webpack-plugin');
 
 module.exports = {
@@ -31,12 +31,12 @@ module.exports = {
 			injectPolyfill: true,
 		}),
 	],
-	resolve: {
-		extensions: ['.json', '.js', '.jsx'],
-		modules: [path.join(__dirname, 'client'), 'node_modules'],
-		alias: {
-			wcstripe: path.resolve(__dirname, 'client'),
-		},
+resolve: {
+	extensions: ['.json', '.js', '.jsx'],
+	modules: [path.join(__dirname, 'client'), 'node_modules'],
+	alias: {
+		wcstripe: path.resolve(__dirname, 'client'),
+	},
 	},
 	entry: {
 		index: './client/blocks/index.js',

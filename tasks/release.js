@@ -1,20 +1,20 @@
 'use strict'
-const shell = require('shelljs');
-const fs = require('fs');
+const shell    = require('shelljs');
+const fs       = require('fs');
 const archiver = require('archiver');
 
 const pluginSlug = 'airwallex-online-payments-gateway';
 
 // configs 
-const releaseDir = 'release';
-const targetDir = `${releaseDir}/${pluginSlug}`;
+const releaseDir     = 'release';
+const targetDir      = `${releaseDir}/${pluginSlug}`;
 const filesToInclude = [
 	'assets',
 	'build',
 	'html',
 	'includes',
 	'airwallex-online-payments-gateway.php',
-    'license.txt',
+	'license.txt',
 	'readme.txt',
 	'uninstall.php',
 ];
@@ -31,15 +31,15 @@ shell.rm('build/*.map');
 shell.cp('-Rf', filesToInclude, targetDir);
 
 // create zip file
-const output = fs.createWriteStream(`${releaseDir}/${pluginSlug}.zip`);
+const output  = fs.createWriteStream(`${releaseDir}/${pluginSlug}.zip`);
 const archive = archiver('zip', {zlib: {level: 9}});
 
 output.on('close', function() {
-    console.log(`Done, release is built in the ${releaseDir} directory.`);
+	console.log(`Done, release is built in the ${releaseDir} directory.`);
 });
 
 archive.on('error', (error) => {
-    console.error(`An error occurred during the release: ${error}`);
+	console.error(`An error occurred during the release: ${error}`);
 });
 
 // pipe archive data to the file

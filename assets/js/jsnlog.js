@@ -3,6 +3,7 @@
  * Open source under the MIT License.
  * Copyright 2012-2017 Mattijs Perdeck All rights reserved.
  */
+// phpcs:ignoreFile - This is a third party library
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
