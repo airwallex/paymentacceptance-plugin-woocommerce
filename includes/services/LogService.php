@@ -2,7 +2,7 @@
 
 namespace Airwallex\Services;
 
-use Airwallex\LoggingClient;
+use Airwallex\Client\LoggingClient;
 
 class LogService {
 

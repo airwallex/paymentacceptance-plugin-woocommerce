@@ -27,33 +27,22 @@ define( 'AIRWALLEX_PLUGIN_NAME', 'airwallex-online-payments-gateway' );
 
 function airwallex_init() {
 
-	if ( ! class_exists( 'WooCommerce' ) ) {
-		add_action(
-			'admin_notices',
-			function () {
-				echo '<div class="error"><p><strong>' . esc_html__( 'Airwallex requires WooCommerce to be installed and active.', 'airwallex-online-payments-gateway' ) . '</strong></p></div>';
-			}
-		);
+	if (!class_exists('WooCommerce')) {
+		add_action('admin_notices', function () {
+			echo '<div class="error"><p><strong>' . esc_html__('Airwallex requires WooCommerce to be installed and active.', 'airwallex-online-payments-gateway') . '</strong></p></div>';
+		});
 		return;
 	}
-	require_once AIRWALLEX_PLUGIN_PATH . 'includes/Main.php';
-	require_once AIRWALLEX_PLUGIN_PATH . 'includes/struct/AbstractBase.php';
-	require_once AIRWALLEX_PLUGIN_PATH . 'includes/client/AbstractClient.php';
-	require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/AirwallexGatewayTrait.php';
-	foreach ( glob( AIRWALLEX_PLUGIN_PATH . 'includes/*/*.php' ) as $includeFile ) {
-		require_once $includeFile;
-	}
 
-	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
-		require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexWCBlockSupport.php';
-		require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexMainWCBlockSupport.php';
-		require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexCardWCBlockSupport.php';
-		require_once AIRWALLEX_PLUGIN_PATH . 'includes/gateways/blocks/AirwallexWeChatWCBlockSupport.php';
+	$autoloader = AIRWALLEX_PLUGIN_PATH . '/vendor/autoload.php';
+	if ( ! file_exists( $autoloader ) ) {
+		return;
 	}
+	require_once $autoloader;
 
 	$airwallex = \Airwallex\Main::getInstance();
 	$airwallex->init();
-	add_action( 'wp_enqueue_scripts', array( $airwallex, 'addJsLegacy' ) );
+	add_action('wp_enqueue_scripts', [$airwallex, 'addJsLegacy']);
 }
 
 add_action( 'plugins_loaded', 'airwallex_init' );

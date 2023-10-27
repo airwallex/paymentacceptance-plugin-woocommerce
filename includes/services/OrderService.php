@@ -2,8 +2,8 @@
 
 namespace Airwallex\Services;
 
-use Airwallex\AbstractClient;
-use Airwallex\CardClient;
+use Airwallex\Client\AbstractClient;
+use Airwallex\Client\CardClient;
 use Airwallex\Gateways\Card;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;

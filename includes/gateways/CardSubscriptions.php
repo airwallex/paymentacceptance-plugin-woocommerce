@@ -2,7 +2,7 @@
 
 namespace Airwallex\Gateways;
 
-use Airwallex\CardClient;
+use Airwallex\Client\CardClient;
 use Airwallex\Services\LogService;
 use Airwallex\Struct\PaymentIntent;
 use Exception;

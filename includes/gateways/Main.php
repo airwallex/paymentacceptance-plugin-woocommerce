@@ -2,8 +2,8 @@
 
 namespace Airwallex\Gateways;
 
-use Airwallex\CardClient;
-use Airwallex\MainClient;
+use Airwallex\Client\CardClient;
+use Airwallex\Client\MainClient;
 use Airwallex\Services\CacheService;
 use Airwallex\Services\LogService;
 use Airwallex\Struct\PaymentIntent;

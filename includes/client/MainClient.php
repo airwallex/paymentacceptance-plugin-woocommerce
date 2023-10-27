@@ -1,6 +1,6 @@
 <?php
 
-namespace Airwallex;
+namespace Airwallex\Client;
 
 class MainClient extends AbstractClient {
 

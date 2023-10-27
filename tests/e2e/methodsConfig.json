@@ -1,0 +1,47 @@
+{
+  "card": {
+    "id": "airwallex_card",
+    "defaultTitle": "__(\"Airwallex - Cards\", \"airwallex-online-payments-gateway\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "Subscription": true
+  },
+  "dropin": {
+    "id": "airwallex_main",
+    "defaultTitle": "__(\"Airwallex - All Payment Methods\", \"airwallex-online-payments-gateway\")",
+    "settingsDescription": "Accepts all available payment methods with your Airwallex account, including cards, Apple Pay, Google Pay, and other local payment methods. ",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "Subscription": true
+  },
+  "wechat": {
+    "id": "airwallex_wechat",
+    "defaultTitle": "__(\"Airwallex - WeChat Pay\", \"airwallex-online-payments-gateway\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "Subscription": true
+  }
+}

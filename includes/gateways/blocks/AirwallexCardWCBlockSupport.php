@@ -4,7 +4,7 @@ namespace Airwallex\Gateways\Blocks;
 
 use Airwallex\Gateways\Card;
 use Airwallex\Services\Util;
-use Airwallex\CardClient;
+use Airwallex\Client\CardClient;
 use Airwallex\Gateways\CardSubscriptions;
 use Airwallex\Services\OrderService;
 use Automattic\WooCommerce\Blocks\Payments\PaymentResult;
