@@ -1,6 +1,6 @@
 <?php
 
-namespace Airwallex;
+namespace Airwallex\Client;
 
 use Airwallex\Client\HttpClient;
 use Airwallex\Services\CacheService;
@@ -10,6 +10,7 @@ use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
 use Exception;
 use Airwallex\Services\Util;
+use Airwallex\Main;
 
 abstract class AbstractClient {
 

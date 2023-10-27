@@ -11,15 +11,29 @@
   "scripts": {
     "build": "rimraf build/* && npm run build:webpack",
     "build:webpack": "wp-scripts build",
-    "build:release": "npm run build && node tasks/release.js && mv release/airwallex-online-payments-gateway.zip ."
+    "build:release": "npm run build && node tasks/release.js && mv release/airwallex-online-payments-gateway.zip .",
+    "deploy": "npm run build:release && ./bin/deploy.sh",
+    "update-version": "./bin/update-versions.sh",
+    "release-to-wp": "./bin/deploy.sh",
+    "lint:php": "./vendor/bin/phpcs --standard=phpcs.xml.dist",
+    "lint:php-fix": "./vendor/bin/phpcbf --standard=phpcs.xml.dist",
+    "lint:js": "eslint . --ext=js,jsx,ts,tsx",
+    "test:php": "./vendor/bin/phpunit --coverage-text",
+    "test:php-html-report": "./vendor/bin/phpunit --coverage-html unit-test-report",
+    "test:e2e": "npx playwright test"
   },
   "dependencies": {
-    "airwallex-payment-elements": "latest"
+    "airwallex-payment-elements": "latest",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.38.1",
+    "@types/node": "^20.8.4",
     "@woocommerce/dependency-extraction-webpack-plugin": "^2.2.0",
+    "@woocommerce/eslint-plugin": "^2.2.0",
     "@wordpress/scripts": "^26.13.0",
     "archiver": "^6.0.1",
+    "jest": "^29.7.0",
     "rimraf": "^5.0.5",
     "shelljs": "^0.8.5",
     "webpack": "^5.76.2"

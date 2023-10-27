@@ -1,6 +1,8 @@
 <?php
 
-use Airwallex\CardClient;
+namespace Airwallex\Controllers;
+
+use Airwallex\Client\CardClient;
 use Airwallex\Gateways\Card;
 use Airwallex\Gateways\Main;
 use Airwallex\Gateways\WeChat;
@@ -8,7 +10,8 @@ use Airwallex\Services\LogService;
 use Airwallex\Services\OrderService;
 use Airwallex\Services\WebhookService;
 use Airwallex\Struct\PaymentIntent;
-use Airwallex\WeChatClient;
+use Airwallex\Client\WeChatClient;
+use Exception;
 
 class AirwallexController {
 

@@ -1,0 +1,85 @@
+{
+  "cookies": [
+    {
+      "name": "wordpress_sec_812ec203ee00103a80d847d7c3d0ace6",
+      "value": "admin%7C1697694580%7CBqKCcJfVKxLQ36Eil1wFbCEpCSh267Mz5uBGMujpzp2%7Cd050943cbba24887af0095ec2e090f27bc68ae3333845933777fe323dad43f62",
+      "domain": "localhost",
+      "path": "/wp-content/plugins",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_sec_812ec203ee00103a80d847d7c3d0ace6",
+      "value": "admin%7C1697694580%7CBqKCcJfVKxLQ36Eil1wFbCEpCSh267Mz5uBGMujpzp2%7Cd050943cbba24887af0095ec2e090f27bc68ae3333845933777fe323dad43f62",
+      "domain": "localhost",
+      "path": "/wp-admin",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_test_cookie",
+      "value": "WP%20Cookie%20check",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_logged_in_812ec203ee00103a80d847d7c3d0ace6",
+      "value": "admin%7C1697694580%7CBqKCcJfVKxLQ36Eil1wFbCEpCSh267Mz5uBGMujpzp2%7C1798f77faf9ef4c2b019776e3db55f35702c948090035db3026407d8cb254189",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "mailpoet_subscriber",
+      "value": "%7B%22subscriber_id%22%3A1%7D",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1732081780.28509,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wp-settings-1",
+      "value": "libraryContent%3Dbrowse",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1729057781.845507,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wp-settings-time-1",
+      "value": "1697521781",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1729057781.845541,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "tk_ai",
+      "value": "woo%3A2VYNFV88uEPjI7zWLAdQ45QC",
+      "domain": "localhost",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="tests/phpunit/bootstrap.php" backupGlobals="false" colors="true" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.4/phpunit.xsd" cacheDirectory=".phpunit.cache">
+  <testsuites>
+    <testsuite name="Airwallex WooCommerce Unit Test">
+      <directory suffix="Test.php">./tests/phpunit</directory>
+    </testsuite>
+  </testsuites>
+  <source>
+    <include>
+      <directory suffix="Util.php">includes/Services</directory>
+      <directory suffix="Main.php">includes</directory>
+    </include>
+    <exclude>
+      <directory>vendor</directory>
+    </exclude>
+  </source>
+</phpunit>

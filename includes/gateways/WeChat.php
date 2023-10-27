@@ -4,7 +4,7 @@ namespace Airwallex\Gateways;
 
 use Airwallex\Services\LogService;
 use Airwallex\Struct\Refund;
-use Airwallex\WeChatClient;
+use Airwallex\Client\WeChatClient;
 use Exception;
 use WC_Payment_Gateway;
 use WP_Error;
