@@ -12,6 +12,7 @@ use Airwallex\Services\WebhookService;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Client\WeChatClient;
 use Exception;
+use WC_Order;
 
 class AirwallexController {
 

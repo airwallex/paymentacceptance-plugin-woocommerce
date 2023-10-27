@@ -27,22 +27,22 @@ define( 'AIRWALLEX_PLUGIN_NAME', 'airwallex-online-payments-gateway' );
 
 function airwallex_init() {
 
-    if (!class_exists('WooCommerce')) {
-        add_action('admin_notices', function () {
-            echo '<div class="error"><p><strong>' . __('Airwallex requires WooCommerce to be installed and active.', AIRWALLEX_PLUGIN_NAME) . '</strong></p></div>';
-        });
-        return;
-    }
+	if (!class_exists('WooCommerce')) {
+		add_action('admin_notices', function () {
+			echo '<div class="error"><p><strong>' . esc_html__('Airwallex requires WooCommerce to be installed and active.', 'airwallex-online-payments-gateway') . '</strong></p></div>';
+		});
+		return;
+	}
 
-    $autoloader = AIRWALLEX_PLUGIN_PATH . '/vendor/autoload.php';
-    if ( ! file_exists( $autoloader ) ) {
-        return;
-    }
-    require_once $autoloader;
+	$autoloader = AIRWALLEX_PLUGIN_PATH . '/vendor/autoload.php';
+	if ( ! file_exists( $autoloader ) ) {
+		return;
+	}
+	require_once $autoloader;
 
-    $airwallex = \Airwallex\Main::getInstance();
-    $airwallex->init();
-    add_action('wp_enqueue_scripts', [$airwallex, 'addJsLegacy']);
+	$airwallex = \Airwallex\Main::getInstance();
+	$airwallex->init();
+	add_action('wp_enqueue_scripts', [$airwallex, 'addJsLegacy']);
 }
 
 add_action( 'plugins_loaded', 'airwallex_init' );
