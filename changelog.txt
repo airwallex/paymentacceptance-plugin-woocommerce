@@ -1,0 +1,156 @@
+*** WooCommerce Airwallex Online Payments Gateway Changelog ***
+
+2023-11-09 - version 1.3.1
+
+* Add - Changelog
+
+2023-10-26 - version 1.3.0
+
+* Add - Support for WooCommerce Cart and Checkout Blocks.
+
+2023-10-18 - version 1.2.13
+
+* Fix - Payment intent product list contains product item with negative unit price.
+
+2023-09-25 - version 1.2.12
+
+* Fix - Theme compatibility issues.
+*       New option in the Airwallex API settings is available to change the payment form template.
+*       Three payment method pages with corresponding shortcodes have been added.
+*       The shortcode can accept arguments 'class' and 'style' to customize the appearance of the payment form.
+
+2023-09-18 - version 1.2.11
+
+* Fix - Empty street field for card payment
+* Fix - Sum of all order product amounts is less than the payment intent amount for Klarna
+
+2023-09-06 - version 1.2.10
+
+* Add - Option to toggle remote logging on or off
+* Fix - Waring message when debug mode is on
+* Fix - When using Klarna as the payment method, the email field is missing and needs to be provided
+* Fix - Creation of duplicate refund items during the refund process
+
+2023-08-25 - version 1.2.9
+
+* Include shipping fee in payment intent
+
+2023-08-07 - version 1.2.8
+
+* Klarna adaptions
+
+2023-07-20 - version 1.2.7
+
+* Enhanced logging
+
+2023-07-03 - version 1.2.6
+
+* Enhanced Caching
+
+2023-06-28 - version 1.2.5
+
+* Enhanced locale support
+
+2023-05-23 - version 1.2.4
+
+* Optimization webhook handling
+* Adaption icons in checkout
+
+2023-04-10 - version 1.2.3
+
+* Additional logging functionality
+
+2022-12-23 - version 1.2.2
+
+* Make billing info Optional
+* Reuse intent if nothing change
+
+2022-11-25 - version 1.2.1
+
+* Relocate the sandbox toggle to api setting page
+* Provide details for risk control purpose
+
+2022-10-17 - version 1.2.0
+
+* Implementation of Drop-In elements
+* IDs in manual payment URLs for safer sessions
+
+2022-07-11 - version 1.1.8
+
+* Replacing the latest airwallex checkout file
+
+2022-04-27 - version 1.1.7
+
+* Warning log if cache-directory permissions are not correctly set
+* Cron interval configurable
+* Added description for sandbox setting
+
+2022-04-14 - version 1.1.6
+
+* Implementation of cronjob for handling non reflected payments
+* Fix Cache errors, fallback to transport payment intent in db
+* Optional status after decline, clean cache service
+
+2022-03-16 - version 1.1.5
+
+* add session logging
+* make security headers case insensitive
+* fix style issue for legacy themes
+* dynamic card logos
+* add SVG logo max height
+* embedded fields only for WooC 4.8+
+* support for https://www.skyverge.com/product/woocommerce-sequential-order-numbers/
+* make asyncIntent request unique, additional logging, webhook logging icons
+
+2022-02-21 - version 1.1.4
+
+* add token caching + improve logging
+
+2022-01-28 - version 1.1.3
+
+* add support for non-permalink setups
+* bugfix - pay old orders
+
+2022-01-13 - version 1.1.2
+
+* Bugfix weChat environment setting
+
+2022-01-07 - version 1.1.1
+
+* Limit descriptor string length, enhanced error handling (browser console)
+
+2021-12-21 - version 1.1.0
+
+* Updated Card Logos
+
+2021-12-12 - version 1.0.5
+
+* extended logging frontend, remove JS check for complete input
+* extended logging for webhooks
+* more robust JS on separate checkout pages
+* Upgrade JS lib
+
+2021-11-01 - version 1.0.4
+
+* Supporting wooCommerce subscriptions
+* Payment method icons for cards
+* Upgrade JS lib
+* Renaming Client ID label
+
+2021-08-06 - version 1.0.3
+
+* Bug fixing limited character length
+
+2021-04-19 - version 1.0.2
+
+* Improved CSS for better checkout experience
+
+2021-04-13 - version 1.0.1
+
+* Refactored JS
+* Replacing of curl with wp-core
+* Compatibility with checkoutWC plugin
+
+2021-03-19 - version 1.0.0
+
+* Initial version
