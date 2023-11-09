@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Airwallex Online Payments Gateway
- * Plugin URI:
+ * Plugin URI: https://www.airwallex.com
  * Description: Official Airwallex Plugin
  * Author: Airwallex
  * Author URI: https://www.airwallex.com
- * Version: 1.3.0
+ * Version: 1.3.1
  * Requires at least: 4.5
  * Tested up to: 6.2
  * WC requires at least: 3.0
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Required minimums and constants
  */
-define( 'AIRWALLEX_VERSION', '1.3.0' );
+define( 'AIRWALLEX_VERSION', '1.3.1' );
 define( 'AIRWALLEX_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
 define( 'AIRWALLEX_PLUGIN_PATH', __DIR__ . '/' );
 define( 'AIRWALLEX_PLUGIN_NAME', 'airwallex-online-payments-gateway' );
