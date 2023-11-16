@@ -88,7 +88,7 @@ class WebhookService {
 
 			$order = $orderService->getOrderByAirwallexRefundId( $refund->getId() );
 			if ( $order ) {
-				$refundInfo = get_post_meta( $order->get_id(), $refund->getMetaKey(), true );
+				$refundInfo = $order->get_meta( $refund->getMetaKey(), true );
 				if ( Refund::STATUS_SUCCEEDED !== $refundInfo['status'] ) {
 					$order->add_order_note(
 						sprintf(
@@ -98,7 +98,8 @@ class WebhookService {
 						)
 					);
 					$refundInfo['status'] = Refund::STATUS_SUCCEEDED;
-					update_post_meta( $order->get_id(), $refund->getMetaKey(), $refundInfo );
+					$order->update_meta_data( $refund->getMetaKey(), $refundInfo );
+					$order->save();
 				}
 				$logService->debug( __METHOD__ . " - Order {$order->get_id()}, refund id {$refund->getId()}, event type {$messageData['name']}, event id {$messageData['id']}" );
 			} else {
@@ -122,7 +123,8 @@ class WebhookService {
 				*/
 				if ( ! $orderService->getRefundIdByAirwallexRefundId( $refund->getId() ) ) {
 					if ( $orderService->getRefundByAmountAndTime( $order->get_id(), $refund->getAmount() ) ) {
-						add_post_meta( $order->get_id(), $refund->getMetaKey(), array( 'status' => Refund::STATUS_SUCCEEDED ) );
+						$order->add_meta_data( $refund->getMetaKey(), array( 'status' => Refund::STATUS_SUCCEEDED ) );
+						$order->save();
 					} else {
 						$wcRefund = wc_create_refund(
 							array(
@@ -134,7 +136,8 @@ class WebhookService {
 							)
 						);
 						if ( $wcRefund instanceof WC_Order_Refund ) {
-							add_post_meta( $order->get_id(), $refund->getMetaKey(), array( 'status' => Refund::STATUS_SUCCEEDED ) );
+							$order->add_meta_data( $refund->getMetaKey(), array( 'status' => Refund::STATUS_SUCCEEDED ) );
+							$order->save();
 						} else {
 							$order->add_order_note(
 								sprintf(

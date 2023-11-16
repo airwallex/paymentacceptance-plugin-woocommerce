@@ -277,7 +277,8 @@ class Main extends WC_Payment_Gateway {
 						$refund->getId()
 					)
 				);
-				add_post_meta( $order->get_id(), $metaKey, array( 'status' => Refund::STATUS_CREATED ) );
+				$order->add_meta_data( $metaKey, array( 'status' => Refund::STATUS_CREATED ) );
+				$order->save();
 			} else {
 				throw new Exception( "refund {$refund->getId()} already exist.", '1' );
 			}

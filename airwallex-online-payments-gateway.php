@@ -25,6 +25,12 @@ define( 'AIRWALLEX_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin
 define( 'AIRWALLEX_PLUGIN_PATH', __DIR__ . '/' );
 define( 'AIRWALLEX_PLUGIN_NAME', 'airwallex-online-payments-gateway' );
 
+add_action( 'before_woocommerce_init', function() {
+    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+    }
+} );
+
 function airwallex_init() {
 
 	if (!class_exists('WooCommerce')) {

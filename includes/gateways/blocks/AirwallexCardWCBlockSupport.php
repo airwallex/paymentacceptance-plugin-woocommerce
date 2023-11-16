@@ -98,7 +98,8 @@ class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 			$paymentIntent = $apiClient->createPaymentIntent( $order->get_total(), $order->get_id(), $this->gateway->is_submit_order_details(), $airwallexCustomerId );
 
 			WC()->session->set( 'airwallex_payment_intent_id', $paymentIntent->getId() );
-			update_post_meta( $order->get_id(), '_tmp_airwallex_payment_intent', $paymentIntent->getId() );
+			$order->update_meta_data( '_tmp_airwallex_payment_intent', $paymentIntent->getId() );
+			$order->save();
 
 			$paymentDetails['airwallexPaymentIntent'] = $paymentIntent->getId();
 			$paymentDetails['wcOrderId']              = $order->get_id();
