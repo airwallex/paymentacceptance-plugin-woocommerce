@@ -23,7 +23,7 @@ class OrderService {
 	public function getOrderByPaymentIntentId( $paymentIntentId ) {
 		global $wpdb;
 		$orderId = null;
-		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+		if ( class_exists(OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			// HPOS enabled
 			$row = $wpdb->get_row(
 				$wpdb->prepare(
@@ -77,7 +77,7 @@ class OrderService {
 		$startTime = ( new \DateTime( 'now - 600 seconds', new \DateTimeZone( '+0000' ) ) )->format( 'Y-m-d H:i:s' );
 		$endTime   = ( new \DateTime( 'now + 600 seconds', new \DateTimeZone( '+0000' ) ) )->format( 'Y-m-d H:i:s' );
 
-		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+		if ( class_exists(OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			// HPOS enabled
 
 			$row = $wpdb->get_row(
@@ -89,8 +89,8 @@ class OrderService {
 											 JOIN ' . OrdersTableDataStore::get_meta_table_name() . " pm ON (o.id = pm.order_id AND pm.meta_key = '_refund_amount')
 											 LEFT JOIN " . OrdersTableDataStore::get_meta_table_name() . " pm_refund_id ON (o.id = pm.order_id AND pm.meta_key = '_airwallex_refund_id')
 							WHERE
-							    o_parent.payment_method LIKE %s
-							        AND
+								o_parent.payment_method LIKE %s
+									AND
 								o.type = 'shop_order_refund'
 									AND
 								o.parent_order_id = %s
@@ -124,18 +124,18 @@ class OrderService {
 							 JOIN ' . $wpdb->postmeta . " pm ON (p.ID = pm.post_id AND pm.meta_key = '_refund_amount')
 							 JOIN " . $wpdb->postmeta . " pm_payment ON (p.post_parent = pm_payment.post_id AND pm_payment.meta_key = '_payment_method' AND  pm_payment.meta_value LIKE %s)
 							 LEFT JOIN " . $wpdb->postmeta . " pm_refund_id ON (p.ID = pm.post_id AND pm.meta_key = '_airwallex_refund_id')
-                            WHERE
-                                p.post_type = 'shop_order_refund'
-                                    AND
-                                p.post_parent = %s
-                                    AND
-                                p.post_date_gmt > %s
-                                    AND
-                                p.post_date_gmt < %s
-                                    AND
-                                pm.meta_value = %s
-                                    AND
-                                pm_refund_id.meta_value IS NULL",
+							WHERE
+								p.post_type = 'shop_order_refund'
+									AND
+								p.post_parent = %s
+									AND
+								p.post_date_gmt > %s
+									AND
+								p.post_date_gmt < %s
+									AND
+								pm.meta_value = %s
+									AND
+								pm_refund_id.meta_value IS NULL",
 					array(
 						'airwallex_%',
 						$orderId,
@@ -162,7 +162,7 @@ class OrderService {
 	 */
 	public function getRefundIdByAirwallexRefundId( $refundId ) {
 		global $wpdb;
-		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+		if ( class_exists(OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			// HPOS enabled
 			$row = $wpdb->get_row(
 				$wpdb->prepare(
@@ -212,7 +212,7 @@ class OrderService {
 	 */
 	public function getOrderByAirwallexRefundId( $refundId ) {
 		global $wpdb;
-		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+		if ( class_exists(OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			// HPOS enabled
 			$orderId = $wpdb->get_var(
 				$wpdb->prepare(
@@ -231,7 +231,7 @@ class OrderService {
 					"
 						SELECT wc_order.ID
 						FROM {$wpdb->posts} wc_order
-						INNER JOIN {$wpdb->postmeta} order_meta ON wc_order.id = order_meta.post_id
+						INNER JOIN {$wpdb->postmeta} order_meta ON wc_order.ID = order_meta.post_id
 						WHERE wc_order.post_type = 'shop_order' AND order_meta.meta_key = %s",
 					Refund::META_REFUND_ID . $refundId
 				)
@@ -272,16 +272,16 @@ class OrderService {
 	protected function getPendingPaymentOrdersIds() {
 		global $wpdb;
 
-		if ( OrderUtil::custom_orders_table_usage_is_enabled() ) {
+		if ( class_exists(OrderUtil::class ) && OrderUtil::custom_orders_table_usage_is_enabled() ) {
 			// HPOS enabled
 			return $wpdb->get_col(
 				'SELECT id FROM ' . OrdersTableDataStore::get_orders_table_name() . "
-					    WHERE
-					        payment_method = 'airwallex_card'
-					            AND
-                            type = 'shop_order'
-                                AND
-                            status = 'wc-pending'"
+						WHERE
+							payment_method = 'airwallex_card'
+								AND
+							type = 'shop_order'
+								AND
+							status = 'wc-pending'"
 			);
 		} else {
 			// HPOS disabled
@@ -312,7 +312,13 @@ class OrderService {
 			$order           = new WC_Order( (int) $orderId );
 			$paymentIntentId = $order->get_transaction_id();
 			if ( $paymentIntentId ) {
-				$paymentMethod = get_post_meta( $order->get_id(), '_payment_method', true );
+				if ( class_exists(OrderUtil::class ) &&  OrderUtil::custom_orders_table_usage_is_enabled() ) {
+					// HPOS enabled
+					$paymentMethod = $order->get_payment_method();
+				} else {
+					// HPOS disabled
+					$paymentMethod = $order->get_meta('_payment_method' );
+				}
 				if ( Card::GATEWAY_ID === $paymentMethod ) {
 					try {
 						$paymentIntent = CardClient::getInstance()->getPaymentIntent( $paymentIntentId );
