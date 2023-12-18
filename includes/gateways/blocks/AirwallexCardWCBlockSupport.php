@@ -11,6 +11,9 @@ use Automattic\WooCommerce\Blocks\Payments\PaymentResult;
 use Automattic\WooCommerce\Blocks\Payments\PaymentContext;
 use Automattic\WooCommerce\Blocks\Package;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 
 	protected $name = 'airwallex_card';

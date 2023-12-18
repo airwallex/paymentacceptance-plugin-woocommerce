@@ -3,6 +3,7 @@
 namespace Airwallex\Gateways;
 
 use Airwallex\Client\CardClient;
+use Airwallex\Gateways\Settings\AirwallexSettingsTrait;
 use Airwallex\Services\CacheService;
 use Airwallex\Services\LogService;
 use Airwallex\Struct\PaymentIntent;
@@ -20,12 +21,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Card extends WC_Payment_Gateway {
 
 	use AirwallexGatewayTrait;
+	use AirwallexSettingsTrait;
 
 	const ROUTE_SLUG              = 'airwallex_card';
 	const ROUTE_SLUG_WECHAT       = 'airwallex_wechat';
 	const ROUTE_SLUG_ASYNC_INTENT = 'airwallex_async_intent';
 	const GATEWAY_ID              = 'airwallex_card';
-	public $method_title          = 'Airwallex - Cards';
+	const DESCRIPTION_PLACEHOLDER = '<!-- -->';
+
+	public $method_title = 'Airwallex - Cards';
 	public $method_description;
 	public $title       = 'Airwallex - Cards';
 	public $description = '';
@@ -42,15 +46,25 @@ class Card extends WC_Payment_Gateway {
 
 		$this->plugin_id = AIRWALLEX_PLUGIN_NAME;
 		$this->init_settings();
-		$this->description = $this->get_option( 'description' ) ? $this->get_option( 'description' ) : ( $this->get_option( 'checkout_form_type' ) === 'inline' ? '<!-- -->' : '' );
+		$this->description = $this->get_option( 'description' ) ? $this->get_option( 'description' ) : ( $this->get_option( 'checkout_form_type' ) === 'inline' ? self::DESCRIPTION_PLACEHOLDER : '' );
 		if ( $this->get_client_id() && $this->get_api_key() ) {
 			$this->method_description = __( 'Accept only credit and debit card payments with your Airwallex account.', 'airwallex-online-payments-gateway' );
 			$this->form_fields        = $this->get_form_fields();
 		}
 
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 		$this->title      = $this->get_option( 'title' );
+		$this->tabTitle   = 'Cards';
 		$this->logService = new LogService();
+		$this->registerHooks();
+	}
+
+	public function registerHooks() {
+		add_filter( 'wc_airwallex_settings_nav_tabs', array( $this, 'adminNavTab' ), 11 );
+		add_action( 'woocommerce_airwallex_settings_checkout_' . $this->id, array( $this, 'enqueueAdminScripts' ) );
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+	}
+
+	public function enqueueAdminScripts() {
 	}
 
 	public function getCardLogos() {
@@ -93,7 +107,7 @@ class Card extends WC_Payment_Gateway {
 
 	public function payment_fields() {
 		if ( $this->get_option( 'checkout_form_type' ) === 'inline' ) {
-			echo '<p>' . esc_html( $this->description ) . '</p>';
+			echo '<p>' . wp_kses_post( $this->description ) . '</p>';
 			echo '<div id="airwallex-card"></div>';
 		} else {
 			parent::payment_fields();
@@ -307,5 +321,16 @@ class Card extends WC_Payment_Gateway {
 			wp_safe_redirect( wc_get_checkout_url() );
 			die;
 		}
+	}
+
+	public static function getMetaData() {
+		$settings = self::getSettings();
+
+		$data = [
+			'enabled' => $settings['enabled'],
+			'checkout_form_type' => $settings['checkout_form_type'],
+		];
+
+		return $data;
 	}
 }

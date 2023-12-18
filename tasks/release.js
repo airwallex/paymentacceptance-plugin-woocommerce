@@ -17,18 +17,24 @@ const filesToInclude = [
 	'license.txt',
 	'readme.txt',
 	'uninstall.php',
+	'apple-developer-merchantid-domain-association',
 ];
 
 // start with a fresh release directory
 shell.rm('-rf', releaseDir);
 shell.mkdir(releaseDir);
 shell.mkdir(targetDir);
+shell.mkdir(`${targetDir}/vendor`);
 
 // remove the 'hidden' source maps
 shell.rm('build/*.map');
 
 // copy required directories to the release dir
 shell.cp('-Rf', filesToInclude, targetDir);
+
+// copy vendor and autoload to the release dir
+shell.cp('-Rf', 'vendor/composer', `${targetDir}/vendor/composer`);
+shell.cp('-Rf', 'vendor/autoload.php', `${targetDir}/vendor`);
 
 // create zip file
 const output  = fs.createWriteStream(`${releaseDir}/${pluginSlug}.zip`);

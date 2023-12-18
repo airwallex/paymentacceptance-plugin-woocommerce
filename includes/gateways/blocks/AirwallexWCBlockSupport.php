@@ -4,6 +4,9 @@ namespace Airwallex\Gateways\Blocks;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 abstract class AirwallexWCBlockSupport extends AbstractPaymentMethodType {
 
 	public $enabled = 'yes';
@@ -24,9 +27,16 @@ abstract class AirwallexWCBlockSupport extends AbstractPaymentMethodType {
 	 * @return array
 	 */
 	public function get_payment_method_script_handles() {
+		wp_enqueue_style(
+			'airwallex-block-css',
+			AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout-blocks.css',
+			array(),
+			AIRWALLEX_VERSION
+		);
+
 		wp_register_script(
 			'airwallex-wc-blocks-integration',
-			AIRWALLEX_PLUGIN_URL . '/build/index.js',
+			AIRWALLEX_PLUGIN_URL . '/build/airwallex-wc-blocks.min.js',
 			array(),
 			AIRWALLEX_VERSION,
 			true
@@ -41,9 +51,16 @@ abstract class AirwallexWCBlockSupport extends AbstractPaymentMethodType {
 	 * @return array
 	 */
 	public function get_payment_method_script_handles_for_admin() {
+		wp_enqueue_style(
+			'airwallex-block-css',
+			AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout-blocks.css',
+			array(),
+			AIRWALLEX_VERSION
+		);
+
 		wp_register_script(
 			'airwallex-wc-blocks-integration',
-			AIRWALLEX_PLUGIN_URL . '/build/index.js',
+			AIRWALLEX_PLUGIN_URL . '/build/airwallex-wc-blocks.min.js',
 			array(),
 			time(),
 			true

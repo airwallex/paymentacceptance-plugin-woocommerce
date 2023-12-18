@@ -5,6 +5,7 @@ namespace Airwallex\Gateways;
 use Airwallex\Services\LogService;
 use Airwallex\Struct\Refund;
 use Airwallex\Client\WeChatClient;
+use Airwallex\Gateways\Settings\AirwallexSettingsTrait;
 use Exception;
 use WC_Payment_Gateway;
 use WP_Error;
@@ -16,14 +17,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WeChat extends WC_Payment_Gateway {
 
 	use AirwallexGatewayTrait;
+	use AirwallexSettingsTrait;
 
-	const ROUTE_SLUG           = 'airwallex_wechat';
+	const ROUTE_SLUG = 'airwallex_wechat';
+	const GATEWAY_ID = 'airwallex_wechat';
+
 	public $method_title       = 'Airwallex - WeChat Pay';
 	public $method_description = '';
 	public $title              = 'Airwallex - WeChat Pay';
 	public $description        = '';
 	public $icon               = '';
-	public $id                 = 'airwallex_wechat';
+	public $id                 = self::GATEWAY_ID;
 	public $plugin_id;
 	public $supports = array(
 		'products',
@@ -41,10 +45,18 @@ class WeChat extends WC_Payment_Gateway {
 		}
 		$this->title      = $this->get_option( 'title' );
 		$this->logService = new LogService();
+		$this->tabTitle   = 'WeChat Pay';
+		$this->registerHooks();
+	}
+
+	public function registerHooks() {
+		add_filter( 'wc_airwallex_settings_nav_tabs', array( $this, 'adminNavTab' ), 13 );
+		add_action( 'woocommerce_airwallex_settings_checkout_' . $this->id, array( $this, 'enqueueAdminScripts' ) );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 	}
 
-
+	public function enqueueAdminScripts() {
+	}
 
 	public function get_form_fields() {
 		return apply_filters( // phpcs:ignore
@@ -163,5 +175,15 @@ class WeChat extends WC_Payment_Gateway {
 			wp_safe_redirect( wc_get_checkout_url() );
 			die;
 		}
+	}
+
+	public static function getMetaData() {
+		$settings = self::getSettings();
+
+		$data = [
+			'enabled' => $settings['enabled'],
+		];
+
+		return $data;
 	}
 }

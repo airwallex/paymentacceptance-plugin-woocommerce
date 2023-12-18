@@ -2,6 +2,8 @@
 
 namespace Airwallex\Services;
 
+use Exception;
+
 class Util {
 
 	public static function getLocale() {
@@ -51,5 +53,99 @@ class Util {
 			$val = floatval( $val );
 		}
 		return round( $val, $precision, $mode );
+	}
+
+	/**
+	 * Get the current environment setting
+	 * 
+	 * @return string The current environment
+	 */
+	public static function getEnvironment() {
+		return in_array( get_option( 'airwallex_enable_sandbox' ), array( true, 'yes' ), true ) ? 'demo' : 'prod';
+	}
+
+	/**
+	 * Get the api kay
+	 * 
+	 * @return string API Key
+	 */
+	public static function getApiKey() {
+		return get_option( 'airwallex_api_key' );
+	}
+
+	/**
+	 * Get the client id
+	 * 
+	 * @return string Client id
+	 */
+	public static function getClientSecret() {
+		return get_option( 'airwallex_client_id' );
+	}
+
+	/**
+	 * Get merchant info from JWT token
+	 * 
+	 * @param string $clientSecret
+	 * @return array Merchant info
+	 */
+	public static function getMerchantInfoFromJwtToken($clientSecret) {
+		try {
+			// decode JWT token
+			$merchantInfo = [];
+			$base64Codes  = explode('.', $clientSecret);
+			if (!empty($base64Codes[1])) {
+				$base64 = str_replace('_', '/', str_replace('-', '+', $base64Codes[1]));
+				
+				$decoded = json_decode(urldecode(base64_decode($base64)), true);
+			}
+
+			if (isset($decoded['account_id'])) {
+				$merchantInfo = [
+					'accountId' => $decoded['account_id'],
+				];
+			}
+
+			return $merchantInfo;
+		} catch (Exception $ex) {
+			LogService::getInstance()->error(__METHOD__, $ex->getTrace());
+			return null;
+		}
+	}
+
+	/**
+	 * Get currency format
+	 * 
+	 * @return array Currency format
+	 */
+	public static function getCurrencyFormat() {
+		$position = get_option( 'woocommerce_currency_pos' );
+		$symbol   = html_entity_decode( get_woocommerce_currency_symbol() );
+		$prefix   = '';
+		$suffix   = '';
+
+		switch ( $position ) {
+			case 'left_space':
+				$prefix = $symbol . ' ';
+				break;
+			case 'left':
+				$prefix = $symbol;
+				break;
+			case 'right_space':
+				$suffix = ' ' . $symbol;
+				break;
+			case 'right':
+				$suffix = $symbol;
+				break;
+		}
+		
+		return [
+			'currencyCode'              => get_woocommerce_currency(),
+			'currencySymbol'            => $symbol,
+			'currencyMinorUnit'         => wc_get_price_decimals(),
+			'currencyDecimalSeparator'  => wc_get_price_decimal_separator(),
+			'currencyThousandSeparator' => wc_get_price_thousand_separator(),
+			'currencyPrefix'            => $prefix,
+			'currencySuffix'            => $suffix,
+		];
 	}
 }

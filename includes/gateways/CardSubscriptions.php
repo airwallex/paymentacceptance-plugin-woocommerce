@@ -64,7 +64,7 @@ class CardSubscriptions extends Card {
 			$airwallexPaymentConsentId = $originalOrder->get_meta( 'airwallex_consent_id' );
 			$cardClient                = new CardClient();
 			$paymentIntent             = $cardClient->createPaymentIntent( $amount, $order->get_id(), false, $airwallexCustomerId );
-			$paymentIntentAfterCapture = $cardClient->confirmPaymentIntent( $paymentIntent->getId(), $airwallexPaymentConsentId );
+			$paymentIntentAfterCapture = $cardClient->confirmPaymentIntent( $paymentIntent->getId(), [ 'payment_consent_reference' => [ 'id' => $airwallexPaymentConsentId ] ] );
 
 			if ( $paymentIntentAfterCapture->getStatus() === PaymentIntent::STATUS_SUCCEEDED ) {
 				( new LogService() )->debug( 'capture successful', $paymentIntentAfterCapture->toArray() );

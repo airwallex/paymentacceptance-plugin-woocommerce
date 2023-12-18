@@ -14,6 +14,17 @@ use Airwallex\Gateways\Blocks\AirwallexMainWCBlockSupport;
 use Airwallex\Gateways\Blocks\AirwallexWeChatWCBlockSupport;
 use Airwallex\Controllers\AirwallexController;
 use Airwallex\Client\AdminClient;
+use Airwallex\Client\CardClient;
+use Airwallex\Controllers\GatewaySettingsController;
+use Airwallex\Controllers\OrderController;
+use Airwallex\Controllers\PaymentConsentController;
+use Airwallex\Controllers\PaymentIntentController;
+use Airwallex\Controllers\PaymentSessionController;
+use Airwallex\Gateways\Blocks\AirwallexExpressCheckoutWCBlockSupport;
+use Airwallex\Gateways\ExpressCheckout;
+use Airwallex\Gateways\Settings\AdminSettings;
+use Airwallex\Gateways\Settings\APISettings;
+use Airwallex\Services\Util;
 use Exception;
 use WC_Order;
 use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
@@ -30,6 +41,10 @@ class Main {
 
 	public static $instance;
 
+	public $apiSettings;
+
+	private $expressCheckout;
+
 	public static function getInstance() {
 		if ( ! isset( self::$instance ) ) {
 			self::$instance = new self();
@@ -42,14 +57,29 @@ class Main {
 	}
 
 	public function init() {
+		$cardClient            = new CardClient();
+		$cacheService          = new CacheService(Util::getClientSecret());
+		$orderService          = new OrderService();
+		$this->expressCheckout = new ExpressCheckout(
+			new Card(),
+			new GatewaySettingsController($cardClient),
+			new OrderController(),
+			new PaymentIntentController($cardClient, $cacheService, $orderService),
+			new PaymentConsentController($cardClient, $cacheService, $orderService),
+			new PaymentSessionController($cardClient),
+			$orderService,
+			new CacheService(Util::getClientSecret()),
+			$cardClient
+		);
+
 		$this->registerEvents();
 		$this->registerOrderStatus();
 		$this->registerCron();
-		$this->wcNoticeApiKeyMissing();
+		$this->registerSettings();
+		$this->registerExpressCheckoutButtons($this->expressCheckout);
 	}
 
 	public function registerEvents() {
-		add_filter( 'woocommerce_get_settings_checkout', array( $this, 'addGlobalSettings' ), 10, 3 );
 		add_filter( 'woocommerce_payment_gateways', array( $this, 'addPaymentGateways' ) );
 		add_action( 'woocommerce_order_status_changed', array( $this, 'handleStatusChange' ), 10, 4 );
 		add_action( 'woocommerce_api_' . Card::ROUTE_SLUG, array( new AirwallexController(), 'cardPayment' ) );
@@ -80,9 +110,14 @@ class Main {
 			add_filter( 'wp_list_pages_excludes', array( $this, 'excludePagesFromList' ), 10, 1 );
 		}
 		add_action( 'woocommerce_blocks_loaded', array( $this, 'woocommerceBlockSupport' ) );
+		add_action('woocommerce_init', [AdminSettings::class, 'init']);
 	}
 
-	public function wcNoticeApiKeyMissing() {
+	public function registerSettings() {
+		$this->apiSettings = new APISettings();
+	}
+
+	public function noticeApiKeyMissing() {
 		$clientId = get_option( 'airwallex_client_id' );
 		$apiKey   = get_option( 'airwallex_api_key' );
 
@@ -108,9 +143,34 @@ class Main {
 		);
 	}
 
+	public function noticeExpressCheckoutDisabled(ExpressCheckout $gateway) {
+		if ( ! $gateway->enabled ) {
+			add_action(
+				'admin_notices',
+				function () {
+					printf(
+						/* translators: Placeholder 1: Opening div tag. Placeholder 2: Open link tag. Placeholder 3: Close link tag. Placeholder 4: Close div tag. */
+						esc_html__(
+							'%1$sYou have not activated any express checkout option. Remember to %2$sselect at least one option%3$s to let your customers enjoy faster, more secure checkouts.%4$s',
+							'airwallex-online-payments-gateway'
+						),
+						'<div class="notice notice-warning is-dismissible" style="padding:12px 12px">',
+						'<a href=">' . esc_url( admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . ExpressCheckout::ID ) ) . '">',
+						'</a>',
+						'</div>'
+					);
+				}
+			);
+		}
+	}
+
 	public function modifyRequestsForLogging( $url, $headers, $data, $type, &$options ) {
 		if ( ! $options['blocking'] && strpos( $url, 'airwallex' ) ) {
-			$options['transport'] = 'Requests_Transport_fsockopen';
+			if ( class_exists('\WpOrg\Requests\Transport\Fsockopen') ) {
+				$options['transport'] = '\WpOrg\Requests\Transport\Fsockopen';
+			} else {
+				$options['transport'] = 'Requests_Transport_fsockopen';
+			}
 		}
 	}
 
@@ -327,123 +387,6 @@ class Main {
 		return $links;
 	}
 
-	public function addGlobalSettings( $settings, $currentSection ) {
-		if ( 'airwallex_general' === $currentSection ) {
-			$settings = array(
-				'title'                                => array(
-					'type' => 'title',
-					'desc' => '<img src="' . AIRWALLEX_PLUGIN_URL . '/assets/images/logo.svg" width="150" alt="Airwallex" /><br>
-                                <h2>API settings</h2>
-                                <br>Please enter your Airwallex credentials
-                                <br><br>
-                                <a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout' ) . '">Back to payment overview</a>
-                                <br>
-                                <br>',
-				),
-				'client_id'                            => array(
-					'title' => __( 'Unique client ID', 'airwallex-online-payments-gateway' ),
-					'type'  => 'text',
-					'desc'  => '',
-					'id'    => 'airwallex_client_id',
-					'value' => get_option( 'airwallex_client_id' ),
-				),
-				'api_key'                              => array(
-					'title' => __( 'API key', 'airwallex-online-payments-gateway' ),
-					'type'  => 'text',
-					'desc'  => '',
-					'id'    => 'airwallex_api_key',
-					'value' => get_option( 'airwallex_api_key' ),
-				),
-				'webhook_secret'                       => array(
-					'title' => __( 'Webhook secret key', 'airwallex-online-payments-gateway' ),
-					'type'  => 'password',
-					'desc'  => 'Webhook URL: ' . WC()->api_request_url( self::ROUTE_SLUG_WEBHOOK ),
-					'id'    => 'airwallex_webhook_secret',
-					'value' => get_option( 'airwallex_webhook_secret' ),
-				),
-				'enable_sandbox'                       => array(
-					'title'   => __( 'Enable sandbox', 'airwallex-online-payments-gateway' ),
-					'desc'    => __( 'Yes', 'airwallex-online-payments-gateway' ),
-					'type'    => 'checkbox',
-					'default' => 'yes',
-					'id'      => 'airwallex_enable_sandbox',
-					'value'   => get_option( 'airwallex_enable_sandbox' ),
-				),
-				'temporary_order_status_after_decline' => array(
-					'title'   => __( 'Temporary order status after decline during checkout', 'airwallex-online-payments-gateway' ),
-					'id'      => 'airwallex_temporary_order_status_after_decline',
-					'type'    => 'select',
-					'desc'    => __( 'This order status is set, when the payment has been declined and the customer redirected to the checkout page to try again.', 'airwallex-online-payments-gateway' ),
-					'options' => array(
-						'pending' => _x( 'Pending payment', 'Order status', 'airwallex-online-payments-gateway' ),
-						'failed'  => _x( 'Failed', 'Order status', 'airwallex-online-payments-gateway' ),
-					),
-					'value'   => get_option( 'airwallex_temporary_order_status_after_decline' ),
-				),
-				'order_status_pending'                 => array(
-					'title'   => __( 'Order state for pending payments', 'airwallex-online-payments-gateway' ),
-					'id'      => 'airwallex_order_status_pending',
-					'type'    => 'select',
-					'desc'    => __( 'Certain local payment methods have asynchronous payment confirmations that can take up to a few days. Card payments are always instant.', 'airwallex-online-payments-gateway' ),
-					'options' => array_merge( array( '' => __( '[Do not change status]', 'airwallex-online-payments-gateway' ) ), wc_get_order_statuses() ),
-					'value'   => get_option( 'airwallex_order_status_pending' ),
-				),
-				'order_status_authorized'              => array(
-					'title'   => __( 'Order state for authorized payments', 'airwallex-online-payments-gateway' ),
-					'id'      => 'airwallex_order_status_authorized',
-					'type'    => 'select',
-					'desc'    => __( 'Status for orders that are authorized but not captured', 'airwallex-online-payments-gateway' ),
-					'options' => array_merge( array( '' => __( '[Do not change status]', 'airwallex-online-payments-gateway' ) ), wc_get_order_statuses() ),
-					'value'   => get_option( 'airwallex_order_status_authorized' ),
-				),
-				'cronjob_interval'                     => array(
-					'title'   => __( 'Cronjob interval', 'airwallex-online-payments-gateway' ),
-					'id'      => 'airwallex_cronjob_interval',
-					'type'    => 'select',
-					'desc'    => '',
-					'options' => array(
-						'3600'  => __( 'Every hour (recommended)', 'airwallex-online-payments-gateway' ),
-						'14400' => __( 'Every 4 hours', 'airwallex-online-payments-gateway' ),
-						'28800' => __( 'Every 8 hours', 'airwallex-online-payments-gateway' ),
-						'43200' => __( 'Every 12 hours', 'airwallex-online-payments-gateway' ),
-					),
-					'value'   => get_option( 'airwallex_cronjob_interval' ),
-				),
-				'do_js_logging'                        => array(
-					'title'   => __( 'Activate JS logging', 'airwallex-online-payments-gateway' ),
-					'desc'    => __( 'Yes (only for special cases after contacting Airwallex)', 'airwallex-online-payments-gateway' ),
-					'type'    => 'checkbox',
-					'default' => 'yes',
-					'id'      => 'airwallex_do_js_logging',
-					'value'   => get_option( 'airwallex_do_js_logging' ),
-				),
-				'do_remote_logging'                    => array(
-					'title'   => __( 'Activate remote logging', 'airwallex-online-payments-gateway' ),
-					'desc'    => __( 'Send diagnostic data to Airwallex', 'airwallex-online-payments-gateway' ) . '<br/><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . __( 'Help Airwallex easily resolve your issues and improve your experience by automatically sending diagnostic data. Diagnostic data may include order details.', 'airwallex-online-payments-gateway' ) . '</small>',
-					'type'    => 'checkbox',
-					'default' => '',
-					'id'      => 'airwallex_do_remote_logging',
-					'value'   => get_option( 'airwallex_do_remote_logging' ),
-				),
-				'payment_page_template'                => array(
-					'title'   => __( 'Payment form template', 'airwallex-online-payments-gateway' ),
-					'id'      => 'airwallex_payment_page_template',
-					'type'    => 'select',
-					'desc'    => '',
-					'options' => array(
-						'default'        => __( 'Default', 'airwallex-online-payments-gateway' ),
-						'wordpress_page' => __( 'WordPress page shortcodes', 'airwallex-online-payments-gateway' ),
-					),
-					'value'   => get_option( 'airwallex_payment_page_template' ),
-				),
-				'sectionend'                           => array(
-					'type' => 'sectionend',
-				),
-			);
-		}
-		return $settings;
-	}
-
 	public function addPaymentGateways( $gateways ) {
 		$gateways[] = MainGateway::class;
 		if ( class_exists( 'WC_Subscriptions_Order' ) && function_exists( 'wcs_create_renewal_order' ) ) {
@@ -452,6 +395,7 @@ class Main {
 			$gateways[] = Card::class;
 		}
 		$gateways[] = WeChat::class;
+		$gateways[] = $this->expressCheckout;
 		return $gateways;
 	}
 
@@ -553,7 +497,7 @@ class Main {
 			return;
 		}
 
-		wp_enqueue_script( 'airwallex-lib-js', $jsUrl, array(), AIRWALLEX_VERSION, true );
+		wp_enqueue_script( 'airwallex-lib-js', $jsUrl, array(), null, true );
 		wp_enqueue_script( 'airwallex-local-js', $jsUrlLocal, array(), AIRWALLEX_VERSION, true );
 
 		wp_enqueue_style( 'airwallex-css', $cssUrl, array(), AIRWALLEX_VERSION );
@@ -698,8 +642,18 @@ AIRWALLEX;
 					$payment_method_registry->register( new AirwallexMainWCBlockSupport() );
 					$payment_method_registry->register( new AirwallexCardWCBlockSupport() );
 					$payment_method_registry->register( new AirwallexWeChatWCBlockSupport() );
+					$payment_method_registry->register( new AirwallexExpressCheckoutWCBlockSupport());
 				}
 			);
 		}
+	}
+
+	public function registerExpressCheckoutButtons($expressCheckout) {
+		add_action( 'woocommerce_after_add_to_cart_quantity', [ $expressCheckout, 'displayExpressCheckoutButtonHtml' ], 3 );
+		add_action( 'woocommerce_after_add_to_cart_quantity', [ $expressCheckout, 'displayExpressCheckoutButtonSeparatorHtml' ], 4 );
+		add_action( 'woocommerce_proceed_to_checkout', [ $expressCheckout, 'displayExpressCheckoutButtonHtml' ], 3 );
+		add_action( 'woocommerce_proceed_to_checkout', [ $expressCheckout, 'displayExpressCheckoutButtonSeparatorHtml' ], 4 );
+		add_action( 'woocommerce_checkout_before_customer_details', [ $expressCheckout, 'displayExpressCheckoutButtonHtml' ], 3 );
+		add_action( 'woocommerce_checkout_before_customer_details', [ $expressCheckout, 'displayExpressCheckoutButtonSeparatorHtml' ], 4 );
 	}
 }

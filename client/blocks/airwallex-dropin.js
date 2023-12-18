@@ -55,7 +55,7 @@ export const airwallexDropInOption = {
 	label: <AirwallexLabelDropIn />,
 	content: <AirwallexContentDropIn />,
 	edit: <AirwallexContentDropIn />,
-	canMakePayment: () => canMakePayment,
+	canMakePayment: canMakePayment,
 	ariaLabel: title,
 	supports: {
 		features: settings?.supports ?? [],

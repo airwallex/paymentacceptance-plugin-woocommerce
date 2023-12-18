@@ -46,6 +46,18 @@ trait AirwallexGatewayTrait {
 		return in_array( get_option( 'airwallex_enable_sandbox' ), array( true, 'yes' ), true );
 	}
 
+	public function isJsLoggingEnabled() {
+		return in_array( get_option( 'do_js_logging' ), array( 'yes', 1, true, '1' ), true );
+	}
+
+	public function isRemoteLoggingEnabled() {
+		return in_array( get_option( 'do_remote_logging' ), array( 'yes', 1, true, '1' ), true );
+	}
+
+	public function getPaymentFormTemplate() {
+		return get_option( 'airwallex_payment_page_template' );
+	}
+
 	public function get_payment_url( $type ) {
 		$template = get_option( 'airwallex_payment_page_template' );
 		if ( 'wordpress_page' === $template ) {
@@ -77,5 +89,9 @@ trait AirwallexGatewayTrait {
 		}
 
 		return $permalink;
+	}
+
+	public static function getSettings() {
+		return get_option(AIRWALLEX_PLUGIN_NAME . self::GATEWAY_ID . '_settings');
 	}
 }

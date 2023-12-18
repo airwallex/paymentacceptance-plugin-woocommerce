@@ -13,4 +13,24 @@ class CardClient extends AbstractClient {
 		$this->isSandbox         = in_array( get_option( 'airwallex_enable_sandbox' ), array( true, 'yes' ), true );
 		$this->paymentDescriptor = (string) $this->gateway->get_option( 'payment_descriptor' );
 	}
+
+	public function getActiveCardSchemes($countryCode, $currency) {
+		$client   = $this->getHttpClient();
+		$response = $client->call(
+			'GET',
+			$this->getPciUrl(
+				'pa/config/payment_method_types?' . http_build_query([
+					'active' => true,
+					'country_code' => $countryCode,
+					'transaction_currency' => $currency,
+				])
+			),
+			null,
+			array(
+				'Authorization' => 'Bearer ' . $this->getToken(),
+			)
+		);
+
+		return empty($response->data['items']) ? [] : $response->data['items'];
+	}
 }

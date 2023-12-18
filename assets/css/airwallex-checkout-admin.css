@@ -1,0 +1,97 @@
+/*------Express Checkout Settings------*/
+.awx-ec-settings-button-preview {
+	display: flex;
+	border: 1px dashed #ddd;
+	box-sizing: border-box;
+	border-radius: 3px;
+	background-color: #f0f0f0;
+	padding: 1em 1em 1em 0;
+	width: 624px;
+}
+
+apple-pay-button {
+	--apple-pay-button-width: 100%;
+	--apple-pay-button-height: 40px;
+	--apple-pay-button-border-radius: 5px;
+}
+
+.awx-ec-button-preview {
+	width: 100%;
+	line-height: normal;
+	margin-left: 1em;
+	display: none;
+}
+
+.awx-ec-button-preview button {
+	width: 100% !important;
+}
+
+.awx-settings-alert-box {
+	display: flex;
+	width: 620px;
+	background-color: #F0F9FF;
+	padding: 10px;
+	border: 1px solid #38BDF8;
+	border-radius: 5px;
+}
+
+@media(max-width: 800px) {
+	.awx-ec-settings-button-preview {
+		width: 100%;
+		flex-flow: column;
+		padding: 1em;
+	}
+
+	.awx-ec-button-preview {
+		margin: 0;
+	}
+
+	.awx-apple-pay-btn {
+		margin-bottom: 1em;
+	}
+}
+
+/*------Common------*/
+.wc-airwallex-settings-logo {
+	margin: 1.5em 0.5em;
+}
+
+.wc-airwallex-settings-field-container {
+	display: flex;
+	align-items: center;
+	margin: 1em 0;
+}
+
+.wc-airwallex-settings-field-container label {
+	font-weight: 600;
+	width: 200px;
+	padding-right: 24px;
+	color: #1d2327;
+}
+
+.wc-airwallex-settings-field-container fieldset {
+	padding: 15px 10px;
+}
+
+.wc-airwallex-settings-field-container input[type=text] {
+	width: 400px;
+}
+
+@media only screen and (max-width: 782px) {
+	.wc-airwallex-settings-field-container {
+		flex-direction: column;
+		align-items: normal;
+	}
+
+	.wc-airwallex-settings-field-container fieldset {
+		padding: 6px 0 4px;
+	}
+
+	.wc-airwallex-settings-field-container input[type=text] {
+		width: 100%;
+	}
+
+	.awx-settings-alert-box {
+		width: 100%;
+	}
+}

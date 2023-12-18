@@ -3,16 +3,22 @@
 namespace Airwallex\Client;
 
 use Airwallex\Client\HttpClient;
+use Airwallex\Controllers\PaymentSessionController;
+use Airwallex\Gateways\AirwallexGatewayTrait;
+use Airwallex\Gateways\ExpressCheckout;
 use Airwallex\Services\CacheService;
-use Airwallex\Services\LogService;
 use Airwallex\Struct\Customer;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
 use Exception;
 use Airwallex\Services\Util;
 use Airwallex\Main;
+use Airwallex\Struct\PaymentConsent;
+use Airwallex\Struct\PaymentSession;
 
 abstract class AbstractClient {
+
+	use AirwallexGatewayTrait;
 
 	const AUTH_URL_LIVE       = 'https://pci-api.airwallex.com/api/v1/';
 	const AUTH_URL_SANDBOX    = 'https://pci-api-demo.airwallex.com/api/v1/';
@@ -292,6 +298,8 @@ abstract class AbstractClient {
 			}
 		}
 
+		$data['metadata'] +=  $this->getMetaData();
+
 		$response = $client->call(
 			'POST',
 			$this->getPciUrl( 'pa/payment_intents/create' ),
@@ -335,34 +343,33 @@ abstract class AbstractClient {
 	 * Send confirm payment intent request to airwallex
 	 *
 	 * @param $paymentIntentId
-	 * @param $paymentConsentId
+	 * @param $payload
 	 * @return PaymentIntent
 	 * @throws Exception
 	 */
-	final public function confirmPaymentIntent( $paymentIntentId, $paymentConsentId ) {
+	final public function confirmPaymentIntent( $paymentIntentId, $payload  ) {
 		if ( empty( $paymentIntentId ) ) {
 			throw new Exception( 'payment intent id empty' );
 		}
-		if ( empty( $paymentConsentId ) ) {
-			throw new Exception( 'payment consent id empty' );
-		}
+		
 		$client   = $this->getHttpClient();
 		$response = $client->call(
 			'POST',
 			$this->getPciUrl( 'pa/payment_intents/' . $paymentIntentId . '/confirm' ),
 			wp_json_encode(
-				array(
-					'payment_consent_reference' => array(
-						'id' => $paymentConsentId,
-					),
-					'request_id'                => uniqid(),
-				)
+				$payload
+				+ ['request_id' => uniqid(),]
 				+ $this->getReferrer()
 			),
 			array(
 				'Authorization' => 'Bearer ' . $this->getToken(),
 			)
 		);
+
+		if (in_array($response->status, HttpClient::HTTP_STATUSES_FAILED, true)) {
+			throw new Exception( 'Failed to confirm the intent, ' . isset($response->data['message']) ? $response->data['message'] : '' );
+		}
+
 		return new PaymentIntent( $response->data );
 	}
 
@@ -452,6 +459,7 @@ abstract class AbstractClient {
 					'reason'            => $reason,
 					'request_id'        => uniqid(),
 				)
+				+ ['metadata' => $this->getMetaData()]
 				+ $this->getReferrer()
 			),
 			array(
@@ -582,6 +590,152 @@ abstract class AbstractClient {
 		return $response->data['client_secret'];
 	}
 
+	/**
+	 * Send confirm continue request to Airwallex for 3ds
+	 * 
+	 * @param string $paymentIntentId
+	 * @param array $payload
+	 * @return PaymentIntent
+	 */
+	final public function paymentConfirmContinue( $paymentIntentId, $payload ) {
+		if ( empty( $paymentIntentId ) ) {
+			throw new Exception( 'payment intent id empty' );
+		}
+		
+		$client   = $this->getHttpClient();
+		$response = $client->call(
+			'POST',
+			$this->getPciUrl( 'pa/payment_intents/' . $paymentIntentId . '/confirm_continue' ),
+			wp_json_encode(
+				$payload
+				+ ['request_id' => uniqid(),]
+				+ $this->getReferrer()
+			),
+			array(
+				'Authorization' => 'Bearer ' . $this->getToken(),
+			)
+		);
+
+		if (in_array($response->status, HttpClient::HTTP_STATUSES_FAILED, true)) {
+			throw new Exception( 'Failed to confirm the intent, ' . isset($response->data['message']) ? $response->data['message'] : '' );
+		}
+
+		return new PaymentIntent( $response->data );
+	}
+
+	/**
+	 * Create payment method for subscription payment
+	 * 
+	 * @param $customerId
+	 * @param array $paymentMethod payment method detail
+	 * @param string $nextTriggeredBy One of merchant, customer
+	 * @param string $merchantTriggerReason Whether the subsequent payments are scheduled. Only applicable when next_triggered_by is merchant. One of scheduled, unscheduled.
+	 * @return integer Payment consent id
+	 */
+	final public function createPaymentConsent( $customerId, $paymentMethod, $nextTriggeredBy = 'merchant', $merchantTriggerReason = 'scheduled' ) {
+		if ( empty( $customerId ) ) {
+			throw new Exception( 'Customer ID is empty.' );
+		}
+
+		$client   = $this->getHttpClient();
+		$response = $client->call(
+			'POST',
+			$this->getPciUrl( 'pa/payment_consents/create'),
+			wp_json_encode(
+				[
+					'next_triggered_by' => $nextTriggeredBy,
+					'merchant_trigger_reason' => $merchantTriggerReason,
+					'payment_method' => $paymentMethod,
+					'customer_id' => $customerId,
+					'request_id' => uniqid(),
+				]
+				+ ['metadata' => $this->getMetaData()]
+				+ $this->getReferrer()
+			),
+			array(
+				'Authorization' => 'Bearer ' . $this->getToken(),
+			)
+		);
+
+		if (in_array($response->status, HttpClient::HTTP_STATUSES_FAILED, true)) {
+			throw new Exception( 'Failed to create payment consent, ' . isset($response->data['message']) ? $response->data['message'] : '' );
+		}
+
+		return $response->data['id'];
+	}
+
+	/**
+	 * Create payment method for subscription payment
+	 * 
+	 * @param $paymentConsentId
+	 * @param array $payload
+	 * @return PaymentConsent
+	 */
+	final public function verifyPaymentConsent( $paymentConsentId, $payload ) {
+		if ( empty( $paymentConsentId ) ) {
+			throw new Exception( 'Payment consent ID is empty.' );
+		}
+
+		$client   = $this->getHttpClient();
+		$response = $client->call(
+			'POST',
+			$this->getPciUrl( sprintf( 'pa/payment_consents/%s/verify', $paymentConsentId ) ),
+			wp_json_encode(
+				[
+					'request_id' => uniqid(),
+				]
+				+ $payload
+				+ $this->getReferrer()
+			),
+			array(
+				'Authorization' => 'Bearer ' . $this->getToken(),
+			)
+		);
+
+		if (in_array($response->status, HttpClient::HTTP_STATUSES_FAILED, true)) {
+			throw new Exception( 'Failed to create payment consent, ' . isset($response->data['message']) ? $response->data['message'] : '' );
+		}
+
+		return new PaymentConsent( $response->data );
+	}
+
+	final public function startPaymentSession($validationUrl, $initiativeContext) {
+		if ( empty( $validationUrl ) ) {
+			throw new Exception( 'Validation URL is empty.' );
+		}
+
+		if ( empty( $initiativeContext ) ) {
+			throw new Exception( 'Initiative Context is empty.' );
+		}
+
+		$client   = $this->getHttpClient();
+		$response = $client->call(
+			'POST',
+			$this->getPciUrl( 'pa/payment_session/start'),
+			wp_json_encode(
+				[
+					'request_id' => uniqid(),
+					'validation_url' => $validationUrl,
+					'initiative_context' => $initiativeContext,
+				]
+				+ $this->getReferrer()
+			),
+			array(
+				'Authorization' => 'Bearer ' . $this->getToken(),
+			)
+		);
+
+		if (in_array($response->status, HttpClient::HTTP_STATUSES_FAILED, true)) {
+			if (isset($response->data['code']) && PaymentSessionController::CONFIGURATION_ERROR === $response->data['code']) {
+				throw new Exception( $response->data['code'] );
+			} else {
+				throw new Exception( 'Failed to create start payment session, ' . isset($response->data['message']) ? $response->data['message'] : '' );
+			}
+		}
+
+		return new PaymentSession( $response->data );
+	}
+
 	public function getAuthorizationRetryClosure() {
 		$me = $this;
 		return function () use ( $me ) {
@@ -597,5 +751,17 @@ abstract class AbstractClient {
 				'version' => AIRWALLEX_VERSION,
 			),
 		);
+	}
+
+	protected function getMetaData() {
+		return [
+			'plugin_info' => wp_json_encode([
+				'php_version' => phpversion(),
+				'wordpress_version' => get_bloginfo('version'),
+				'woo_commerce_version' => defined( 'WC_VERSION' ) ? WC_VERSION : '',
+				'payment_form_template' => $this->getPaymentFormTemplate(),
+				'express_checkout' => ExpressCheckout::getMetaData(),
+			]),
+		];
 	}
 }

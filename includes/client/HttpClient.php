@@ -9,7 +9,12 @@ class HttpClient {
 
 	private $lastCallInfo = null;
 
-	const ERROR_CODE_UNAUTHORIZED = 'unauthorized';
+	const ERROR_CODE_UNAUTHORIZED           = 'unauthorized';
+	const HTTP_STATUS_BAD_REQUEST           = 400;
+	const HTTP_STATUS_UNAUTHORIZED          = 401;
+	const HTTP_STATUS_NOT_FOUND             = 404;
+	const HTTP_STATUS_INTERNAL_SERVER_ERROR = 500;
+	const HTTP_STATUSES_FAILED              = [400, 401, 404, 500];
 
 	/**
 	 * Send http request
@@ -39,7 +44,7 @@ class HttpClient {
 				( $noResponse ?
 					array(
 						'blocking'  => false,
-						'transport' => 'Requests_Transport_fsockopen',
+						'transport' => class_exists('\WpOrg\Requests\Transport\Fsockopen') ? '\WpOrg\Requests\Transport\Fsockopen' : 'Requests_Transport_fsockopen',
 					)
 					:
 					array()
