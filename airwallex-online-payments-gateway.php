@@ -25,6 +25,12 @@ define( 'AIRWALLEX_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin
 define( 'AIRWALLEX_PLUGIN_PATH', __DIR__ . '/' );
 define( 'AIRWALLEX_PLUGIN_NAME', 'airwallex-online-payments-gateway' );
 
+add_action( 'before_woocommerce_init', function() {
+    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+    }
+} );
+
 function airwallex_init() {
 
 	if (!class_exists('WooCommerce')) {
@@ -35,10 +41,21 @@ function airwallex_init() {
 	}
 
 	$autoloader = AIRWALLEX_PLUGIN_PATH . '/vendor/autoload.php';
-	if ( ! file_exists( $autoloader ) ) {
-		return;
-	}
-	require_once $autoloader;
+    if ( file_exists( $autoloader ) ) {
+        require_once $autoloader;
+    } else {
+        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Main.php';
+        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Struct/AbstractBase.php';
+        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Client/AbstractClient.php';
+        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Gateways/AirwallexGatewayTrait.php';
+        foreach (glob(AIRWALLEX_PLUGIN_PATH . 'includes/*/*.php') as $includeFile) {
+            require_once $includeFile;
+        }
+        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Gateways/Blocks/AirwallexWCBlockSupport.php';
+        foreach (glob(AIRWALLEX_PLUGIN_PATH . 'includes/*/*/*.php') as $includeFile) {
+            require_once $includeFile;
+        }
+    }
 
 	$airwallex = \Airwallex\Main::getInstance();
 	$airwallex->init();
