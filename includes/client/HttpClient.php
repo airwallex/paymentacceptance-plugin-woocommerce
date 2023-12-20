@@ -39,7 +39,7 @@ class HttpClient {
 				( $noResponse ?
 					array(
 						'blocking'  => false,
-						'transport' => 'Requests_Transport_fsockopen',
+						'transport' => class_exists('\WpOrg\Requests\Transport\Fsockopen') ? '\WpOrg\Requests\Transport\Fsockopen' : 'Requests_Transport_fsockopen',
 					)
 					:
 					array()

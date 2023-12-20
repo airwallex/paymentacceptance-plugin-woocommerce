@@ -292,6 +292,8 @@ abstract class AbstractClient {
 			}
 		}
 
+		$data['metadata'] +=  $this->getMetaData();
+
 		$response = $client->call(
 			'POST',
 			$this->getPciUrl( 'pa/payment_intents/create' ),
@@ -597,5 +599,16 @@ abstract class AbstractClient {
 				'version' => AIRWALLEX_VERSION,
 			),
 		);
+	}
+
+	protected function getMetaData() {
+		return [
+			'plugin_info' => wp_json_encode([
+				'php_version' => phpversion(),
+				'wordpress_version' => function_exists('get_bloginfo') ? get_bloginfo('version') : '',
+				'woo_commerce_version' => defined( 'WC_VERSION' ) ? WC_VERSION : '',
+				'payment_form_template' => get_option( 'airwallex_payment_page_template' ),
+			]),
+		];
 	}
 }
