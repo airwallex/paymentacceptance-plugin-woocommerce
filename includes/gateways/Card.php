@@ -93,7 +93,7 @@ class Card extends WC_Payment_Gateway {
 
 	public function payment_fields() {
 		if ( $this->get_option( 'checkout_form_type' ) === 'inline' ) {
-			echo '<p>' . esc_html( $this->description ) . '</p>';
+			echo '<p>' . wp_kses_post( $this->description ) . '</p>';
 			echo '<div id="airwallex-card"></div>';
 		} else {
 			parent::payment_fields();
