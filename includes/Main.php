@@ -110,7 +110,11 @@ class Main {
 
 	public function modifyRequestsForLogging( $url, $headers, $data, $type, &$options ) {
 		if ( ! $options['blocking'] && strpos( $url, 'airwallex' ) ) {
-			$options['transport'] = 'Requests_Transport_fsockopen';
+			if ( class_exists('\WpOrg\Requests\Transport\Fsockopen') ) {
+				$options['transport'] = '\WpOrg\Requests\Transport\Fsockopen';
+			} else {
+				$options['transport'] = 'Requests_Transport_fsockopen';
+			}
 		}
 	}
 
