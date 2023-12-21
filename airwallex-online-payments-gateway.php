@@ -41,7 +41,7 @@ function airwallex_init() {
 	}
 
 	$autoloader = AIRWALLEX_PLUGIN_PATH . '/vendor/autoload.php';
-    if ( file_exists( $autoloader ) ) {
+    if ( file_exists( $autoloader ) && PHP_VERSION_ID >= 50600 ) {
         require_once $autoloader;
     } else {
         require_once AIRWALLEX_PLUGIN_PATH . 'includes/Main.php';
