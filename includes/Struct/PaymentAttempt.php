@@ -1,6 +1,6 @@
 <?php
 
-namespace Airwallex\struct;
+namespace Airwallex\Struct;
 
 class PaymentAttempt extends AbstractBase {
 
