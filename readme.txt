@@ -56,9 +56,9 @@ Airwallex is a global payments platform with a mission to empower businesses of 
 == Changelog ==
 
 = 1.4.0 =
-* Release Date - 20 December 2023*
+* Release Date - 21 December 2023*
 
-* Add - Support for HPOS
+* Add - Support for High Performance Order Storage(HPOS)
 * Fix - Card method description issue
 * Fix - Remote logging warning message
 
