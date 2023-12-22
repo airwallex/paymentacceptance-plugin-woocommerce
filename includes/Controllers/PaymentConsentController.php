@@ -131,7 +131,8 @@ class PaymentConsentController {
 			$this->cacheService->set('awx_consent_to_intent_id_' . $paymentConsent->getId(), $paymentConsent->getInitialPaymentIntentId(), HOUR_IN_SECONDS);
 
 			WC()->session->set( 'airwallex_payment_intent_id', $paymentConsent->getInitialPaymentIntentId() );
-			update_post_meta( $orderId, '_tmp_airwallex_payment_intent', $paymentConsent->getInitialPaymentIntentId() );
+			$order->update_meta_data( '_tmp_airwallex_payment_intent', $paymentConsent->getInitialPaymentIntentId() );
+			$order->save();
 			WC()->session->set( 'airwallex_order', $orderId );
 
 			LogService::getInstance()->debug(__METHOD__ . ' - Payment consent verified.', $paymentConsentId);

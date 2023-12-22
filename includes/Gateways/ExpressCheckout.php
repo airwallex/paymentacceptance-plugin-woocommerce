@@ -977,7 +977,8 @@ class ExpressCheckout extends WC_Payment_Gateway {
 			$paymentIntent = $apiClient->createPaymentIntent( $order->get_total(), $order->get_id(), $this->is_submit_order_details(), $airwallexCustomerId );
 			WC()->session->set( 'airwallex_payment_intent_id', $paymentIntent->getId() );
 
-			update_post_meta( $order_id, '_tmp_airwallex_payment_intent', $paymentIntent->getId() );
+			$order->update_meta_data( '_tmp_airwallex_payment_intent', $paymentIntent->getId() );
+			$order->save();
 			WC()->session->set( 'airwallex_order', $order_id );
 
 			$confirmationUrl  = $this->get_payment_confirmation_url();
@@ -1033,7 +1034,8 @@ class ExpressCheckout extends WC_Payment_Gateway {
 						$refund->getId()
 					)
 				);
-				add_post_meta( $order->get_id(), $metaKey, array( 'status' => Refund::STATUS_CREATED ) );
+				$order->add_meta_data( $metaKey, array( 'status' => Refund::STATUS_CREATED ) );
+				$order->save();
 			} else {
 				throw new Exception( "refund {$refund->getId()} already exist.", '1' );
 			}
