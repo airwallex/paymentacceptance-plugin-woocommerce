@@ -785,12 +785,12 @@ class ExpressCheckout extends WC_Payment_Gateway {
 	}
 
 	public function getActiveCardSchemes($countryCode, $currencyCode) {
-		$cacheKey = 'wc_airwallex_ec_card_schemas';
-		$schemes  = $this->cacheService->get( $cacheKey );
+		// $cacheKey = 'wc_airwallex_ec_card_schemas';
+		// $schemes  = $this->cacheService->get( $cacheKey );
 
-		if (!empty($schemes)) {
-			return $schemes;
-		}
+		// if (!empty($schemes)) {
+		// 	return $schemes;
+		// }
 
 		$schemes = [
 			'googlepay' => [
@@ -821,7 +821,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 				}
 			}
 
-			$this->cacheService->set($cacheKey, $schemes, DAY_IN_SECONDS);
+			// $this->cacheService->set($cacheKey, $schemes, DAY_IN_SECONDS);
 		} catch (Exception $e) {
 			LogService::getInstance()->error(__METHOD__ . ' - Failed to get active card schemas.', $e->getMessage());
 		}
@@ -965,11 +965,20 @@ class ExpressCheckout extends WC_Payment_Gateway {
 				throw new Exception( 'Order not found: ' . $order_id );
 			}
 
+			$orderContainsSubscription = $this->orderService->containsSubscription( $order->get_id() );
+			// we cannot create intent with amount 0, for subscription product with free trail, we need to go with the create consent flow
+			if ( 0 == $order->get_total() && $orderContainsSubscription ) {
+				return [
+					'result' => 'success',
+					'redirect' => apply_filters( 'woocommerce_checkout_no_payment_needed_redirect', $order->get_checkout_order_received_url(), $order ),
+				];
+			}
+
 			$apiClient = CardClient::getInstance();
 
 			// create customer if subscription 
 			$airwallexCustomerId = null;
-			if ( $this->orderService->containsSubscription( $order->get_id() ) ) {
+			if ( $orderContainsSubscription ) {
 				$airwallexCustomerId = $this->orderService->getAirwallexCustomerId( $order->get_customer_id( '' ), $apiClient );
 			}
 

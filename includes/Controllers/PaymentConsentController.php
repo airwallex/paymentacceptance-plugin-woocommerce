@@ -117,7 +117,6 @@ class PaymentConsentController {
 				'verification_options' => [
 					$paymentMethodType => [
 						'currency' => get_woocommerce_currency(),
-						'three_ds_action' => 'FORCE_3DS'
 					],
 				],
 				'return_url' => $origin . WC_AJAX::get_endpoint( sprintf(

@@ -287,6 +287,7 @@ abstract class AbstractClient {
 		}
 
 		$data['order'] = $orderData;
+		$data['metadata'] +=  $this->getMetaData();
 
 		$intent = $this->getCachedPaymentIntent( $data );
 		if ( $intent && $intent instanceof PaymentIntent ) {
@@ -297,8 +298,6 @@ abstract class AbstractClient {
 				}
 			}
 		}
-
-		$data['metadata'] +=  $this->getMetaData();
 
 		$response = $client->call(
 			'POST',

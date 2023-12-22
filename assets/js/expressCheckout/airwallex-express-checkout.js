@@ -129,13 +129,31 @@ jQuery(function ($) {
 					const { paymentSession, error } = merchantSession;
 
 					if (paymentSession) {
-						if (awxExpressCheckoutSettings.isProductPage) {
-							await addToCart();
-						}
 						session.completeMerchantValidation(paymentSession);
 					} else {
 						console.warn(error);
 						session.abort();
+					}
+				};
+
+				session.onpaymentmethodselected     = async (event) => {
+					if (awxExpressCheckoutSettings.isProductPage) {
+						const response = await addToCart();
+
+						if (response.success) {
+							const { orderInfo } = response;
+
+							const paymentMethodUpdate = {
+								newTotal: orderInfo.total,
+								newLineItems: getAppleFormattedLineItems(orderInfo.displayItems),
+							}
+							session.completePaymentMethodSelection(paymentMethodUpdate);
+						} else {
+							console.warn('Failed to add the product to the cart.');
+							session.abort();
+						}
+						
+						console.log(response);
 					}
 				};
 
