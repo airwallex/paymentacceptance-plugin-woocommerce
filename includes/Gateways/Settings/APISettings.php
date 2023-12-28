@@ -36,7 +36,7 @@ class APISettings extends AbstractAirwallexSettings {
 			'client_id'                            => array(
 				'title' => __( 'Unique client ID', 'airwallex-online-payments-gateway' ),
 				'type'  => 'text',
-				'desc'  => '',
+				'description'  => '',
 				'id'    => 'airwallex_client_id',
 				'value' => get_option( 'airwallex_client_id' ),
 				'class' => 'wc-airwallex-client-id',
@@ -44,7 +44,7 @@ class APISettings extends AbstractAirwallexSettings {
 			'api_key'                              => array(
 				'title' => __( 'API key', 'airwallex-online-payments-gateway' ),
 				'type'  => 'text',
-				'desc'  => '',
+				'description'  => '',
 				'id'    => 'airwallex_api_key',
 				'value' => get_option( 'airwallex_api_key' ),
 				'class' => 'wc-airwallex-api-key',
@@ -52,13 +52,12 @@ class APISettings extends AbstractAirwallexSettings {
 			'webhook_secret'                       => array(
 				'title' => __( 'Webhook secret key', 'airwallex-online-payments-gateway' ),
 				'type'  => 'password',
-				'desc'  => 'Webhook URL: ' . WC()->api_request_url( Main::ROUTE_SLUG_WEBHOOK ),
+				'description'  => 'Webhook URL: ' . WC()->api_request_url( Main::ROUTE_SLUG_WEBHOOK ),
 				'id'    => 'airwallex_webhook_secret',
 				'value' => get_option( 'airwallex_webhook_secret' ),
 			),
 			'enable_sandbox'                       => array(
 				'title'   => __( 'Enable sandbox', 'airwallex-online-payments-gateway' ),
-				'desc'    => __( 'Yes', 'airwallex-online-payments-gateway' ),
 				'type'    => 'checkbox',
 				'default' => 'yes',
 				'id'      => 'airwallex_enable_sandbox',
@@ -76,7 +75,7 @@ class APISettings extends AbstractAirwallexSettings {
 				'title'   => __( 'Temporary order status after decline during checkout', 'airwallex-online-payments-gateway' ),
 				'id'      => 'airwallex_temporary_order_status_after_decline',
 				'type'    => 'select',
-				'desc'    => __( 'This order status is set, when the payment has been declined and the customer redirected to the checkout page to try again.', 'airwallex-online-payments-gateway' ),
+				'description'    => __( 'This order status is set, when the payment has been declined and the customer redirected to the checkout page to try again.', 'airwallex-online-payments-gateway' ),
 				'options' => array(
 					'pending' => _x( 'Pending payment', 'Order status', 'airwallex-online-payments-gateway' ),
 					'failed'  => _x( 'Failed', 'Order status', 'airwallex-online-payments-gateway' ),
@@ -87,7 +86,7 @@ class APISettings extends AbstractAirwallexSettings {
 				'title'   => __( 'Order state for pending payments', 'airwallex-online-payments-gateway' ),
 				'id'      => 'airwallex_order_status_pending',
 				'type'    => 'select',
-				'desc'    => __( 'Certain local payment methods have asynchronous payment confirmations that can take up to a few days. Card payments are always instant.', 'airwallex-online-payments-gateway' ),
+				'description'    => __( 'Certain local payment methods have asynchronous payment confirmations that can take up to a few days. Card payments are always instant.', 'airwallex-online-payments-gateway' ),
 				'options' => array_merge( array( '' => __( '[Do not change status]', 'airwallex-online-payments-gateway' ) ), wc_get_order_statuses() ),
 				'value'   => get_option( 'airwallex_order_status_pending' ),
 			),
@@ -95,7 +94,7 @@ class APISettings extends AbstractAirwallexSettings {
 				'title'   => __( 'Order state for authorized payments', 'airwallex-online-payments-gateway' ),
 				'id'      => 'airwallex_order_status_authorized',
 				'type'    => 'select',
-				'desc'    => __( 'Status for orders that are authorized but not captured', 'airwallex-online-payments-gateway' ),
+				'description'    => __( 'Status for orders that are authorized but not captured', 'airwallex-online-payments-gateway' ),
 				'options' => array_merge( array( '' => __( '[Do not change status]', 'airwallex-online-payments-gateway' ) ), wc_get_order_statuses() ),
 				'value'   => get_option( 'airwallex_order_status_authorized' ),
 			),
@@ -103,7 +102,7 @@ class APISettings extends AbstractAirwallexSettings {
 				'title'   => __( 'Cronjob interval', 'airwallex-online-payments-gateway' ),
 				'id'      => 'airwallex_cronjob_interval',
 				'type'    => 'select',
-				'desc'    => '',
+				'description'    => '',
 				'options' => array(
 					'3600'  => __( 'Every hour (recommended)', 'airwallex-online-payments-gateway' ),
 					'14400' => __( 'Every 4 hours', 'airwallex-online-payments-gateway' ),
@@ -114,7 +113,7 @@ class APISettings extends AbstractAirwallexSettings {
 			),
 			'do_js_logging'                        => array(
 				'title'   => __( 'Activate JS logging', 'airwallex-online-payments-gateway' ),
-				'desc'    => __( 'Yes (only for special cases after contacting Airwallex)', 'airwallex-online-payments-gateway' ),
+				'description'    => __( 'Yes (only for special cases after contacting Airwallex)', 'airwallex-online-payments-gateway' ),
 				'type'    => 'checkbox',
 				'default' => 'yes',
 				'id'      => 'airwallex_do_js_logging',
@@ -122,7 +121,7 @@ class APISettings extends AbstractAirwallexSettings {
 			),
 			'do_remote_logging'                    => array(
 				'title'   => __( 'Activate remote logging', 'airwallex-online-payments-gateway' ),
-				'desc'    => __( 'Send diagnostic data to Airwallex', 'airwallex-online-payments-gateway' ) . '<br/><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' . __( 'Help Airwallex easily resolve your issues and improve your experience by automatically sending diagnostic data. Diagnostic data may include order details.', 'airwallex-online-payments-gateway' ) . '</small>',
+				'description'    => __( 'Send diagnostic data to Airwallex', 'airwallex-online-payments-gateway' ) . '<br/><small>' . __( 'Help Airwallex easily resolve your issues and improve your experience by automatically sending diagnostic data. Diagnostic data may include order details.', 'airwallex-online-payments-gateway' ) . '</small>',
 				'type'    => 'checkbox',
 				'default' => '',
 				'id'      => 'airwallex_do_remote_logging',
@@ -132,7 +131,7 @@ class APISettings extends AbstractAirwallexSettings {
 				'title'   => __( 'Payment form template', 'airwallex-online-payments-gateway' ),
 				'id'      => 'airwallex_payment_page_template',
 				'type'    => 'select',
-				'desc'    => '',
+				'description'    => '',
 				'options' => array(
 					'default'        => __( 'Default', 'airwallex-online-payments-gateway' ),
 					'wordpress_page' => __( 'WordPress page shortcodes', 'airwallex-online-payments-gateway' ),

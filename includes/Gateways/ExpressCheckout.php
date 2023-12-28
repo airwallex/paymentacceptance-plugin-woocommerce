@@ -785,12 +785,12 @@ class ExpressCheckout extends WC_Payment_Gateway {
 	}
 
 	public function getActiveCardSchemes($countryCode, $currencyCode) {
-		// $cacheKey = 'wc_airwallex_ec_card_schemas';
-		// $schemes  = $this->cacheService->get( $cacheKey );
+		$cacheKey = 'wc_airwallex_ec_card_schemas';
+		$schemes  = $this->cacheService->get( $cacheKey );
 
-		// if (!empty($schemes)) {
-		// 	return $schemes;
-		// }
+		if (!empty($schemes)) {
+			return $schemes;
+		}
 
 		$schemes = [
 			'googlepay' => [
@@ -821,7 +821,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 				}
 			}
 
-			// $this->cacheService->set($cacheKey, $schemes, DAY_IN_SECONDS);
+			$this->cacheService->set($cacheKey, $schemes, MINUTE_IN_SECONDS);
 		} catch (Exception $e) {
 			LogService::getInstance()->error(__METHOD__ . ' - Failed to get active card schemas.', $e->getMessage());
 		}

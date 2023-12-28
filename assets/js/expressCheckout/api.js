@@ -4,6 +4,7 @@ import {
 	airTrackerCommonData,
 	deviceData,
 } from './utils.js';
+import VersionData from '../../../version.json';
 import { checkoutResponseFlow } from './threeDs.js';
 import $ from 'jquery';
 
@@ -291,7 +292,8 @@ export const getConfirmPayload = (commonPayload, paymentMethodObj, paymentConsen
 			},
 		},
 		integration_data: {
-			type: paymentMethodObj.type,
+			type: 'woo_commerce',
+			version: VersionData?.version,
 			origin: window.location.origin,
 		},
 	};

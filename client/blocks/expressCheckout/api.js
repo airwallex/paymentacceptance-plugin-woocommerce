@@ -5,6 +5,7 @@ import {
 	getBrowserInfo,
 	airTrackerCommonData,
 } from './utils.js';
+import VersionData from '../../../version.json';
 
 const settings = getSetting('airwallex_express_checkout_data', {});
 
@@ -211,7 +212,8 @@ export const getConfirmPayload = (commonPayload, paymentMethodObj, paymentConsen
 			},
 		},
 		integration_data: {
-			type: paymentMethodObj.type,
+			type: 'woo_commerce',
+			version: VersionData?.version,
 			origin: window.location.origin,
 		},
 	};
