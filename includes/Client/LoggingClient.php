@@ -2,6 +2,7 @@
 
 namespace Airwallex\Client;
 
+use Airwallex\Services\Util;
 use Exception;
 
 class LoggingClient extends AbstractClient {
@@ -9,6 +10,8 @@ class LoggingClient extends AbstractClient {
 	const LOG_SEVERITY_INFO    = 'info';
 	const LOG_SEVERITY_WARNING = 'warn';
 	const LOG_SEVERITY_ERROR   = 'error';
+
+	protected static $sessionId;
 
 	private $isActive = false;
 
@@ -19,11 +22,12 @@ class LoggingClient extends AbstractClient {
 		$this->isActive  = self::isActive();
 	}
 
-	protected function getSessionId() {
-		if ( ! session_id() ) {
-			session_start();
+	protected static function getSessionId() {
+		if ( ! isset( self::$sessionId ) ) {
+			self::$sessionId = Util::generateUuidV4();
 		}
-		return session_id();
+
+		return self::$sessionId;
 	}
 
 	public function log( $severity, $eventName, $message, $details = array(), $type = 'unknown' ) {
@@ -36,7 +40,7 @@ class LoggingClient extends AbstractClient {
 				'appName'    => 'pa_plugin',
 				'source'     => 'woo_commerce',
 				'deviceId'   => 'unknown',
-				'sessionId'  => $this->getSessionId(),
+				'sessionId'  => self::getSessionId(),
 				'appVersion' => AIRWALLEX_VERSION,
 				'platform'   => $this->getClientPlatform(),
 				'env'        => $this->isSandbox ? 'demo' : 'prod',
