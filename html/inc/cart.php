@@ -55,6 +55,10 @@ defined( 'ABSPATH' ) || exit;
 	?>
 	</tbody>
 </table>
+<?php
+	WC()->cart->calculate_shipping();
+	WC()->cart->calculate_totals();
+?>
 <table class="totals-table">
 	<tfoot>
 
@@ -76,7 +80,16 @@ defined( 'ABSPATH' ) || exit;
 
 		<?php do_action( 'woocommerce_review_order_before_shipping' ); ?>
 
-		<?php wc_cart_totals_shipping_html(); ?>
+		<tr>
+			<th><?php esc_html_e( 'Shipping', 'woocommerce' ) ?></th>
+			<td>
+				<?php if ( WC()->cart->display_prices_including_tax() ) : ?>
+					<?php echo wp_kses_post( wc_price( WC()->cart->get_shipping_total() + WC()->cart->get_shipping_tax() ) ); ?>
+				<?php else : ?>
+					<?php echo wp_kses_post( wc_price( WC()->cart->get_shipping_total() ) ); ?>
+				<?php endif; ?>
+			</td>
+		</tr>
 
 		<?php do_action( 'woocommerce_review_order_after_shipping' ); ?>
 
@@ -111,8 +124,6 @@ defined( 'ABSPATH' ) || exit;
 		<th><?php esc_html_e( 'Total', 'woocommerce' ); ?></th>
 		<td><?php wc_cart_totals_order_total_html(); ?></td>
 	</tr>
-
-	<?php do_action( 'woocommerce_review_order_after_order_total' ); ?>
 
 	</tfoot>
 </table>
