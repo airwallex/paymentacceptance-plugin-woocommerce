@@ -41,7 +41,7 @@ defined( 'ABSPATH' ) || exit;
 				<td class="product-info">
 					<?php echo apply_filters( 'woocommerce_checkout_cart_item_quantity', ' <strong class="product-quantity">' . sprintf( '%s&nbsp;&times;', $airwallex_cart_item['quantity'] ) . '</strong>', $airwallex_cart_item, $airwallex_cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<?php echo apply_filters( 'woocommerce_cart_item_name', $airwallex_product->get_name(), $airwallex_cart_item, $airwallex_cart_item_key ) . '&nbsp;'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<?php echo wc_get_formatted_cart_item_data( $airwallex_cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php echo wp_kses_post( wc_get_formatted_cart_item_data( $airwallex_cart_item ) ); ?>
 					<div class="price">
 						<?php echo apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $airwallex_product, $airwallex_cart_item['quantity'] ), $airwallex_cart_item, $airwallex_cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
@@ -55,6 +55,10 @@ defined( 'ABSPATH' ) || exit;
 	?>
 	</tbody>
 </table>
+<?php
+	WC()->cart->calculate_shipping();
+	WC()->cart->calculate_totals();
+?>
 <table class="totals-table">
 	<tfoot>
 
@@ -76,7 +80,16 @@ defined( 'ABSPATH' ) || exit;
 
 		<?php do_action( 'woocommerce_review_order_before_shipping' ); ?>
 
-		<?php wc_cart_totals_shipping_html(); ?>
+		<tr>
+			<th><?php esc_html_e( 'Shipping', 'woocommerce' ) ?></th>
+			<td>
+				<?php if ( WC()->cart->display_prices_including_tax() ) : ?>
+					<?php echo wp_kses_post( wc_price( WC()->cart->get_shipping_total() + WC()->cart->get_shipping_tax() ) ); ?>
+				<?php else : ?>
+					<?php echo wp_kses_post( wc_price( WC()->cart->get_shipping_total() ) ); ?>
+				<?php endif; ?>
+			</td>
+		</tr>
 
 		<?php do_action( 'woocommerce_review_order_after_shipping' ); ?>
 
@@ -111,8 +124,6 @@ defined( 'ABSPATH' ) || exit;
 		<th><?php esc_html_e( 'Total', 'woocommerce' ); ?></th>
 		<td><?php wc_cart_totals_order_total_html(); ?></td>
 	</tr>
-
-	<?php do_action( 'woocommerce_review_order_after_order_total' ); ?>
 
 	</tfoot>
 </table>
