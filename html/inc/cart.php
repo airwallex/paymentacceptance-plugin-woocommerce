@@ -41,7 +41,7 @@ defined( 'ABSPATH' ) || exit;
 				<td class="product-info">
 					<?php echo apply_filters( 'woocommerce_checkout_cart_item_quantity', ' <strong class="product-quantity">' . sprintf( '%s&nbsp;&times;', $airwallex_cart_item['quantity'] ) . '</strong>', $airwallex_cart_item, $airwallex_cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<?php echo apply_filters( 'woocommerce_cart_item_name', $airwallex_product->get_name(), $airwallex_cart_item, $airwallex_cart_item_key ) . '&nbsp;'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-					<?php echo wp_kses_post( wc_get_formatted_cart_item_data( $airwallex_cart_item ) ); ?>
+					<?php echo wc_get_formatted_cart_item_data( $airwallex_cart_item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					<div class="price">
 						<?php echo apply_filters( 'woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal( $airwallex_product, $airwallex_cart_item['quantity'] ), $airwallex_cart_item, $airwallex_cart_item_key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
