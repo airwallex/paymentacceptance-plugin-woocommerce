@@ -152,8 +152,6 @@ jQuery(function ($) {
 							console.warn('Failed to add the product to the cart.');
 							session.abort();
 						}
-						
-						console.log(response);
 					}
 				};
 
