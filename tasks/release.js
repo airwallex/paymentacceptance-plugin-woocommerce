@@ -16,6 +16,7 @@ const filesToInclude = [
 	'airwallex-online-payments-gateway.php',
 	'license.txt',
 	'readme.txt',
+	'changelog.txt',
 	'uninstall.php',
 	'apple-developer-merchantid-domain-association',
 ];

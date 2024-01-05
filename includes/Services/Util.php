@@ -148,4 +148,34 @@ class Util {
 			'currencySuffix'            => $suffix,
 		];
 	}
+
+	/**
+	 * Generate a Version 4 UUID
+	 * 
+	 * @return string
+	 */
+	public static function generateUuidV4() {
+		// Generate 16 bytes (128 bits) of random data or use the openssl random pseudo bytes function.
+		$data = '';
+		if ( function_exists( 'random_bytes' ) ) {
+			$data = random_bytes(16);
+		} else if ( function_exists( 'openssl_random_pseudo_bytes' ) ) {
+			$data = openssl_random_pseudo_bytes(16);
+		} else {
+			$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+			$charactersLength = strlen( $characters );
+			for ($i = 0; $i < 16; $i++) {
+				$data .= $characters[mt_rand( 0, $charactersLength - 1 )];
+			}
+		}
+    
+		// Set the version to 0100 (4 in binary) to indicate it's a version 4 UUID.
+		$data[6] = chr( ord($data[6] ) & 0x0f | 0x40);
+		
+		// Set the bits for variant to 10.
+		$data[8] = chr( ord($data[8] ) & 0x3f | 0x80);
+		
+		// Output the 36 character UUID.
+		return vsprintf( '%s%s-%s-%s-%s-%s%s%s', str_split( bin2hex($data), 4 ) );
+	}
 }

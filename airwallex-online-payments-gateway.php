@@ -5,11 +5,11 @@
  * Description: Official Airwallex Plugin
  * Author: Airwallex
  * Author URI: https://www.airwallex.com
- * Version: 1.3.1
+ * Version: 1.4.0
  * Requires at least: 4.5
- * Tested up to: 6.2
+ * Tested up to: 6.4
  * WC requires at least: 3.0
- * WC tested up to: 7.9
+ * WC tested up to: 8.4
  * Text Domain: airwallex-online-payments-gateway
  */
 
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Required minimums and constants
  */
-define( 'AIRWALLEX_VERSION', '1.3.1' );
+define( 'AIRWALLEX_VERSION', '1.4.0' );
 define( 'AIRWALLEX_PLUGIN_URL', untrailingslashit( plugins_url( basename( plugin_dir_path( __FILE__ ) ), basename( __FILE__ ) ) ) );
 define( 'AIRWALLEX_PLUGIN_PATH', __DIR__ . '/' );
 define( 'AIRWALLEX_PLUGIN_NAME', 'airwallex-online-payments-gateway' );
@@ -41,8 +41,20 @@ function airwallex_init() {
 	}
 
 	$autoloader = AIRWALLEX_PLUGIN_PATH . '/vendor/autoload.php';
-    if ( !file_exists( $autoloader ) ) {
-        return;
+    if ( file_exists( $autoloader ) && PHP_VERSION_ID >= 50600 ) {
+        require_once $autoloader;
+    } else {
+        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Main.php';
+        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Struct/AbstractBase.php';
+        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Client/AbstractClient.php';
+        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Gateways/AirwallexGatewayTrait.php';
+        foreach (glob(AIRWALLEX_PLUGIN_PATH . 'includes/*/*.php') as $includeFile) {
+            require_once $includeFile;
+        }
+        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Gateways/Blocks/AirwallexWCBlockSupport.php';
+        foreach (glob(AIRWALLEX_PLUGIN_PATH . 'includes/*/*/*.php') as $includeFile) {
+            require_once $includeFile;
+        }
     }
     require_once $autoloader;
 

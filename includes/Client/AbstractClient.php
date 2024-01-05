@@ -4,7 +4,6 @@ namespace Airwallex\Client;
 
 use Airwallex\Client\HttpClient;
 use Airwallex\Controllers\PaymentSessionController;
-use Airwallex\Gateways\AirwallexGatewayTrait;
 use Airwallex\Gateways\ExpressCheckout;
 use Airwallex\Services\CacheService;
 use Airwallex\Struct\Customer;
@@ -17,8 +16,6 @@ use Airwallex\Struct\PaymentConsent;
 use Airwallex\Struct\PaymentSession;
 
 abstract class AbstractClient {
-
-	use AirwallexGatewayTrait;
 
 	const AUTH_URL_LIVE       = 'https://pci-api.airwallex.com/api/v1/';
 	const AUTH_URL_SANDBOX    = 'https://pci-api-demo.airwallex.com/api/v1/';
@@ -756,9 +753,9 @@ abstract class AbstractClient {
 		return [
 			'plugin_info' => wp_json_encode([
 				'php_version' => phpversion(),
-				'wordpress_version' => get_bloginfo('version'),
+				'wordpress_version' => function_exists('get_bloginfo') ? get_bloginfo('version') : '',
 				'woo_commerce_version' => defined( 'WC_VERSION' ) ? WC_VERSION : '',
-				'payment_form_template' => $this->getPaymentFormTemplate(),
+				'payment_form_template' => get_option( 'airwallex_payment_page_template' ),
 				'express_checkout' => ExpressCheckout::getMetaData(),
 			]),
 		];

@@ -124,8 +124,16 @@
 	width: 30%;
 }
 
+.airwallex-checkout .product-info {
+	vertical-align: top;
+}
+
 .airwallex-checkout .price {
 	font-size: 0.8em;
+}
+
+.airwallex-checkout .woocommerce-remove-coupon {
+	display: none;
 }
 
 .airwallex-checkout .payment-section {
