@@ -12,6 +12,7 @@ $awxActiveTabExist     = false;
 ?>
 <div class="wc-airwallex-settings-logo">
 	<img class="airwallex-logo" src="<?php echo esc_attr(AIRWALLEX_PLUGIN_URL . '/assets/images/logo.svg'); ?>"/>
+	<span id="awx-account-connected" style="display: <?php echo $this->isConnected() ? 'inline-block' : 'none' ?>; padding: 3px 8px; font-weight:bold; border-radius:3px; background-color:#E0F7E7">Connected</span>
 	<span id="awx-account-not-connected" style="display: <?php echo $this->isConnected() ? 'none' : 'inline-block' ?>; padding: 3px 8px; font-weight:bold; border-radius:3px; background-color:#FFADAD">Not Connected</span>
 </div>
 <div class="airwallex-settings-nav">

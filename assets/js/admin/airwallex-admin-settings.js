@@ -155,8 +155,10 @@ jQuery(function ($) {
             if (response.success) {
                 $('.wc-airwallex-connection-test').closest('tr').hide();
                 $('#awx-account-not-connected').hide();
+				$('#awx-account-connected').show();
             } else {
                 $('#awx-account-not-connected').show();
+				$('#awx-account-connected').hide();
             }
 		}).fail(function (error) {
 			console.log(error);
@@ -184,9 +186,12 @@ jQuery(function ($) {
     if (awxAdminSettings.apiSettings.connected) {
         $('.wc-airwallex-connection-test').closest('tr').hide();
         $('#awx-account-not-connected').hide();
+		$('#awx-account-connected').show();
     }
 
 	$('.wc-airwallex-client-id, .wc-airwallex-api-key, .wc-airwallex-sandbox').on('change', function() {
         $('.wc-airwallex-connection-test').closest('tr').show();
+		$('#awx-account-not-connected').hide();
+		$('#awx-account-connected').hide();
 	});
 });
