@@ -62,7 +62,7 @@ if ( $order->has_billing_address() ) {
 		'city'         => $order->get_billing_city(),
 		'country_code' => $order->get_billing_country(),
 		'postcode'     => $order->get_billing_postcode(),
-		'state'        => $order->get_shipping_state(),
+		'state'        => $order->get_billing_state() ? $order->get_billing_state() : $order->get_shipping_state(),
 		'street'       => $order->get_billing_address_1(),
 	);
 	$airwallexBilling['billing'] = array(

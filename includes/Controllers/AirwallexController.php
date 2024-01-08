@@ -284,6 +284,33 @@ class AirwallexController {
 					'paymentIntent' => $paymentIntent->toArray(),
 				)
 			);
+
+			if ( ! empty( $_GET['awx_return_result'] ) ) {
+				$awxReturnResult = wc_clean( $_GET['awx_return_result'] );
+				$latestAttempt = $paymentIntent->getLatestPaymentAttempt();
+				// the awx_return_result param is only available for Klarna right now 
+				if ( ! empty( $latestAttempt['payment_method']['type'] ) && 'klarna' === $latestAttempt['payment_method']['type'] ) {
+					switch ($awxReturnResult) {
+						case 'success':
+							break;
+						case 'failure':
+						case 'cancel':
+						case 'back':
+							if ( in_array( $paymentIntent->getStatus(), PaymentIntent::SUCCESS_STATUSES ) ) {
+								$this->logService->warning( __METHOD__ . ' return result does not match with intent status ', [
+									'intentStatus' => $paymentIntent->getStatus(),
+									'returnResult' => $awxReturnResult,
+								] );
+							} else {
+								throw new Exception('Payment Incomplete: The transaction was not finalized by the user.');
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
+
 			$order = wc_get_order( $orderId );
 
 			if ( empty( $order ) ) {
