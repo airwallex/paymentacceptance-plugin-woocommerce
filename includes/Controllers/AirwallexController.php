@@ -286,29 +286,7 @@ class AirwallexController {
 			);
 
 			if ( ! empty( $_GET['awx_return_result'] ) ) {
-				$awxReturnResult = wc_clean( $_GET['awx_return_result'] );
-				$latestAttempt = $paymentIntent->getLatestPaymentAttempt();
-				// the awx_return_result param is only available for Klarna right now 
-				if ( ! empty( $latestAttempt['payment_method']['type'] ) && 'klarna' === $latestAttempt['payment_method']['type'] ) {
-					switch ($awxReturnResult) {
-						case 'success':
-							break;
-						case 'failure':
-						case 'cancel':
-						case 'back':
-							if ( in_array( $paymentIntent->getStatus(), PaymentIntent::SUCCESS_STATUSES ) ) {
-								$this->logService->warning( __METHOD__ . ' return result does not match with intent status ', [
-									'intentStatus' => $paymentIntent->getStatus(),
-									'returnResult' => $awxReturnResult,
-								] );
-							} else {
-								throw new Exception('Payment Incomplete: The transaction was not finalized by the user.');
-							}
-							break;
-						default:
-							break;
-					}
-				}
+				$this->handleRedirectWithReturnResult( $paymentIntent );
 			}
 
 			$order = wc_get_order( $orderId );
@@ -377,6 +355,42 @@ class AirwallexController {
 			wc_add_notice( __( 'Airwallex payment error', 'airwallex-online-payments-gateway' ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
 			die;
+		}
+	}
+
+	/**
+	 * Handle the redirect if awx_return_result is available in the redirect url.
+	 * 
+	 * Some payment method supports different return url for success/back/cancel payment.
+	 * If the payment is not successful, we should redirect the shopper back to the checkout page.
+	 * 
+	 * @param PaymentIntent $paymentIntent
+	 */
+	private function handleRedirectWithReturnResult( $paymentIntent ) {
+		$awxReturnResult = wc_clean( $_GET['awx_return_result'] );
+		$latestAttempt = $paymentIntent->getLatestPaymentAttempt();
+		// the awx_return_result param is only available for Klarna right now 
+		if ( ! empty( $latestAttempt['payment_method']['type'] ) && 'klarna' === $latestAttempt['payment_method']['type'] ) {
+			switch ($awxReturnResult) {
+				case 'success':
+					break;
+				case 'failure':
+				case 'cancel':
+				case 'back':
+					if ( in_array( $paymentIntent->getStatus(), [PaymentIntent::STATUS_SUCCEEDED], true ) ) {
+						$this->logService->warning( __METHOD__ . ' Return result does not match with intent status. ', [
+							'intentStatus' => $paymentIntent->getStatus(),
+							'returnResult' => $awxReturnResult,
+						] );
+					} else {
+						$this->logService->debug( __METHOD__ . ' Payment Incomplete: The transaction was not finalized by the user. Return result ' . $awxReturnResult );
+						wp_safe_redirect( wc_get_checkout_url() );
+						die;
+					}
+					break;
+				default:
+					break;
+			}
 		}
 	}
 
