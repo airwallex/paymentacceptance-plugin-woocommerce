@@ -1,0 +1,13 @@
+/*----------Express Checkout-----------*/
+@supports (-webkit-appearance: -apple-pay-button) {
+	.awx-block-ec-apple-pay-button {
+		-webkit-appearance: -apple-pay-button;
+		width: 100%;
+	}
+}
+
+@supports not (-webkit-appearance: -apple-pay-button) {
+	.awx-block-ec-apple-pay-button {
+		display: none;
+	}
+}

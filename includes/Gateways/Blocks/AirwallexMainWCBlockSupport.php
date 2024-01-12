@@ -4,6 +4,9 @@ namespace Airwallex\Gateways\Blocks;
 
 use Airwallex\Gateways\Main;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 class AirwallexMainWCBlockSupport extends AirwallexWCBlockSupport {
 
 	protected $name = 'airwallex_main';

@@ -58,3 +58,8 @@ const AirwallexClient = {
 		}
 	}
 };
+
+// hide the express checkout gateway in the payment options
+jQuery(document.body).on('updated_checkout', function () {
+	jQuery('.payment_method_airwallex_express_checkout').hide();
+});

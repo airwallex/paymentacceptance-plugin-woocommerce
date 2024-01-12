@@ -4,12 +4,14 @@ namespace Airwallex\Struct;
 
 class PaymentIntent extends AbstractBase {
 
-	const STATUS_REQUIRES_CAPTURE = 'REQUIRES_CAPTURE';
-	const STATUS_SUCCEEDED        = 'SUCCEEDED';
+	const STATUS_REQUIRES_CAPTURE         = 'REQUIRES_CAPTURE';
+	const STATUS_SUCCEEDED                = 'SUCCEEDED';
+	const STATUS_REQUIRES_CUSTOMER_ACTION = 'REQUIRES_CUSTOMER_ACTION';
 
 	const PENDING_STATUSES = array(
-		'REQUIRES_CUSTOMER_ACTION',
+		self::STATUS_REQUIRES_CUSTOMER_ACTION,
 	);
+	const SUCCESS_STATUSES = ['SUCCEEDED', 'REQUIRES_CAPTURE', 'AUTHORIZED', 'DONE'];
 
 	protected $id;
 	protected $requestId;
@@ -17,18 +19,21 @@ class PaymentIntent extends AbstractBase {
 	protected $currency;
 	protected $order;
 	protected $merchantOrderId;
-	protected $returnUrl;
-	protected $supplementaryAmount;
+	protected $customerId;
+	protected $paymentConsentId;
 	protected $descriptor;
+	protected $metadata = [];
 	protected $status;
 	protected $capturedAmount;
+	protected $latestPaymentAttempt;
 	protected $createdAt;
 	protected $updatedAt;
+	protected $cancelledAt;
+	protected $cancellationReason;
+	protected $nextAction;
 	protected $clientSecret;
-	protected $latestPaymentAttempt;
-	protected $paymentConsentId;
-	protected $customerId;
-	protected $metadata = array();
+	protected $supplementaryAmount;
+	protected $returnUrl;
 
 	/**
 	 * Get customer ID
@@ -391,6 +396,65 @@ class PaymentIntent extends AbstractBase {
 	 */
 	public function setUpdatedAt( $updatedAt ) {
 		$this->updatedAt = $updatedAt;
+		return $this;
+	}
+	/**
+	 * Get cancelled at
+	 * 
+	 * @return mixed
+	 */
+	public function getCancelledAt() {
+		return $this->nextAction;
+	}
+
+	/**
+	 * Set cancelled at
+	 * 
+	 * @param mixed $cancelledAt
+	 * @return PaymentIntent
+	 */
+	public function setCancelledAt( $cancelledAt ) {
+		$this->cancelledAt = $cancelledAt;
+		return $this;
+	}
+
+	/**
+	 * Get cancellation reason
+	 * 
+	 * @return array
+	 */
+	public function getCancellationReason() {
+		return $this->cancellationReason;
+	}
+
+	/**
+	 * Set next action
+	 * 
+	 * @param mixed $cancellationReason
+	 * @return PaymentIntent
+	 */
+	public function setCancellationReason( $cancellationReason ) {
+		$this->cancellationReason = $cancellationReason;
+		return $this;
+	}
+
+	/**
+	 * Get next action
+	 * 
+	 * @return mixed
+	 */
+	public function getNextAction() {
+		return $this->nextAction;
+	}
+
+	/**
+	 * Set next action
+	 * 
+	 * @param mixed $nextAction
+	 * @return PaymentIntent
+	 */
+	public function setNextAction( $nextAction ) {
+		$this->nextAction = $nextAction;
 		return $this;
 	}
 }

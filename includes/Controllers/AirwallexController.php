@@ -2,6 +2,7 @@
 
 namespace Airwallex\Controllers;
 
+use Airwallex\Client\AdminClient;
 use Airwallex\Client\CardClient;
 use Airwallex\Gateways\Card;
 use Airwallex\Gateways\Main;
@@ -11,6 +12,7 @@ use Airwallex\Services\OrderService;
 use Airwallex\Services\WebhookService;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Client\WeChatClient;
+use Airwallex\Gateways\ExpressCheckout;
 use Exception;
 use WC_Order;
 
@@ -320,7 +322,7 @@ class AirwallexController {
 			} elseif ( $paymentIntent->getStatus() === PaymentIntent::STATUS_REQUIRES_CAPTURE ) {
 				$orderService->setAuthorizedStatus( $order );
 				$paymentGateway = wc_get_payment_gateway_by_order( $order );
-				if ( $paymentGateway instanceof Card ) {
+				if ( $paymentGateway instanceof Card || $paymentGateway instanceof ExpressCheckout ) {
 					if ( $paymentGateway->is_capture_immediately() ) {
 						$this->logService->debug( 'paymentConfirmation() start capture', array( $paymentIntent->toArray() ) );
 						$paymentIntentAfterCapture = $apiClient->capture( $paymentIntentId, $paymentIntent->getAmount() );
@@ -480,6 +482,42 @@ class AirwallexController {
 			} else {
 				$this->logService->error( $log['m'] );
 			}
+		}
+	}
+
+	public function connectionTest() {
+		check_ajax_referer('wc-airwallex-admin-settings-connection-test', 'security');
+
+		$clientId  = isset($_POST['client_id']) ? wc_clean(wp_unslash($_POST['client_id'])) : '';
+		$apiKey    = isset($_POST['api_key']) ? wc_clean(wp_unslash($_POST['api_key'])) : '';
+		$isSandbox = isset($_POST['is_sandbox']) ? wc_clean(wp_unslash($_POST['is_sandbox'])) : '';
+
+		if (empty($clientId) || empty($apiKey)) {
+			wp_send_json([
+				'success' => false,
+				'message' => __('You must enter your Client ID and API key before performing a connection test.', 'airwallex-online-payments-gateway'),
+			]);
+		}
+
+		try {
+			$apiClient = new AdminClient($clientId, $apiKey, 'checked' === $isSandbox);
+
+			if ( $apiClient->testAuth() ) {
+				wp_send_json([
+					'success' => true,
+					'message' => __('Connection test to Airwallex was successful.', 'airwallex-online-payments-gateway'),
+				]);
+			} else {
+				wp_send_json([
+					'success' => false,
+					'message' => __('Invalid client id or api key, please check your entries.', 'airwallex-online-payments-gateway'),
+				]);
+			}
+		} catch (Exception $e) {
+			wp_send_json([
+				'success' => false,
+				'message' => __('Something went wrong.', 'airwallex-online-payments-gateway'),
+			]);
 		}
 	}
 }

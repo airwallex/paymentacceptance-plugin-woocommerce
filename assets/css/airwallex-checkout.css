@@ -32,3 +32,61 @@ label[for="payment_method_airwallex_card"] > img, .airwallex-card-icon{
 	opacity: 0.25;
 	z-index: 1000;
 }
+
+/*----------Express Checkout-----------*/
+#awx-express-checkout-wrapper {
+	display: none;
+}
+
+.awx-express-checkout-error {
+	display: none;
+}
+
+.awx-express-checkout-button-set {
+	display: flex;
+	border: 1px solid #ddd;
+	box-sizing: border-box;
+	border-radius: 3px;
+	padding: 1em 1em 1em 0;
+}
+
+.awx-express-checkout-button-set legend {
+	margin: 0 auto;
+	padding: 0 10px;
+	text-align: center;
+}
+
+.awx-express-checkout-button-set .awx-ec-button {
+	margin-left: 1em;
+}
+
+apple-pay-button {
+	--apple-pay-button-width: 100%;
+	--apple-pay-button-height: 40px;
+	--apple-pay-button-border-radius: 5px;
+}
+
+.awx-ec-button {
+	width: 100%;
+	line-height: normal;
+	display: none;
+}
+
+.awx-ec-button button {
+	width: 100% !important;
+}
+
+@media(max-width: 800px) {
+	#awx-express-checkout-button-set {
+		flex-flow: column;
+		padding: 1em;
+	}
+
+	.awx-ec-button {
+		margin: 0;
+	}
+
+	.awx-apple-pay-btn {
+		margin-bottom: 1em;
+	}
+}

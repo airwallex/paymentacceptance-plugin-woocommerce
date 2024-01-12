@@ -18,6 +18,7 @@ const filesToInclude = [
 	'readme.txt',
 	'changelog.txt',
 	'uninstall.php',
+	'apple-developer-merchantid-domain-association',
 ];
 
 // start with a fresh release directory

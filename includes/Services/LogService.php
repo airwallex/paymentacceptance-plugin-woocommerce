@@ -6,9 +6,12 @@ use Airwallex\Client\LoggingClient;
 
 class LogService {
 
-	const CARD_ELEMENT_TYPE    = 'cardElement';
-	const DROP_IN_ELEMENT_TYPE = 'dropInElement';
-	const WECHAT_ELEMENT_TYPE  = 'wechatElement';
+	const CARD_ELEMENT_TYPE            = 'cardElement';
+	const DROP_IN_ELEMENT_TYPE         = 'dropInElement';
+	const WECHAT_ELEMENT_TYPE          = 'wechatElement';
+	const GOOGLE_EXPRESS_CHECKOUT_TYPE = 'googleExpressCheckout';
+	const APPLE_EXPRESS_CHECKOUT_TYPE  = 'appleExpressCheckout';
+
 	private $logDir;
 	private $loggingClient;
 	private static $instance;

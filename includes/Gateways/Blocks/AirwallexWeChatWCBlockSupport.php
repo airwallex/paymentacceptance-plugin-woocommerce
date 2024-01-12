@@ -4,6 +4,9 @@ namespace Airwallex\Gateways\Blocks;
 
 use Airwallex\Gateways\WeChat;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 class AirwallexWeChatWCBlockSupport extends AirwallexWCBlockSupport {
 
 	protected $name = 'airwallex_wechat';

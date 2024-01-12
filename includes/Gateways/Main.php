@@ -4,6 +4,7 @@ namespace Airwallex\Gateways;
 
 use Airwallex\Client\CardClient;
 use Airwallex\Client\MainClient;
+use Airwallex\Gateways\Settings\AirwallexSettingsTrait;
 use Airwallex\Services\CacheService;
 use Airwallex\Services\LogService;
 use Airwallex\Struct\PaymentIntent;
@@ -20,18 +21,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Main extends WC_Payment_Gateway {
 
 	use AirwallexGatewayTrait;
+	use AirwallexSettingsTrait;
 
 	const STATUS_CONNECTED      = 'connected';
 	const STATUS__NOT_CONNECTED = 'not connected';
 	const STATUS_ERROR          = 'error';
 	const ROUTE_SLUG            = 'airwallex_main';
+	const GATEWAY_ID = 'airwallex_main';
 
 	public $method_title       = 'Airwallex - All Payment Methods';
 	public $method_description = 'Accepts all available payment methods with your Airwallex account, including cards, Apple Pay, Google Pay, and other local payment methods. ';
 	public $title              = 'Airwallex - All Payment Methods';
 	public $description        = '';
 	public $icon               = '';
-	public $id                 = 'airwallex_main';
+	public $id                 = self::GATEWAY_ID;
 	public $plugin_id;
 	public $max_number_of_logos = 5;
 	public $supports            = array(
@@ -63,12 +66,21 @@ class Main extends WC_Payment_Gateway {
 		}
 		$this->title      = $this->get_option( 'title' );
 		$this->logService = new LogService();
-		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		$this->tabTitle   = 'All Payment Methods';
+		$this->registerHooks();
+	}
 
+	public function registerHooks() {
+		add_filter( 'wc_airwallex_settings_nav_tabs', array( $this, 'adminNavTab' ), 14 );
+		add_action( 'woocommerce_airwallex_settings_checkout_' . $this->id, array( $this, 'enqueueAdminScripts' ) );
+		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 		if ( class_exists( 'WC_Subscriptions_Order' ) ) {
 			add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, array( $this, 'do_subscription_payment' ), 10, 2 );
 			add_filter( 'woocommerce_my_subscriptions_payment_method', array( $this, 'subscription_payment_information' ), 10, 2 );
 		}
+	}
+
+	public function enqueueAdminScripts() {
 	}
 
 	public function getStatus() {
@@ -186,13 +198,6 @@ class Main extends WC_Payment_Gateway {
 		return apply_filters( // phpcs:ignore
 			'wc_airwallex_settings', // phpcs:ignore
 			array(
-				'info1'       => array(
-					'type'    => 'free',
-					'html'    => '
-                        <img src="' . AIRWALLEX_PLUGIN_URL . '/assets/images/logo.svg" width="150" alt="Airwallex" /><br><br>
-                        ' . $intro,
-					'default' => '',
-				),
 				'enabled'     => array(
 					'title'       => __( 'Enable/Disable', 'airwallex-online-payments-gateway' ),
 					'label'       => __( 'Enable Airwallex Payments', 'airwallex-online-payments-gateway' ),
@@ -311,7 +316,7 @@ class Main extends WC_Payment_Gateway {
 			$airwallexPaymentConsentId = $originalOrder->get_meta( 'airwallex_consent_id' );
 			$cardClient                = new CardClient();
 			$paymentIntent             = $cardClient->createPaymentIntent( $amount, $order->get_id(), false, $airwallexCustomerId );
-			$paymentIntentAfterCapture = $cardClient->confirmPaymentIntent( $paymentIntent->getId(), $airwallexPaymentConsentId );
+			$paymentIntentAfterCapture = $cardClient->confirmPaymentIntent( $paymentIntent->getId(), [ 'payment_consent_reference' => [ 'id' => $airwallexPaymentConsentId ] ] );
 
 			if ( $paymentIntentAfterCapture->getStatus() === PaymentIntent::STATUS_SUCCEEDED ) {
 				( new LogService() )->debug( 'capture successful', $paymentIntentAfterCapture->toArray() );
@@ -324,18 +329,6 @@ class Main extends WC_Payment_Gateway {
 		} catch ( Exception $e ) {
 			( new LogService() )->error( 'do_subscription_payment failed', $e->getMessage() );
 		}
-	}
-
-	public function generate_free_html( $key, $data ) {
-
-		ob_start();
-		?>
-		<tr>
-			<td colspan="2"><?php echo $data['html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
-		</tr>
-		<?php
-
-		return ob_get_clean();
 	}
 
 	public function generate_radio_html( $key, $data ) {
@@ -579,5 +572,15 @@ class Main extends WC_Payment_Gateway {
 			wp_safe_redirect( wc_get_checkout_url() );
 			die;
 		}
+	}
+
+	public static function getMetaData() {
+		$settings = self::getSettings();
+
+		$data = [
+			'enabled' => $settings['enabled'],
+		];
+
+		return $data;
 	}
 }

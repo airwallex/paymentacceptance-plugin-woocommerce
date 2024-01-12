@@ -9,6 +9,7 @@
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/unit-test-report/*</exclude-pattern>
+	<exclude-pattern>*/release/*</exclude-pattern>
 
 	<!-- Configs -->
 	<config name="minimum_supported_wp_version" value="4.7" />

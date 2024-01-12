@@ -47,7 +47,7 @@ wp_enqueue_style( 'airwallex-standalone-css', AIRWALLEX_PLUGIN_URL . '/assets/cs
 
 <?php
 
-wp_enqueue_script( 'airwallex-lib-js', 'https://checkout.airwallex.com/assets/elements.bundle.min.js', array(), AIRWALLEX_VERSION, true );
+wp_enqueue_script( 'airwallex-lib-js', 'https://checkout.airwallex.com/assets/elements.bundle.min.js', array(), null, true );
 wp_enqueue_script( 'airwallex-local-js', AIRWALLEX_PLUGIN_URL . '/assets/js/airwallex-local.js', array(), AIRWALLEX_VERSION, true );
 if ( defined( 'AIRWALLEX_INLINE_JS' ) ) {
 	wp_add_inline_script( 'airwallex-local-js', AIRWALLEX_INLINE_JS );

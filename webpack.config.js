@@ -1,6 +1,7 @@
 const path                              = require('path');
 const defaultConfig                     = require('@wordpress/scripts/config/webpack.config');
 const DependencyExtractionWebpackPlugin = require('@woocommerce/dependency-extraction-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
 	...defaultConfig,
@@ -10,7 +11,9 @@ module.exports = {
 			: defaultConfig.devtool,
 	optimization: {
 		...defaultConfig.optimization,
+		minimize: true,
 		minimizer: [
+			new TerserPlugin(),
 			...defaultConfig.optimization.minimizer.map((plugin) => {
 				if (plugin.constructor.name === 'TerserPlugin') {
 					// wp-scripts does not allow to override the Terser minimizer sourceMap option, without this
@@ -20,6 +23,7 @@ module.exports = {
 				return plugin;
 			}),
 		],
+		usedExports: true,
 		splitChunks: undefined,
 	},
 	plugins: [
@@ -31,14 +35,37 @@ module.exports = {
 			injectPolyfill: true,
 		}),
 	],
-resolve: {
-	extensions: ['.json', '.js', '.jsx'],
-	modules: [path.join(__dirname, 'client'), 'node_modules'],
-	alias: {
-		wcstripe: path.resolve(__dirname, 'client'),
-	},
+	module: {
+		...defaultConfig.module,
+		rules: [
+		  ...defaultConfig.module.rules,
+		  {
+			test: /\.tsx?$/,
+			use: [
+			  {
+				loader: 'ts-loader',
+				options: {
+				  configFile: 'tsconfig.json',
+				  transpileOnly: true,
+				}
+			  }
+			]        
+		  }
+		]
+	  },
+	resolve: {
+		extensions: ['.json', '.js', '.jsx', '.ts', '.tsx'],
+		modules: [path.join(__dirname, 'client'), path.join(__dirname, 'assets/js'), 'node_modules'],
+		alias: {
+		},
 	},
 	entry: {
-		index: './client/blocks/index.js',
+		'airwallex-wc-blocks': './client/blocks/index.js',
+		'airwallex-wc-ec-blocks': './client/blocks/expressCheckout/index.js',
+		'airwallex-express-checkout': './assets/js/expressCheckout/airwallex-express-checkout.js', 
+	},
+	output: {
+		path: path.resolve(__dirname, './build/'),
+		filename: '[name].min.js',
 	},
 };
