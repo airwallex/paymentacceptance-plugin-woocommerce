@@ -379,7 +379,7 @@ class AirwallexController {
 				case 'failure':
 				case 'cancel':
 				case 'back':
-					if ( in_array( $paymentIntent->getStatus(), [PaymentIntent::STATUS_SUCCEEDED], true ) ) {
+					if ( in_array( $paymentIntent->getStatus(), PaymentIntent::SUCCESS_STATUSES, true ) ) {
 						$this->logService->warning( __METHOD__ . ' Return result does not match with intent status. ', [
 							'intentStatus' => $paymentIntent->getStatus(),
 							'returnResult' => $awxReturnResult,
