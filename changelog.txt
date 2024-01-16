@@ -1,6 +1,6 @@
 *** WooCommerce Airwallex Online Payments Gateway Changelog ***
 
-2023-12-21 - version 1.5.0
+2024-01-16 - version 1.5.0
 
 * Add - Google Pay express checkout
 * Add - Plugin settings UI improvement
