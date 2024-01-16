@@ -1,5 +1,13 @@
 *** WooCommerce Airwallex Online Payments Gateway Changelog ***
 
+2024-01-16 - version 1.5.0
+
+* Add - Google Pay express checkout
+* Add - Plugin settings UI improvement
+* Add - Klarna redirect enhancement
+* Fix - Shipping cost is not visible for the all payment methods page
+* Fix - Remote logging warning message in the log file
+
 2023-12-21 - version 1.4.0
 
 * Add - Support for High Performance Order Storage(HPOS)
