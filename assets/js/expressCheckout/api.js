@@ -251,7 +251,6 @@ export const processOrderWithoutPayment = (redirectUrl, paymentMethodObj) => {
 		security: awxExpressCheckoutSettings.nonce.payment,
 		redirectUrl: redirectUrl,
 		paymentMethodObj: paymentMethodObj,
-		device: getDeviceInfo(airTrackerCommonData.sessionId, window.location.origin),
 		deviceData: getBrowserInfo(airTrackerCommonData.sessionId),
 		origin: window.location.origin,
 	}
@@ -283,7 +282,6 @@ export const processOrderWithoutPayment = (redirectUrl, paymentMethodObj) => {
 
 export const getConfirmPayload = (commonPayload, paymentMethodObj, paymentConsentId = null) => {
 	let confirmPayload         = {
-		device: getDeviceInfo(airTrackerCommonData.sessionId, window.location.origin),
 		device_data: getBrowserInfo(airTrackerCommonData.sessionId),
 		payment_method: paymentMethodObj,
 		payment_method_options: {
