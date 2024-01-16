@@ -65,7 +65,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		$this->id                 = self::GATEWAY_ID;
 		$this->method_title       = __('Airwallex - Express Checkout', 'airwallex-online-payments-gateway');
 		$this->method_description = __(
-			'Apple Pay and Google Pay express checkout.',
+			'Google Pay express checkout.',
 			'airwallex-online-payments-gateway'
 		);
 		$this->supports           = array(
@@ -451,7 +451,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 			'airwallex-express-checkout',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-express-checkout.min.js',
 			$dependencies,
-			time(),
+			AIRWALLEX_VERSION,
 			true
 		);
 		wp_add_inline_script(

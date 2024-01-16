@@ -424,7 +424,7 @@ class Main {
 	private function handleStatusChangeForCard( $statusTo, $order ) {
 		$cardGateway = new Card();
 
-		if ( $order->get_payment_method() !== $cardGateway->id ) {
+		if ( $order->get_payment_method() !== $cardGateway->id && $order->get_payment_method() !== ExpressCheckout::GATEWAY_ID ) {
 			return;
 		}
 

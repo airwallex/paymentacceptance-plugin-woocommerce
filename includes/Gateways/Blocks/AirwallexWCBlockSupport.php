@@ -62,7 +62,7 @@ abstract class AirwallexWCBlockSupport extends AbstractPaymentMethodType {
 			'airwallex-wc-blocks-integration',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-wc-blocks.min.js',
 			array(),
-			time(),
+			AIRWALLEX_VERSION,
 			true
 		);
 

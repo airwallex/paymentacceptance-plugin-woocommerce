@@ -82,7 +82,7 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 			'airwallex-wc-ec-blocks-integration',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-wc-ec-blocks.min.js',
 			$dependencies,
-			time(),
+			AIRWALLEX_VERSION,
 			true
 		);
 
@@ -110,7 +110,7 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 			'airwallex-wc-ec-blocks-integration',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-wc-ec-blocks.min.js',
 			$dependencies,
-			time(),
+			AIRWALLEX_VERSION,
 			true
 		);
 
