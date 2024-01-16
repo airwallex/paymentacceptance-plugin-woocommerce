@@ -3,6 +3,7 @@
 namespace Airwallex\Services;
 
 use Airwallex\Gateways\Card;
+use Airwallex\Gateways\ExpressCheckout;
 use Airwallex\Main;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
@@ -62,7 +63,7 @@ class WebhookService {
 						break;
 					case 'payment_intent.capture_required':
 						$orderService->setAuthorizedStatus( $order );
-						if ( $order->get_payment_method() === Card::GATEWAY_ID ) {
+						if ( $order->get_payment_method() === Card::GATEWAY_ID || $order->get_payment_method() === ExpressCheckout::GATEWAY_ID ) {
 							$cardGateway = new Card();
 							if ( ! $cardGateway->is_capture_immediately() ) {
 								$orderService->setPaymentSuccess( $order, $paymentIntent );

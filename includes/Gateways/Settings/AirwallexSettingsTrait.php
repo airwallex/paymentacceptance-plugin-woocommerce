@@ -114,13 +114,13 @@ trait AirwallexSettingsTrait {
 			'airwallex-admin-css',
 			AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout-admin.css',
 			[],
-			time()
+			AIRWALLEX_VERSION
 		);
 		wp_enqueue_script(
 			'airwallex-admin-settings',
 			AIRWALLEX_PLUGIN_URL . '/assets/js/admin/airwallex-admin-settings.js',
 			['jquery'],
-			time(),
+			AIRWALLEX_VERSION,
 			true
 		);
 	}
