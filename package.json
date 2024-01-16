@@ -11,7 +11,7 @@
   "scripts": {
     "build": "rimraf build/* && npm run build:webpack",
     "build:webpack": "wp-scripts build",
-    "build:release": "npm run build && composer install --no-dev --optimize-autoloader && node tasks/release.js",
+    "build:release": "npm install && npm run build && composer install --no-dev --optimize-autoloader && node tasks/release.js",
     "deploy": "npm run build:release && ./deploy.sh",
     "update-version": "./update-versions.sh",
     "release-to-wp": "./deploy.sh",
