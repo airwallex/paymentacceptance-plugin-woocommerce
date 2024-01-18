@@ -1062,7 +1062,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 
 		$data = [
 			'enabled' => $settings['enabled'],
-			'methods' => implode(',', $settings['payment_methods']),
+			'methods' => implode(',', (array) $settings['payment_methods']),
 		];
 
 		return $data;
