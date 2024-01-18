@@ -32,6 +32,7 @@ class CardSubscriptions extends Card {
 				'subscription_reactivation',
 				'subscription_amount_changes',
 				'subscription_date_changes',
+				'multiple_subscriptions',
 			)
 		);
 	}
