@@ -18,5 +18,5 @@ if (document.getElementById(fingerprintScriptId) === null) {
 	document.body.appendChild(fingerprintScript);
 }
 
-// registerExpressPaymentMethod(airwallexApplePayOption);
+registerExpressPaymentMethod(airwallexApplePayOption);
 registerExpressPaymentMethod(airwallexGooglePayOption);

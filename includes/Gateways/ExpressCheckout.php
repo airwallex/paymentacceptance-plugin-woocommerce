@@ -65,7 +65,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		$this->id                 = self::GATEWAY_ID;
 		$this->method_title       = __('Airwallex - Express Checkout', 'airwallex-online-payments-gateway');
 		$this->method_description = __(
-			'Google Pay express checkout.',
+			'Apple Pay and Google Pay express checkout.',
 			'airwallex-online-payments-gateway'
 		);
 		$this->supports           = array(
@@ -141,13 +141,13 @@ class ExpressCheckout extends WC_Payment_Gateway {
 				]
 			],
 			[
-				// 'register_domain_instruction' => [
-				// 	'type' => 'apple_pay_instruction',
-				// 	'title' => __('Apple Pay', 'airwallex-online-payments-gateway'),
-				// 	'label' => __('Register', 'airwallex-online-payments-gateway'),
-				// 	'class' => 'wc-airwallex-register-apple-pay-domain button-secondary',
-				// 	'disabled'    => !$isCardGatewayEnabled,
-				// ],
+				'register_domain_instruction' => [
+					'type' => 'apple_pay_instruction',
+					'title' => __('Apple Pay', 'airwallex-online-payments-gateway'),
+					'label' => __('Register', 'airwallex-online-payments-gateway'),
+					'class' => 'wc-airwallex-register-apple-pay-domain button-secondary',
+					'disabled'    => !$isCardGatewayEnabled,
+				],
 				'google_merchant_id' => [
 					'title'   => __( 'Google Pay', 'airwallex-online-payments-gateway' ),
 					'type'    => 'google_pay_instruction',
@@ -169,10 +169,10 @@ class ExpressCheckout extends WC_Payment_Gateway {
 					'type' => 'multiselect',
 					'class' => 'wc-enhanced-select',
 					'options' => [
-						// 'apple_pay' => __('Apple Pay', 'airwallex-online-payments-gateway'),
+						'apple_pay' => __('Apple Pay', 'airwallex-online-payments-gateway'),
 						'google_pay' => __('Google Pay', 'airwallex-online-payments-gateway'),
 					],
-					'default' => ['google_pay'],
+					'default' => ['apple_pay', 'google_pay'],
 					'disabled'    => !$isCardGatewayEnabled,
 				],
 				'show_button_on' => [
@@ -423,7 +423,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 				<div id="awx-express-checkout-button" class="awx-express-checkout-button">
 			<?php endif; ?>
 
-			<!-- <?php if ($this->isMethodEnabled('apple_pay')) : ?>
+			<?php if ($this->isMethodEnabled('apple_pay')) : ?>
 				<div id="awx-ec-apple-pay-btn" class="awx-ec-button awx-apple-pay-btn">
 					<apple-pay-button
 						locale="<?php echo esc_attr(Util::getLocale()); ?>"
@@ -432,7 +432,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 						>
 					</apple-pay-button>
 				</div>
-			<?php endif; ?> -->
+			<?php endif; ?>
 
 			<?php if ($this->isMethodEnabled('google_pay')) : ?>
 				<div id="awx-ec-google-pay-btn" class="awx-ec-button awx-google-pay-btn">
