@@ -75,7 +75,7 @@ class WebhookService {
 						break;
 					default:
 						$attempt = $paymentIntent->getLatestPaymentAttempt();
-						if ( in_array( $attempt[''], array_map( 'strtolower', PaymentIntent::PENDING_STATUSES ), true ) ) {
+						if ( isset($attempt['']) && in_array( $attempt[''], array_map( 'strtolower', PaymentIntent::PENDING_STATUSES ), true ) ) {
 							$logService->debug( '🖧 detected pending status from webhook', $eventType );
 							$orderService->setPendingStatus( $order );
 						}

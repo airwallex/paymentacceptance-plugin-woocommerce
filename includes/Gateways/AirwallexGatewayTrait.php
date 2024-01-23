@@ -92,6 +92,6 @@ trait AirwallexGatewayTrait {
 	}
 
 	public static function getSettings() {
-		return get_option(AIRWALLEX_PLUGIN_NAME . self::GATEWAY_ID . '_settings');
+		return get_option(AIRWALLEX_PLUGIN_NAME . self::GATEWAY_ID . '_settings', []);
 	}
 }

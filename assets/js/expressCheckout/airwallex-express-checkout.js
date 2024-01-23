@@ -494,7 +494,7 @@ jQuery(function ($) {
 				paymentDataRequest.shippingOptionRequired    = true;
 			}
 
-			return paymentDataRequest
+			return paymentDataRequest;
 		},
 
 		/**

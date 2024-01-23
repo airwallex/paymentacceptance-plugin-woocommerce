@@ -181,7 +181,7 @@ class WeChat extends WC_Payment_Gateway {
 		$settings = self::getSettings();
 
 		$data = [
-			'enabled' => $settings['enabled'],
+			'enabled' => isset($settings['enabled']) ? $settings['enabled'] : 'no',
 		];
 
 		return $data;

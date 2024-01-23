@@ -183,7 +183,7 @@ jQuery(function ($) {
 		});
 	});
 
-    if (awxAdminSettings.apiSettings.connected) {
+    if (awxAdminSettings && awxAdminSettings.apiSettings.connected) {
         $('.wc-airwallex-connection-test').closest('tr').hide();
         $('#awx-account-not-connected').hide();
 		$('#awx-account-connected').show();
