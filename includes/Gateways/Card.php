@@ -327,8 +327,8 @@ class Card extends WC_Payment_Gateway {
 		$settings = self::getSettings();
 
 		$data = [
-			'enabled' => $settings['enabled'],
-			'checkout_form_type' => $settings['checkout_form_type'],
+			'enabled' => isset($settings['enabled']) ? $settings['enabled'] : 'no',
+			'checkout_form_type' => isset($settings['checkout_form_type']) ? $settings['checkout_form_type'] : '',
 		];
 
 		return $data;

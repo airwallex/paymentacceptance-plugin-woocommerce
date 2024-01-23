@@ -755,7 +755,7 @@ abstract class AbstractClient {
 				'php_version' => phpversion(),
 				'wordpress_version' => function_exists('get_bloginfo') ? get_bloginfo('version') : '',
 				'woo_commerce_version' => defined( 'WC_VERSION' ) ? WC_VERSION : '',
-				'payment_form_template' => get_option( 'airwallex_payment_page_template' ),
+				'payment_form_template' => get_option( 'airwallex_payment_page_template', 'default' ),
 				'express_checkout' => ExpressCheckout::getMetaData(),
 			]),
 		];

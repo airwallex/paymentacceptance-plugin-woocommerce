@@ -216,16 +216,14 @@ class OrderController {
 	public function getShippingOptions() {
 		check_ajax_referer( 'wc-airwallex-express-checkout-shipping', 'security' );
 
-		$shippingAddress = filter_input_array(
-			INPUT_POST,
-			[	'address' => FILTER_SANITIZE_STRING,
-				'address2' => FILTER_SANITIZE_STRING,
-				'country'   => FILTER_SANITIZE_STRING,
-				'state'     => FILTER_SANITIZE_STRING,
-				'postcode'  => FILTER_SANITIZE_STRING,
-				'city'      => FILTER_SANITIZE_STRING,
-			]
-		);
+		$shippingAddress = [
+			'address'  => isset($_POST['address']) ? wc_clean(wp_unslash($_POST['address'])) : '',
+			'address2' => isset($_POST['address2']) ? wc_clean(wp_unslash($_POST['address2'])) : '',
+			'country'  => isset($_POST['country']) ? wc_clean(wp_unslash($_POST['country'])) : '',
+			'state'    => isset($_POST['state']) ? wc_clean(wp_unslash($_POST['state'])) : '',
+			'postcode' => isset($_POST['postcode']) ? wc_clean(wp_unslash($_POST['postcode'])) : '',
+			'city'     => isset($_POST['city']) ? wc_clean(wp_unslash($_POST['city'])) : '',
+		];
 
 		$data = $this->getAvailableShippingOptions( $shippingAddress );
 		wp_send_json($data);
