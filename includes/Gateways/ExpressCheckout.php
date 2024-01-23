@@ -117,7 +117,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		add_action('wc_ajax_airwallex_start_payment_session', [$this->paymentSessionController, 'startPaymentSession']);
 		add_action('wc_ajax_airwallex_register_apple_pay_domain', [$this->gatewaySettingsController, 'registerDomain']);
 
-		add_filter('woocommerce_registration_error_email_exists', [$this, 'registrationEmailExistsError'], 10 , 2);
+		add_filter('woocommerce_registration_error_email_exists', [$this, 'registrationEmailExistsError'], 10, 2);
 
 		if ( class_exists( 'WC_Subscriptions_Order' ) ) {
 			add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, array( $this, 'do_subscription_payment' ), 10, 2 );
@@ -357,7 +357,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 	}
 
 	public function isMethodEnabled($method) {
-		return in_array($method, (array) $this->get_option('payment_methods'), true);
+		return in_array($this->enabled, ['yes', 1, true, '1'], true) && in_array($method, (array) $this->get_option('payment_methods'), true);
 	}
 
 	public function isCardGatewayEnabled() {
@@ -773,7 +773,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		];
 	}
 
-	public function registrationEmailExistsError($message, $email) {
+	public function registrationEmailExistsError($message, $email = '') {
 		$accountLink = get_option( 'woocommerce_myaccount_page_id' ) ? wc_get_account_endpoint_url( 'dashboard' ) : wp_login_url();
 
 		return sprintf(
@@ -1061,8 +1061,8 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		$settings = self::getSettings();
 
 		$data = [
-			'enabled' => $settings['enabled'],
-			'methods' => implode(',', (array) $settings['payment_methods']),
+			'enabled' => isset($settings['enabled']) ? $settings['enabled'] : 'no',
+			'methods' => isset($settings['payment_methods']) ? $settings['payment_methods'] : '',
 		];
 
 		return $data;
