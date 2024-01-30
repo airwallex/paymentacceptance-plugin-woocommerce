@@ -709,13 +709,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		return in_array($pageType, $this->getShowButtonOn(), true);
 	}
 
-	public function getCreatePaymentIntentUrl() {
-		$url  = \WooCommerce::instance()->api_request_url( Card::ROUTE_SLUG_ASYNC_INTENT );
-		$url .= ( strpos( $url, '?' ) === false ? '?' : '&' ) . 'request_id=' . uniqid();
-
-		return $url;
-	}
-
 	/**
 	 * Checks whether account creation is possible upon checkout.
 	 *
@@ -857,7 +850,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 			'allowedCardNetworks' => $this->getActiveCardSchemes($countryCode, strtolower(get_woocommerce_currency())),
 			'totalPriceLabel' => get_bloginfo('name'),
 			'totalPriceStatus' => 'ESTIMATED',
-			'createPaymentIntentUrl' => $this->getCreatePaymentIntentUrl(),
 			'subTotal' => $subTotal,
 		];
 

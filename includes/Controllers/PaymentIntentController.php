@@ -34,7 +34,8 @@ class PaymentIntentController {
 
 		$paymentIntentId              = isset($_POST['commonPayload']['paymentIntentId']) ? sanitize_text_field(wp_unslash($_POST['commonPayload']['paymentIntentId'])) : '';
 		$confirmPayload               = isset($_POST['confirmPayload']) ? wc_clean(wp_unslash($_POST['confirmPayload'])) : [];
-		$confirmPayload['return_url'] = $confirmPayload['integration_data']['origin'] . WC_AJAX::get_endpoint("airwallex_3ds&intent_id={$paymentIntentId}&origin={$confirmPayload['integration_data']['origin']}");
+		$origin                       = isset($_POST['origin']) ? wc_clean(wp_unslash($_POST['origin'])) : get_site_url();
+		$confirmPayload['return_url'] = $origin . WC_AJAX::get_endpoint("airwallex_3ds&intent_id={$paymentIntentId}&origin={$confirmPayload['integration_data']['origin']}");
 
 		LogService::getInstance()->debug(__METHOD__ . " - Confirm intent {$paymentIntentId}.");
 		LogService::getInstance()->debug(__METHOD__ . ' - Payload.', $confirmPayload);

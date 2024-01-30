@@ -122,7 +122,8 @@ export const confirmPaymentIntent = (commonPayload, confirmPayload) => {
 	const data                    = {
 		security: settings.nonce.payment,
 		confirmPayload: confirmPayload,
-		commonPayload: commonPayload
+		commonPayload: commonPayload,
+		origin: window.location.origin,
 	};
 
 	return $.ajax({
@@ -210,11 +211,6 @@ export const getConfirmPayload = (commonPayload, paymentMethodObj, paymentConsen
 			card: {
 				auto_capture: commonPayload.autoCapture,
 			},
-		},
-		integration_data: {
-			type: 'woo_commerce',
-			version: VersionData?.version,
-			origin: window.location.origin,
 		},
 	};
 

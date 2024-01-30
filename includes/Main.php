@@ -90,7 +90,6 @@ class Main {
 		if ( $this->isJsLoggingActive() ) {
 			add_action( 'woocommerce_api_' . self::ROUTE_SLUG_JS_LOGGER, array( new AirwallexController(), 'jsLog' ) );
 		}
-		add_action( 'woocommerce_api_' . Card::ROUTE_SLUG_ASYNC_INTENT, array( new AirwallexController(), 'asyncIntent' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( AIRWALLEX_PLUGIN_PATH . AIRWALLEX_PLUGIN_NAME . '.php' ), array( $this, 'addPluginSettingsLink' ) );
 		add_action( 'airwallex_check_pending_transactions', array( $this, 'checkPendingTransactions' ) );
 		add_action( 'woocommerce_settings_saved', array( $this, 'updateMerchantCountryAfterSave' ) );
@@ -462,7 +461,6 @@ class Main {
 
 		$inlineScript = '
             const AirwallexParameters = {
-                asyncIntentUrl: \'' . $cardGateway->get_async_intent_url() . '\',
                 confirmationUrl: \'' . $confirmationUrl . '\'
             };';
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) {
@@ -510,34 +508,10 @@ class Main {
 		$locale            = \Airwallex\Services\Util::getLocale();
 		$inlineScript     .= <<<AIRWALLEX
 
-    const airwallexCheckoutProcessingAction = function (msg) {
-        if (msg && msg.indexOf('<!--Airwallex payment processing-->') !== -1) {
-            confirmSlimCardPayment();
-        }
-    }
-
-    jQuery(document.body).on('checkout_error', function (e, msg) {
-        airwallexCheckoutProcessingAction(msg);
-    });
-
-    //for plugin CheckoutWC
-    window.addEventListener('cfw-checkout-failed-before-error-message', function (event) {
-        if (typeof event.detail.response.messages === 'undefined') {
-            return;
-        }
-        airwallexCheckoutProcessingAction(event.detail.response.messages);
-    });
-
-    //this is for payment changes after order placement
-    jQuery('#order_review').on('submit', function (e) {
-        let airwallexCardPaymentOption = jQuery('#payment_method_airwallex_card');
-        if (airwallexCardPaymentOption.length && airwallexCardPaymentOption.is(':checked')) {
-            if (jQuery('#airwallex-card').length) {
-                e.preventDefault();
-                confirmSlimCardPayment($airwallexOrderId);
-            }
-        }
-    });
+	jQuery('form.checkout').on('checkout_place_order_success', function(ele, result, form) {
+		confirmSlimCardPayment(result);
+		return true;
+	});
 
     Airwallex.init({
         env: '$environment',
@@ -558,7 +532,7 @@ class Main {
         }
     }, 1000);
 
-    function confirmSlimCardPayment(orderId) {
+    function confirmSlimCardPayment(data) {
         //timeout necessary because of event order in plugin CheckoutWC
         setTimeout(function(){
             jQuery('form.checkout').block({
@@ -570,57 +544,49 @@ class Main {
             });
         }, 50);
 
-        let asyncIntentUrl = AirwallexParameters.asyncIntentUrl;
-        if(orderId){
-            asyncIntentUrl += (asyncIntentUrl.indexOf('?') !== -1 ? '&' : '?') + 'airwallexOrderId=' + orderId;
-        }
-
-        AirwallexClient.ajaxGet(asyncIntentUrl, function (data) {
-            if (!data || data.error) {
-                AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', ''));
-            }
-            const finalConfirmationUrl = AirwallexParameters.confirmationUrl + 'order_id=' + data.orderId + '&intent_id=' + data.paymentIntent;
-            if(data.createConsent){
-                Airwallex.createPaymentConsent({
-                    intent_id: data.paymentIntent,
-                    customer_id: data.customerId,
-                    client_secret: data.clientSecret,
-                    currency: data.currency,
-                    element: airwallexSlimCard,
-                    next_triggered_by: 'merchant'
-                }).then((response) => {
-                    location.href = finalConfirmationUrl;
-                }).catch(err => {
-                    console.log(err);
-                    jQuery('form.checkout').unblock();
-                    AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', err.message || ''));
-                });
-            }else{
-                Airwallex.confirmPaymentIntent({
-                    element: airwallexSlimCard,
-                    id: data.paymentIntent,
-                    client_secret: data.clientSecret,
-                    payment_method: {
-                        card: {
-                            name: AirwallexClient.getCardHolderName()
-                        },
-                        billing: AirwallexClient.getBillingInformation()
-                    },
-                    payment_method_options: {
-                        card: {
-                            auto_capture: $autoCapture,
-                        },
-                    }
-                }).then((response) => {
-                    location.href = finalConfirmationUrl;
-                }).catch(err => {
-                    console.log(err);
-                    jQuery('form.checkout').unblock();
-                    AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', err.message || ''));
-                })
-            }
-
-        });
+        if (!data || data.error) {
+			AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', ''));
+		}
+		const finalConfirmationUrl = AirwallexParameters.confirmationUrl + 'order_id=' + data.orderId + '&intent_id=' + data.paymentIntent;
+		if(data.createConsent){
+			Airwallex.createPaymentConsent({
+				intent_id: data.paymentIntent,
+				customer_id: data.customerId,
+				client_secret: data.clientSecret,
+				currency: data.currency,
+				element: airwallexSlimCard,
+				next_triggered_by: 'merchant'
+			}).then((response) => {
+				location.href = finalConfirmationUrl;
+			}).catch(err => {
+				console.log(err);
+				jQuery('form.checkout').unblock();
+				AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', err.message || ''));
+			});
+		}else{
+			Airwallex.confirmPaymentIntent({
+				element: airwallexSlimCard,
+				id: data.paymentIntent,
+				client_secret: data.clientSecret,
+				payment_method: {
+					card: {
+						name: AirwallexClient.getCardHolderName()
+					},
+					billing: AirwallexClient.getBillingInformation()
+				},
+				payment_method_options: {
+					card: {
+						auto_capture: $autoCapture,
+					},
+				}
+			}).then((response) => {
+				location.href = finalConfirmationUrl;
+			}).catch(err => {
+				console.log(err);
+				jQuery('form.checkout').unblock();
+				AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', err.message || ''));
+			})
+		}
     }
 
     window.addEventListener('onError', (event) => {
