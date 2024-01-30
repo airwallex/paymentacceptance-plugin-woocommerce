@@ -581,7 +581,7 @@ class Main extends WC_Payment_Gateway {
 			$apiClient           = MainClient::getInstance();
 			$paymentIntent             = $apiClient->getPaymentIntent( $paymentIntentId );
 			$paymentIntentClientSecret = $paymentIntent->getClientSecret();
-			$customerId                = $paymentIntent->getCustomerId();
+			$airwallexCustomerId       = $paymentIntent->getCustomerId();
 			$confirmationUrl           = $this->get_payment_confirmation_url();
 			$isSandbox                 = $this->is_sandbox();
 			$orderService = new OrderService();
