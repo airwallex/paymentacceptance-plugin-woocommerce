@@ -200,11 +200,6 @@ class OrderController {
 		$paymentMethod = isset( $_POST['payment_method_type'] ) ? wc_clean(wp_unslash($_POST['payment_method_type'])) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		WC()->session->set( 'airwallex_express_checkout_payment_method', $paymentMethod );
 
-		// refresh the checkout nonce so no exceptions are thrown.
-		$newNonce             = wp_create_nonce( 'woocommerce-process_checkout' );
-		$_REQUEST['_wpnonce'] = $newNonce;
-		$_POST['_wpnonce']    = $newNonce;
-
 		WC()->checkout()->process_checkout();
 
 		die( 0 );

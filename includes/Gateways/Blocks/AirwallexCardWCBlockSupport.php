@@ -94,7 +94,7 @@ class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 
 			$airwallexCustomerId = null;
 			$orderService        = new OrderService();
-			if ( $order->get_customer_id( '' ) || $orderService->containsSubscription( $order->get_id() ) ) {
+			if ( $orderService->containsSubscription( $order->get_id() ) ) {
 				$airwallexCustomerId = $orderService->getAirwallexCustomerId( $order->get_customer_id( '' ), $apiClient );
 			}
 

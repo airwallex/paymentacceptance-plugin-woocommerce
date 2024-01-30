@@ -6,6 +6,7 @@ use Airwallex\Client\CardClient;
 use Airwallex\Gateways\Settings\AirwallexSettingsTrait;
 use Airwallex\Services\CacheService;
 use Airwallex\Services\LogService;
+use Airwallex\Services\OrderService;
 use Airwallex\Struct\PaymentIntent;
 use Airwallex\Struct\Refund;
 use Exception;
@@ -25,7 +26,6 @@ class Card extends WC_Payment_Gateway {
 
 	const ROUTE_SLUG              = 'airwallex_card';
 	const ROUTE_SLUG_WECHAT       = 'airwallex_wechat';
-	const ROUTE_SLUG_ASYNC_INTENT = 'airwallex_async_intent';
 	const GATEWAY_ID              = 'airwallex_card';
 	const DESCRIPTION_PLACEHOLDER = '<!-- -->';
 
@@ -114,12 +114,6 @@ class Card extends WC_Payment_Gateway {
 		}
 	}
 
-	public function get_async_intent_url() {
-		$url  = \WooCommerce::instance()->api_request_url( self::ROUTE_SLUG_ASYNC_INTENT );
-		$url .= ( strpos( $url, '?' ) === false ? '?' : '&' ) . 'request_id=' . uniqid();
-		return $url;
-	}
-
 	public function get_form_fields() {
 		$isEmbeddedFieldsAllowed = ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.8.0', '>=' ) );
 		return apply_filters( // phpcs:ignore
@@ -185,16 +179,62 @@ class Card extends WC_Payment_Gateway {
 	}
 
 	public function process_payment( $order_id ) {
-		$return = array(
-			'result' => 'success',
-		);
-		WC()->session->set( 'airwallex_order', $order_id );
-		if ( 'redirect' === $this->get_option( 'checkout_form_type' ) ) {
-			$return['redirect'] = $this->get_payment_url( 'airwallex_payment_method_card' );
-		} else {
-			$return['messages'] = '<!--Airwallex payment processing-->';
+		try {
+			$order   = wc_get_order( $order_id );
+			if ( empty( $order ) ) {
+				$this->logService->debug( __METHOD__ . ' - can not find order', array( 'orderId' => $order_id ) );
+				throw new Exception( 'Order not found: ' . $order_id );
+			}
+
+			$apiClient = CardClient::getInstance();
+			$orderService        = new OrderService();
+			$airwallexCustomerId = null;
+			if ( $orderService->containsSubscription( $order->get_id() ) ) {
+				$airwallexCustomerId = $orderService->getAirwallexCustomerId( $order->get_customer_id( '' ), $apiClient );
+			}
+
+			$this->logService->debug( __METHOD__ . ' - before create intent', array( 'orderId' => $order_id ) );
+			$paymentIntent = $apiClient->createPaymentIntent( $order->get_total(), $order->get_id(), $this->is_submit_order_details(), $airwallexCustomerId );
+			$this->logService->debug(
+				__METHOD__ . ' - payment intent created ',
+				array(
+					'paymentIntent' => $paymentIntent,
+					'session'  => array(
+						'cookie' => WC()->session->get_session_cookie(),
+						'data'   => WC()->session->get_session_data(),
+					),
+				),
+				LogService::CARD_ELEMENT_TYPE
+			);
+
+			WC()->session->set( 'airwallex_order', $order_id );
+			WC()->session->set( 'airwallex_payment_intent_id', $paymentIntent->getId() );
+			$order->update_meta_data( '_tmp_airwallex_payment_intent', $paymentIntent->getId() );
+			$order->save();
+
+			$result = ['result' => 'success'];
+			if ( 'redirect' === $this->get_option( 'checkout_form_type' ) ) {
+				$result['redirect'] = $this->get_payment_url( 'airwallex_payment_method_card' );
+			} else {
+				$result += [
+					'paymentIntent' => $paymentIntent->getId(),
+					'orderId'       => $order_id,
+					'createConsent' => ! empty( $airwallexCustomerId ),
+					'customerId'    => ! empty( $airwallexCustomerId ) ? $airwallexCustomerId : '',
+					'currency'      => $order->get_currency( '' ),
+					'clientSecret'  => $paymentIntent->getClientSecret(),
+					'messages'       => __('Processing payment.', 'airwallex-online-payments-gateway')
+				];
+			}
+			
+			return $result;
+		} catch ( Exception $e ) {
+			$this->logService->error( __METHOD__ . ' - card payment create intent failed.', $e->getMessage(), LogService::CARD_ELEMENT_TYPE );
+			return [
+				'result' => 'failure',
+				'messages' => __('Airwallex payment error.', 'airwallex-online-payments-gateway')
+			];
 		}
-		return $return;
 	}
 
 	public function process_refund( $order_id, $amount = null, $reason = '' ) {
@@ -297,16 +337,15 @@ class Card extends WC_Payment_Gateway {
 				throw new Exception( 'Order not found: ' . $orderId );
 			}
 
+			$paymentIntentId = WC()->session->get( 'airwallex_payment_intent_id' );
 			$apiClient                 = CardClient::getInstance();
-			$paymentIntent             = $apiClient->createPaymentIntent( $order->get_total(), $order->get_id(), $this->is_submit_order_details() );
-			$paymentIntentId           = $paymentIntent->getId();
+			$paymentIntent             = $apiClient->getPaymentIntent( $paymentIntentId );
 			$paymentIntentClientSecret = $paymentIntent->getClientSecret();
 			$confirmationUrl           = $this->get_payment_confirmation_url();
 			$isSandbox                 = $this->is_sandbox();
-			WC()->session->set( 'airwallex_payment_intent_id', $paymentIntentId );
 
 			$this->logService->debug(
-				'Redirect to the card payment page',
+				__METHOD__ . ' - Redirect to the card payment page',
 				array(
 					'orderId'       => $orderId,
 					'paymentIntent' => $paymentIntentId,
@@ -316,7 +355,7 @@ class Card extends WC_Payment_Gateway {
 
 			include AIRWALLEX_PLUGIN_PATH . '/html/card-payment-shortcode.php';
 		} catch ( Exception $e ) {
-			$this->logService->error( 'Card payment action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE );
+			$this->logService->error( __METHOD__ . ' - Card payment action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE );
 			wc_add_notice( __( 'Airwallex payment error', 'airwallex-online-payments-gateway' ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
 			die;
