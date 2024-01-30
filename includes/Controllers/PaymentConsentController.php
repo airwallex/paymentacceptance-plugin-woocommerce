@@ -38,6 +38,10 @@ class PaymentConsentController {
 		LogService::getInstance()->debug(__METHOD__ . " - Create payment consent for {$customerId} with {$paymentMethodPayload['type']}.");
 		try {
 			$paymentMethodType = $paymentMethodPayload['type'];
+			if ( ! in_array( $paymentMethodType, ['applepay', 'googlepay'] ) ) {
+				throw new Exception('Payment method type ' . $paymentMethodType . ' is not allowed.');
+			}
+
 			$paymentConsentId  = $this->cardClient->createPaymentConsent($customerId, [
 					'type' => $paymentMethodType,
 					$paymentMethodType => $paymentMethodPayload[$paymentMethodType],
@@ -104,6 +108,10 @@ class PaymentConsentController {
 			LogService::getInstance()->debug(__METHOD__ . ' - Create Payment consent for order: .' . $orderId);
 
 			$paymentMethodType = $paymentMethodPayload['type'];
+			if ( ! in_array( $paymentMethodType, ['applepay', 'googlepay'] ) ) {
+				throw new Exception('Payment method type ' . $paymentMethodType . ' is not allowed.');
+			}
+			
 			$paymentConsentId  = $this->cardClient->createPaymentConsent($customerId, [
 					'type' => $paymentMethodType,
 					$paymentMethodType => $paymentMethodPayload[$paymentMethodType],
