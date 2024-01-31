@@ -46,6 +46,7 @@ class Main extends WC_Payment_Gateway {
 		'subscription_reactivation',
 		'subscription_amount_changes',
 		'subscription_date_changes',
+		'multiple_subscriptions',
 	);
 	public static $status       = null;
 	public $logService;
