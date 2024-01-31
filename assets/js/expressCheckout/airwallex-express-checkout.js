@@ -71,31 +71,39 @@ jQuery(function ($) {
 			const mode                 = button.mode === 'recurring' ? 'recurring' : 'oneoff';
 			
 			// check the existence of apple session before init the button
+			const applePayScriptId = 'airwallex-apple-pay-js';
 			if (awxExpressCheckoutSettings.applePayEnabled
-					&& mode in checkout.allowedCardNetworks.applepay
-					&& checkout.allowedCardNetworks.applepay[mode].length > 0) {
+				&& mode in checkout.allowedCardNetworks.applepay
+				&& checkout.allowedCardNetworks.applepay[mode].length > 0) {
+				if (document.getElementById(applePayScriptId) === null) {
 					const appleScript  = document.createElement('script');
 					appleScript.src    = applePayJSLib;
 					appleScript.async  = true;
+					appleScript.setAttribute('id', applePayScriptId);
 					appleScript.onload = () => {
 						if (deviceSupportApplePay()) {
 							airwallexExpressCheckout.onApplePayLoaded();
 						}
-				};
+					};
 					document.body.appendChild(appleScript);
+				}
 			}
 
 			// check the existence of google before init the button
+			const googlePayScriptId = 'airwallex-google-pay-js';
 			if (awxExpressCheckoutSettings.googlePayEnabled
 				&& mode in checkout.allowedCardNetworks.googlepay
 				&& checkout.allowedCardNetworks.googlepay[mode].length > 0) {
-				const googleScript  = document.createElement('script');
-				googleScript.src    = googlePayJSLib;
-				googleScript.async  = true;
-				googleScript.onload = () => {
-					airwallexExpressCheckout.onGooglePayLoaded();
-				};
-				document.body.appendChild(googleScript);
+				if (document.getElementById(googlePayScriptId) === null) {
+					const googleScript  = document.createElement('script');
+					googleScript.src    = googlePayJSLib;
+					googleScript.async  = true;
+					googleScript.setAttribute('id', googlePayScriptId);
+					googleScript.onload = () => {
+						airwallexExpressCheckout.onGooglePayLoaded();
+					};
+					document.body.appendChild(googleScript);
+				}
 			}
 		},
 
@@ -137,21 +145,19 @@ jQuery(function ($) {
 				};
 
 				session.onpaymentmethodselected     = async (event) => {
-					if (awxExpressCheckoutSettings.isProductPage) {
-						const response = await addToCart();
+					const response = awxExpressCheckoutSettings.isProductPage ? await addToCart() : await getCartDetails();
 
-						if (response.success) {
-							const { orderInfo } = response;
+					if (response.success) {
+						const { orderInfo } = response;
 
-							const paymentMethodUpdate = {
-								newTotal: orderInfo.total,
-								newLineItems: getAppleFormattedLineItems(orderInfo.displayItems),
-							}
-							session.completePaymentMethodSelection(paymentMethodUpdate);
-						} else {
-							console.warn('Failed to add the product to the cart.');
-							session.abort();
+						const paymentMethodUpdate = {
+							newTotal: orderInfo.total,
+							newLineItems: getAppleFormattedLineItems(orderInfo.displayItems),
 						}
+						session.completePaymentMethodSelection(paymentMethodUpdate);
+					} else {
+						console.warn('Failed to add the product to the cart.');
+						session.abort();
 					}
 				};
 
@@ -255,6 +261,7 @@ jQuery(function ($) {
 		},
 
 		processApplePayPayment: async function(payment) {
+			payment['shippingMethods'] = shippingMethods;
 			const orderResponse = await createOrder(payment, 'applepay');
 			if (orderResponse.result === 'success') {
 				const commonPayload                  = orderResponse.payload;

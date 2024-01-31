@@ -294,7 +294,7 @@ const getOrderDataForApplePay = (paymentData) => {
 		shipping_city:             shipping ? (shipping.locality ? shipping.locality : shipping.administrativeArea ) : '',
 		shipping_state:            shipping ? shipping.administrativeArea : '',
 		shipping_postcode:         shipping ? shipping.postalCode : '',
-		shipping_method:           [ null ],
+		shipping_method:           paymentData.shippingMethods ? paymentData.shippingMethods : [ null ],
 	};
 
 	const data = Object.assign(

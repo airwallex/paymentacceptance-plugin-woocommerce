@@ -74,7 +74,7 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 		if ($this->enableExpressCheckout) {
 			if ($this->gateway->isMethodEnabled('apple_pay')) {
 				$this->gateway->loadAppleScript();
-				$dependencies[] = 'airwallex-apple-pay';
+				$dependencies[] = 'airwallex-apple-pay-block';
 			}
 		}
 
@@ -102,7 +102,7 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 		if ($this->enableExpressCheckout) {
 			if ($this->gateway->isMethodEnabled('apple_pay')) {
 				$this->gateway->loadAppleScript();
-				$dependencies[] = 'airwallex-apple-pay';
+				$dependencies[] = 'airwallex-apple-pay-block';
 			}
 		}
 
