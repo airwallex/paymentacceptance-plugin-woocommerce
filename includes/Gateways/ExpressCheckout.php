@@ -386,7 +386,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 
 	public function loadAppleScript() {
 		wp_enqueue_script(
-			'airwallex-apple-pay',
+			'airwallex-apple-pay-block',
 			'https://applepay.cdn-apple.com/jsapi/v1.1.0/apple-pay-sdk.js',
 			array(),
 			null,

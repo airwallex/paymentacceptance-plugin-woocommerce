@@ -48,7 +48,8 @@ const getApplePayPaymentRequest = (billing) => {
 	};
 };
 
-const processApplePayPayment = async (payment) => {
+const processApplePayPayment = async (payment, shippingMethods) => {
+	payment['shippingMethods'] = shippingMethods;
 	const orderResponse      = await createOrder(payment, 'applepay');
 
 	if (orderResponse.result === 'success') {
@@ -218,7 +219,7 @@ const AWXApplePayButton = (props) => {
 		}
 
 		session.onpaymentauthorized = async (event) => {
-			const response          = await processApplePayPayment(event.payment);
+			const response          = await processApplePayPayment(event.payment, shippingMethods);
 			if (response.success) {
 				session.completePayment({
 					'status': ApplePaySession.STATUS_SUCCESS,
