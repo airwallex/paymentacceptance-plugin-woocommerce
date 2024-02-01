@@ -10,7 +10,7 @@ CURRENTDIR=$(pwd)
 PLUGINSLUG="airwallex-online-payments-gateway"
 PLUGINDIR="$CURRENTDIR/release/$PLUGINSLUG"
 SVNPATH="/tmp/SVN/$PLUGINSLUG"
-SVNURL="http://plugins.svn.wordpress.org/$PLUGINSLUG"
+SVNURL="https://plugins.svn.wordpress.org/$PLUGINSLUG"
 MAINFILE="$PLUGINSLUG.php"
 SVNUSER="airwallex"
 

@@ -285,7 +285,7 @@ class Main {
 	 */
 	public function excludePagesFromMenu( $items ) {
 		$cacheService   = new CacheService();
-		$excludePageIds = explode( ',', $cacheService->get( self::AWX_PAGE_ID_CACHE_KEY ) );
+		$excludePageIds = explode( ',', (string) $cacheService->get( self::AWX_PAGE_ID_CACHE_KEY ) );
 		foreach ( $items as $key => $item ) {
 			if ( in_array( strval( $item->object_id ), $excludePageIds, true ) ) {
 				unset( $items[ $key ] );
@@ -303,7 +303,7 @@ class Main {
 	 */
 	public function excludePagesFromList( $excludeArray ) {
 		$cacheService   = new CacheService();
-		$excludePageIds = explode( ',', $cacheService->get( self::AWX_PAGE_ID_CACHE_KEY ) );
+		$excludePageIds = explode( ',', (string) $cacheService->get( self::AWX_PAGE_ID_CACHE_KEY ) );
 		if ( is_array( $excludePageIds ) ) {
 			$excludeArray += $excludePageIds;
 		}
