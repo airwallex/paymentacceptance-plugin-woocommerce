@@ -35,7 +35,7 @@ class PaymentIntentController {
 		$paymentIntentId              = isset($_POST['commonPayload']['paymentIntentId']) ? sanitize_text_field(wp_unslash($_POST['commonPayload']['paymentIntentId'])) : '';
 		$confirmPayload               = isset($_POST['confirmPayload']) ? wc_clean(wp_unslash($_POST['confirmPayload'])) : [];
 		$origin                       = isset($_POST['origin']) ? wc_clean(wp_unslash($_POST['origin'])) : get_site_url();
-		$confirmPayload['return_url'] = $origin . WC_AJAX::get_endpoint("airwallex_3ds&intent_id={$paymentIntentId}&origin={$confirmPayload['integration_data']['origin']}");
+		$confirmPayload['return_url'] = $origin . WC_AJAX::get_endpoint("airwallex_3ds&intent_id={$paymentIntentId}&origin={$origin}");
 
 		LogService::getInstance()->debug(__METHOD__ . " - Confirm intent {$paymentIntentId}.");
 		LogService::getInstance()->debug(__METHOD__ . ' - Payload.', $confirmPayload);
@@ -67,7 +67,7 @@ class PaymentIntentController {
 	public function threeDS() {
 		$paymentConsentId = isset($_GET['consent_id']) ? sanitize_text_field(wp_unslash($_GET['consent_id'])) : '';
 		$paymentIntentId  = isset($_GET['intent_id']) ? sanitize_text_field(wp_unslash($_GET['intent_id'])) : '';
-		$origin           = isset($_GET['origin']) ? sanitize_text_field(wp_unslash($_GET['origin'])) : '';
+		$origin           = isset($_GET['origin']) ? sanitize_text_field(wp_unslash($_GET['origin'])) : get_site_url();
 
 		try {
 			if (!$paymentIntentId && $paymentConsentId) {

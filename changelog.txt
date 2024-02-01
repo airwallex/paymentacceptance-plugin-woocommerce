@@ -1,5 +1,11 @@
 *** WooCommerce Airwallex Online Payments Gateway Changelog ***
 
+2024-02-01 - version 1.6.0
+
+* Add - Apple Pay express checkout
+* Add - Support for multiple subscriptions
+* Fix - Conflict with Klarna Checkout For WooCommerce plugin
+
 2024-01-18 - version 1.5.1
 
 * Fix - Checkout issue
