@@ -294,9 +294,12 @@ class Main extends WC_Payment_Gateway {
 			$order->update_meta_data( '_tmp_airwallex_payment_intent', $paymentIntent->getId() );
 			$order->save();
 
+			$redirectUrl = $this->get_payment_url( 'airwallex_payment_method_all' );
+			$redirectUrl .= ( strpos( $redirectUrl, '?' ) === false ) ? '?' : '&';
+			$redirectUrl .= 'order_id=' . $order_id;
 			return [
 				'result'   => 'success',
-				'redirect' => $this->get_payment_url( 'airwallex_payment_method_all' ),
+				'redirect' => $redirectUrl,
 			];
 		} catch ( Exception $e ) {
 			$this->logService->error( __METHOD__ . ' - Drop in create intent failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE );

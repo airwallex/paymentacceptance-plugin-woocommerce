@@ -87,6 +87,7 @@ class Main {
 		add_action( 'woocommerce_api_' . WeChat::ROUTE_SLUG, array( new AirwallexController(), 'weChatPayment' ) );
 		add_action( 'woocommerce_api_' . self::ROUTE_SLUG_CONFIRMATION, array( new AirwallexController(), 'paymentConfirmation' ) );
 		add_action( 'woocommerce_api_' . self::ROUTE_SLUG_WEBHOOK, array( new AirwallexController(), 'webhook' ) );
+		add_action( 'woocommerce_api_airwallex_process_order_pay', [new AirwallexController(), 'processOrderPay'] );
 		if ( $this->isJsLoggingActive() ) {
 			add_action( 'woocommerce_api_' . self::ROUTE_SLUG_JS_LOGGER, array( new AirwallexController(), 'jsLog' ) );
 		}
@@ -110,6 +111,7 @@ class Main {
 		}
 		add_action( 'woocommerce_blocks_loaded', array( $this, 'woocommerceBlockSupport' ) );
 		add_action('woocommerce_init', [AdminSettings::class, 'init']);
+		add_filter( 'woocommerce_available_payment_gateways', [$this, 'disableGatewayOrderPay'] );
 	}
 
 	public function registerSettings() {
@@ -461,7 +463,8 @@ class Main {
 
 		$inlineScript = '
             const AirwallexParameters = {
-                confirmationUrl: \'' . $confirmationUrl . '\'
+                confirmationUrl: \'' . $confirmationUrl . '\',
+				isOrderPayPage: \'' . is_wc_endpoint_url( 'order-pay' ) . '\',
             };';
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) {
 			global $wp;
@@ -469,6 +472,11 @@ class Main {
 			if ( $order_id ) {
 				$order = wc_get_order( $order_id );
 				if ( is_a( $order, 'WC_Order' ) ) {
+					$airwallexOrderKey = isset($_GET['key']) ? wp_unslash( $_GET['key'] ) : '';
+					$orderPayUrl = WC()->api_request_url('airwallex_process_order_pay');
+					$orderPayUrl .= ( strpos( $orderPayUrl, '?' ) === false ) ? '?' : '&';
+					$orderPayUrl .= 'order_id=' . $order_id . '&key=' . $airwallexOrderKey;
+
 					$inlineScript .= 'AirwallexParameters.billingFirstName = ' . wp_json_encode( $order->get_billing_first_name() ) . ';';
 					$inlineScript .= 'AirwallexParameters.billingLastName = ' . wp_json_encode( $order->get_billing_last_name() ) . ';';
 					$inlineScript .= 'AirwallexParameters.billingAddress1 = ' . wp_json_encode( $order->get_billing_address_1() ) . ';';
@@ -478,6 +486,7 @@ class Main {
 					$inlineScript .= 'AirwallexParameters.billingPostcode = ' . wp_json_encode( $order->get_billing_postcode() ) . ';';
 					$inlineScript .= 'AirwallexParameters.billingCountry = ' . wp_json_encode( $order->get_billing_country() ) . ';';
 					$inlineScript .= 'AirwallexParameters.billingEmail = ' . wp_json_encode( $order->get_billing_email() ) . ';';
+					$inlineScript .= 'AirwallexParameters.processOrderPayUrl = \'' . $orderPayUrl . '\';';
 				}
 			}
 		}
@@ -504,13 +513,42 @@ class Main {
 		$incompleteMessage = __( 'Your credit card details are incomplete', 'airwallex-online-payments-gateway' );
 		$environment       = $cardGateway->is_sandbox() ? 'demo' : 'prod';
 		$autoCapture       = $cardGateway->is_capture_immediately() ? 'true' : 'false';
-		$airwallexOrderId  = absint( get_query_var( 'order-pay' ) );
 		$locale            = \Airwallex\Services\Util::getLocale();
 		$inlineScript     .= <<<AIRWALLEX
 
+	const awxCheckoutForm = AirwallexParameters.isOrderPayPage ? '#order_review' : 'form.checkout';
 	jQuery('form.checkout').on('checkout_place_order_success', function(ele, result, form) {
 		confirmSlimCardPayment(result);
 		return true;
+	});
+
+	jQuery(document.body).on('click', '#place_order', function(event) {
+		const selectedPaymentMethod = jQuery('[name="payment_method"]:checked').val()
+		if ( AirwallexParameters.isOrderPayPage && 'airwallex_card' === selectedPaymentMethod) {
+			airwallexCheckoutBlock('#order_review');
+			event.preventDefault();
+			jQuery.ajax({
+				type: 'POST',
+				data: jQuery("#order_review").serialize(),
+				url: AirwallexParameters.processOrderPayUrl,
+			}).done((response) => {
+				if (response.result === 'success') {
+					if (response.redirect) {
+						location.href = response.redirect;
+					} else {
+						confirmSlimCardPayment(response);
+					}
+				} else {
+					console.log(response.error);
+					jQuery('#order_review').unblock();
+					AirwallexClient.displayCheckoutError(awxCheckoutForm, String('$errorMessage').replace('%s', response.error || ''));
+				}
+			}).fail((error) => {
+				console.log(error);
+				jQuery('#order_review').unblock();
+				AirwallexClient.displayCheckoutError(awxCheckoutForm, String('$errorMessage').replace('%s', error.message || ''));
+			});
+		}
 	});
 
     Airwallex.init({
@@ -532,10 +570,10 @@ class Main {
         }
     }, 1000);
 
-    function confirmSlimCardPayment(data) {
-        //timeout necessary because of event order in plugin CheckoutWC
-        setTimeout(function(){
-            jQuery('form.checkout').block({
+	function airwallexCheckoutBlock(element) {
+		//timeout necessary because of event order in plugin CheckoutWC
+		setTimeout(function(){
+            jQuery(element).block({
                     message: null,
                     overlayCSS: {
                         background: '#fff',
@@ -543,9 +581,13 @@ class Main {
                     }
             });
         }, 50);
+	}
+
+    function confirmSlimCardPayment(data) {
+		airwallexCheckoutBlock('form.checkout');
 
         if (!data || data.error) {
-			AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', ''));
+			AirwallexClient.displayCheckoutError(awxCheckoutForm, String('$errorMessage').replace('%s', ''));
 		}
 		const finalConfirmationUrl = AirwallexParameters.confirmationUrl + 'order_id=' + data.orderId + '&intent_id=' + data.paymentIntent;
 		if(data.createConsent){
@@ -561,7 +603,7 @@ class Main {
 			}).catch(err => {
 				console.log(err);
 				jQuery('form.checkout').unblock();
-				AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', err.message || ''));
+				AirwallexClient.displayCheckoutError(awxCheckoutForm, String('$errorMessage').replace('%s', err.message || ''));
 			});
 		}else{
 			Airwallex.confirmPaymentIntent({
@@ -584,7 +626,7 @@ class Main {
 			}).catch(err => {
 				console.log(err);
 				jQuery('form.checkout').unblock();
-				AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', err.message || ''));
+				AirwallexClient.displayCheckoutError(awxCheckoutForm, String('$errorMessage').replace('%s', err.message || ''));
 			})
 		}
     }
@@ -594,7 +636,7 @@ class Main {
             return;
         }
         const {error} = event.detail;
-        AirwallexClient.displayCheckoutError(String('$errorMessage').replace('%s', error.message || ''));
+        AirwallexClient.displayCheckoutError(awxCheckoutForm, String('$errorMessage').replace('%s', error.message || ''));
     });
 AIRWALLEX;
 		wp_add_inline_script( 'airwallex-local-js', $inlineScript );
@@ -621,5 +663,13 @@ AIRWALLEX;
 		add_action( 'woocommerce_proceed_to_checkout', [ $expressCheckout, 'displayExpressCheckoutButtonSeparatorHtml' ], 4 );
 		add_action( 'woocommerce_checkout_before_customer_details', [ $expressCheckout, 'displayExpressCheckoutButtonHtml' ], 3 );
 		add_action( 'woocommerce_checkout_before_customer_details', [ $expressCheckout, 'displayExpressCheckoutButtonSeparatorHtml' ], 4 );
+	}
+
+	public function disableGatewayOrderPay($available_gateways) {
+		if ( is_wc_endpoint_url( 'order-pay' ) ) {
+			unset( $available_gateways['airwallex_express_checkout'] );
+		}
+
+		return $available_gateways;
 	}
 }
