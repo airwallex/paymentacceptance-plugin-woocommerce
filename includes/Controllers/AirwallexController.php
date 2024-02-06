@@ -151,7 +151,7 @@ class AirwallexController {
 			$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
 			$payment_method     = isset( $available_gateways[ $payment_method_id ] ) ? $available_gateways[ $payment_method_id ] : false;
 			if ( ! $payment_method ) {
-				throw new Exception( __( 'Invalid payment method.', 'woocommerce' ) );
+				throw new Exception( __( 'Invalid payment method.', 'airwallex-online-payments-gateway' ) );
 			}
 			$order->set_payment_method( $payment_method );
 			$order->save();
@@ -324,7 +324,7 @@ class AirwallexController {
 	 * @param PaymentIntent $paymentIntent
 	 */
 	private function handleRedirectWithReturnResult( $paymentIntent ) {
-		$awxReturnResult = wc_clean( $_GET['awx_return_result'] );
+		$awxReturnResult = isset($_GET['awx_return_result']) ? wc_clean( $_GET['awx_return_result'] ) : '';
 		$latestAttempt = $paymentIntent->getLatestPaymentAttempt();
 		// the awx_return_result param is only available for Klarna right now 
 		if ( ! empty( $latestAttempt['payment_method']['type'] ) && 'klarna' === $latestAttempt['payment_method']['type'] ) {

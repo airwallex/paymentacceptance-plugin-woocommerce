@@ -475,7 +475,7 @@ class Main {
 					$airwallexOrderKey = isset($_GET['key']) ? wp_unslash( $_GET['key'] ) : '';
 					$orderPayUrl = WC()->api_request_url('airwallex_process_order_pay');
 					$orderPayUrl .= ( strpos( $orderPayUrl, '?' ) === false ) ? '?' : '&';
-					$orderPayUrl .= 'order_id=' .$order_id . '&key=' . $airwallexOrderKey;
+					$orderPayUrl .= 'order_id=' . $order_id . '&key=' . $airwallexOrderKey;
 
 					$inlineScript .= 'AirwallexParameters.billingFirstName = ' . wp_json_encode( $order->get_billing_first_name() ) . ';';
 					$inlineScript .= 'AirwallexParameters.billingLastName = ' . wp_json_encode( $order->get_billing_last_name() ) . ';';
@@ -519,15 +519,12 @@ class Main {
 	const awxCheckoutForm = AirwallexParameters.isOrderPayPage ? '#order_review' : 'form.checkout';
 	jQuery('form.checkout').on('checkout_place_order_success', function(ele, result, form) {
 		confirmSlimCardPayment(result);
-		console.log(456);
 		return true;
 	});
 
 	jQuery(document.body).on('click', '#place_order', function(event) {
-		console.log(123);
 		const selectedPaymentMethod = jQuery('[name="payment_method"]:checked').val()
 		if ( AirwallexParameters.isOrderPayPage && 'airwallex_card' === selectedPaymentMethod) {
-			console.log(234);
 			airwallexCheckoutBlock('#order_review');
 			event.preventDefault();
 			jQuery.ajax({
