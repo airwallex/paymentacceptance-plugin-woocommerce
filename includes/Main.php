@@ -532,7 +532,6 @@ class Main {
 				data: jQuery("#order_review").serialize(),
 				url: AirwallexParameters.processOrderPayUrl,
 			}).done((response) => {
-				console.log(response);
 				if (response.result === 'success') {
 					if (response.redirect) {
 						location.href = response.redirect;
