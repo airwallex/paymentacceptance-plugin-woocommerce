@@ -22,7 +22,6 @@ use Airwallex\Services\CacheService;
 class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 
 	protected $name                  = 'airwallex_express_checkout';
-	protected $enableExpressCheckout = false;
 
 	/**
 	 * Initializes the payment method type.
@@ -44,7 +43,6 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 			new CacheService(Util::getClientSecret()),
 			$cardClient
 		);
-		$this->enableExpressCheckout = $this->shouldDisplay(); 
 	}
 
 	/**
@@ -71,11 +69,9 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 
 		$dependencies = ['jquery', 'jquery-blockui'];
 		// only load the external script if the payment method is enabled
-		if ($this->enableExpressCheckout) {
-			if ($this->gateway->isMethodEnabled('apple_pay')) {
-				$this->gateway->loadAppleScript();
-				$dependencies[] = 'airwallex-apple-pay-block';
-			}
+		if ($this->gateway->isMethodEnabled('apple_pay')) {
+			$this->gateway->loadAppleScript();
+			$dependencies[] = 'airwallex-apple-pay-block';
 		}
 
 		wp_register_script(
@@ -99,11 +95,9 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 
 		$dependencies = ['jquery'];
 		// only load the external script if the payment method is enabled
-		if ($this->enableExpressCheckout) {
-			if ($this->gateway->isMethodEnabled('apple_pay')) {
-				$this->gateway->loadAppleScript();
-				$dependencies[] = 'airwallex-apple-pay-block';
-			}
+		if ($this->gateway->isMethodEnabled('apple_pay')) {
+			$this->gateway->loadAppleScript();
+			$dependencies[] = 'airwallex-apple-pay-block';
 		}
 
 		wp_register_script(
