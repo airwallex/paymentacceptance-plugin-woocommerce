@@ -42,8 +42,8 @@ const AirwallexClient = {
 		xmlhttp.open("GET", url, true);
 		xmlhttp.send();
 	},
-	displayCheckoutError: function (msg) {
-		const checkout_form = jQuery('form.checkout');
+	displayCheckoutError: function (form, msg) {
+		const checkout_form = jQuery(form);
 		jQuery('.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message').remove();
 		checkout_form.prepend('<div class="woocommerce-NoticeGroup woocommerce-NoticeGroup-checkout"><ul class="woocommerce-error"><li>' + msg + '</li></ul></div>');
 		checkout_form.removeClass('processing').unblock();

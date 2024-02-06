@@ -116,9 +116,12 @@ class WeChat extends WC_Payment_Gateway {
 			$order->update_meta_data( '_tmp_airwallex_payment_intent', $paymentIntent->getId() );
 			$order->save();
 
+			$redirectUrl = $this->get_payment_url( 'airwallex_payment_method_wechat' );
+			$redirectUrl .= ( strpos( $redirectUrl, '?' ) === false ) ? '?' : '&';
+			$redirectUrl .= 'order_id=' . $order_id;
 			return [
 				'result'   => 'success',
-				'redirect' => $this->get_payment_url( 'airwallex_payment_method_wechat' ),
+				'redirect' => $redirectUrl,
 			];
 		} catch ( Exception $e ) {
 			$this->logService->error( 'Drop in payment action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE );

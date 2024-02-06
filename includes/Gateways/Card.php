@@ -214,7 +214,10 @@ class Card extends WC_Payment_Gateway {
 
 			$result = ['result' => 'success'];
 			if ( 'redirect' === $this->get_option( 'checkout_form_type' ) ) {
-				$result['redirect'] = $this->get_payment_url( 'airwallex_payment_method_card' );
+				$redirectUrl = $this->get_payment_url( 'airwallex_payment_method_card' );
+				$redirectUrl .= ( strpos( $redirectUrl, '?' ) === false ) ? '?' : '&';
+				$redirectUrl .= 'order_id=' . $order_id;
+				$result['redirect'] = $redirectUrl;
 			} else {
 				$result += [
 					'paymentIntent' => $paymentIntent->getId(),
@@ -230,10 +233,7 @@ class Card extends WC_Payment_Gateway {
 			return $result;
 		} catch ( Exception $e ) {
 			$this->logService->error( __METHOD__ . ' - card payment create intent failed.', $e->getMessage(), LogService::CARD_ELEMENT_TYPE );
-			return [
-				'result' => 'failure',
-				'messages' => __('Airwallex payment error.', 'airwallex-online-payments-gateway')
-			];
+			throw new Exception( __( 'Airwallex payment error', 'airwallex-online-payments-gateway' ) );
 		}
 	}
 

@@ -29,12 +29,17 @@ class AirwallexController {
 	private function getPaymentDetailForRedirect(AbstractClient $apiClient, $gateway) {
 		$orderId = (int) WC()->session->get( 'airwallex_order' );
 		$orderId = empty( $orderId ) ? (int) WC()->session->get( 'order_awaiting_payment' ) : $orderId;
+		if (empty($orderId)) {
+			$this->logService->debug(__METHOD__ . ' - Detect order id from URL.');
+			$orderId = isset($_GET['order_id']) ? absint($_GET['order_id']) : 0;
+		}
 		$order   = wc_get_order( $orderId );
 		if ( empty( $order ) ) {
 			throw new Exception( 'Order not found: ' . $orderId );
 		}
 
 		$paymentIntentId = WC()->session->get( 'airwallex_payment_intent_id' );
+		$paymentIntentId = empty( $paymentIntentId ) ? $order->get_meta('_tmp_airwallex_payment_intent') : $paymentIntentId;
 		$paymentIntent   = $apiClient->getPaymentIntent( $paymentIntentId );
 		$clientSecret = $paymentIntent->getClientSecret();
 		$customerId = $paymentIntent->getCustomerId();
@@ -117,6 +122,49 @@ class AirwallexController {
 			wc_add_notice( __( 'Airwallex payment error', 'airwallex-online-payments-gateway' ), 'error' );
 			wp_safe_redirect( wc_get_checkout_url() );
 			die;
+		}
+	}
+
+	public function processOrderPay() {
+		try {
+			if ( isset( $_POST['woocommerce_pay'], $_GET['key'] ) ) {
+				$nonce_value = wc_get_var( $_REQUEST['woocommerce-pay-nonce'], wc_get_var( $_REQUEST['_wpnonce'], '' ) ); // @codingStandardsIgnoreLine.
+	
+				if ( ! wp_verify_nonce( $nonce_value, 'woocommerce-pay' ) ) {
+					throw new Exception( __( 'Invalid request.', 'airwallex-online-payments-gateway' ) );
+				}
+			} else {
+				throw new Exception( __( 'Invalid request.', 'airwallex-online-payments-gateway' ) );
+			}
+
+			$order_key = isset($_GET['key']) ? wp_unslash( $_GET['key'] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$order_id  = isset($_GET['order_id']) ? absint( $_GET['order_id'] ) : 0;
+			$order     = wc_get_order( $order_id );
+			if ( ! $order || ! hash_equals( $order_key, $order->get_order_key() ) || ! $order->needs_payment() ) {
+				throw new Exception( __( 'You are not authorized to update this order.', 'airwallex-online-payments-gateway' ) );
+			}
+
+			$payment_method_id = isset( $_POST['payment_method'] ) ? wc_clean( wp_unslash( $_POST['payment_method'] ) ) : false;
+			if ( ! $payment_method_id ) {
+				throw new Exception( __( 'Invalid payment method.', 'airwallex-online-payments-gateway' ) );
+			}
+			$available_gateways = WC()->payment_gateways->get_available_payment_gateways();
+			$payment_method     = isset( $available_gateways[ $payment_method_id ] ) ? $available_gateways[ $payment_method_id ] : false;
+			if ( ! $payment_method ) {
+				throw new Exception( __( 'Invalid payment method.', 'woocommerce' ) );
+			}
+			$order->set_payment_method( $payment_method );
+			$order->save();
+
+			$result = $payment_method->process_payment($order->get_id());
+
+			wp_send_json($result);
+		} catch ( Exception $e ) {
+			wc_add_notice( $e->getMessage(), 'error' );
+			wp_send_json([
+				'result' => 'fail',
+				'error' => $e->getMessage(),
+			]);
 		}
 	}
 

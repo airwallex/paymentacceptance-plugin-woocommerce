@@ -78,7 +78,7 @@ $airwallex_inlineJs = <<<AIRWALLEX
             if(successMessage){
                 successMessage.style.display = 'block';
             }
-            location.href = AirwallexParameters.confirmationUrl;
+            location.href = AirwallexParameters.confirmationUrl + 'order_id=$orderId';
         });
         window.addEventListener('onError', (event) => {
             document.getElementById('airwallex-error-message').style.display = 'block';
