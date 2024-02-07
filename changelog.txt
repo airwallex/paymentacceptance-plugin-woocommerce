@@ -1,5 +1,9 @@
 *** WooCommerce Airwallex Online Payments Gateway Changelog ***
 
+2024-02-07 - version 1.6.1
+
+* Fix - Issue with WooCommerce order pay page
+
 2024-02-01 - version 1.6.0
 
 * Add - Apple Pay express checkout
