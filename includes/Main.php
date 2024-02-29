@@ -589,7 +589,9 @@ class Main {
         if (!data || data.error) {
 			AirwallexClient.displayCheckoutError(awxCheckoutForm, String('$errorMessage').replace('%s', ''));
 		}
-		const finalConfirmationUrl = AirwallexParameters.confirmationUrl + 'order_id=' + data.orderId + '&intent_id=' + data.paymentIntent;
+		let finalConfirmationUrl = AirwallexParameters.confirmationUrl;
+		finalConfirmationUrl += finalConfirmationUrl.includes('?') ? '&' : '?';
+		finalConfirmationUrl += 'order_id=' + data.orderId + '&intent_id=' + data.paymentIntent;
 		if(data.createConsent){
 			Airwallex.createPaymentConsent({
 				intent_id: data.paymentIntent,
