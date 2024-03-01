@@ -3,6 +3,10 @@
 namespace Airwallex\Gateways;
 
 use Airwallex\Main;
+use Airwallex\Client\CardClient;
+use Exception;
+use Airwallex\Services\CacheService;
+use Airwallex\Services\LogService;
 
 trait AirwallexGatewayTrait {
 
@@ -93,5 +97,23 @@ trait AirwallexGatewayTrait {
 
 	public static function getSettings() {
 		return get_option(AIRWALLEX_PLUGIN_NAME . self::GATEWAY_ID . '_settings', []);
+	}
+
+	public function getPaymentMethodTypes() {
+		$cacheService = new CacheService( $this->get_api_key() );
+		$paymentMethodTypes = $cacheService->get( 'rawPaymentMethods' );
+
+		if ( is_null( $paymentMethodTypes ) ) {
+			$apiClient = CardClient::getInstance();
+			try {
+				$paymentMethodTypes = $apiClient->getPaymentMethodTypes();
+
+				$cacheService->set( 'rawPaymentMethods', $paymentMethodTypes, HOUR_IN_SECONDS );
+			} catch ( Exception $e ) {
+				LogService::getInstance()->error(__METHOD__ . ' Failed to get payment method types.');
+			}
+		}
+
+		return $paymentMethodTypes;
 	}
 }
