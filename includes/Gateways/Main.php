@@ -126,8 +126,7 @@ class Main extends WC_Payment_Gateway {
 			$cacheService = new CacheService( $this->get_api_key() );
 			$logos        = $cacheService->get( 'paymentLogos' );
 			if ( empty( $logos ) ) {
-				$apiClient          = CardClient::getInstance();
-				$paymentMethodTypes = $apiClient->getPaymentMethodTypes();
+				$paymentMethodTypes = $this->getPaymentMethodTypes();
 				if ( $paymentMethodTypes ) {
 					$logos = array();
 					foreach ( $paymentMethodTypes as $paymentMethodType ) {
@@ -160,8 +159,7 @@ class Main extends WC_Payment_Gateway {
 			$cacheService = new CacheService( $this->get_api_key() );
 			$methods      = $cacheService->get( 'paymentMethods' );
 			if ( empty( $methods ) ) {
-				$apiClient          = CardClient::getInstance();
-				$paymentMethodTypes = $apiClient->getPaymentMethodTypes();
+				$paymentMethodTypes = $this->getPaymentMethodTypes();
 				if ( $paymentMethodTypes ) {
 					foreach ( $paymentMethodTypes as $paymentMethodType ) {
 						if ( empty( $paymentMethodType['name'] ) || empty( $paymentMethodType['display_name'] ) ) {
@@ -507,7 +505,7 @@ class Main extends WC_Payment_Gateway {
 		);
 
 		$data  = wp_parse_args( $data, $defaults );
-		$value = (array) $this->get_option( $key, array() );
+		$value = (array) $this->get_option( $key, array() );	
 		ob_start();
 		?>
 		<tr valign="top">

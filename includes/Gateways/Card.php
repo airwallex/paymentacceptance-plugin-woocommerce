@@ -71,8 +71,7 @@ class Card extends WC_Payment_Gateway {
 		$cacheService = new CacheService( $this->get_api_key() );
 		$logos        = $cacheService->get( 'cardLogos' );
 		if ( empty( $logos ) ) {
-			$apiClient          = CardClient::getInstance();
-			$paymentMethodTypes = $apiClient->getPaymentMethodTypes();
+			$paymentMethodTypes = $this->getPaymentMethodTypes();
 			if ( $paymentMethodTypes ) {
 				$logos = array();
 				foreach ( $paymentMethodTypes as $paymentMethodType ) {
@@ -88,7 +87,7 @@ class Card extends WC_Payment_Gateway {
 				$cacheService->set( 'cardLogos', $logos, 86400 );
 			}
 		}
-		return array_reverse( $logos );
+		return empty( $logos ) ? [] : array_reverse( $logos );
 	}
 
 	public function get_icon() {

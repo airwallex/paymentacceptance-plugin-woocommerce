@@ -543,7 +543,7 @@ abstract class AbstractClient {
 			)
 		);
 		if ( empty( $response->data['items'] ) ) {
-			return null;
+			return [];
 		}
 		return $response->data['items'];
 	}
