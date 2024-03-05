@@ -67,7 +67,7 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 	public function get_payment_method_script_handles() {
 		$this->enqueue_style();
 
-		$dependencies = ['jquery', 'jquery-blockui'];
+		$dependencies = (function_exists('is_login') && is_login()) || is_admin() ? ['jquery'] : ['jquery', 'jquery-blockui'];
 		// only load the external script if the payment method is enabled
 		if ($this->gateway->isMethodEnabled('apple_pay')) {
 			$this->gateway->loadAppleScript();
