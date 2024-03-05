@@ -103,19 +103,68 @@ export const updateShippingDetails = (selectedShippingMethodId, shippingMethods)
 };
 
 /**
- * Adds the current item on the page to the cart and return the cart details
- *
- * @returns 
+ * Get estimated cart details for product
  */
-export const addToCart = () => {
-	var product_id     = $('.single_add_to_cart_button').val();
+export const getEstimatedCartDetails = () => {
+	let product_id = $('.single_add_to_cart_button').val();
 
 	// Check if product is a variable product.
 	if ($('.single_variation_wrap').length) {
 		product_id = $('.single_variation_wrap').find('input[name="product_id"]').val();
 	}
 
-	var data = {
+	let data = {
+		security: awxExpressCheckoutSettings.nonce.estimateCart,
+		product_id: product_id,
+		qty: $('.quantity .qty').val(),
+		attributes: $('.variations_form').length ? getAttributes().data : []
+	};
+
+	// add addons data to the POST body
+	let formData = $('form.cart').serializeArray();
+	$.each(formData, function (i, field) {
+		if (/^addon-/.test(field.name)) {
+			if (/\[\]$/.test(field.name)) {
+				let fieldName = field.name.substring(0, field.name.length - 2);
+				if (data[fieldName]) {
+					data[fieldName].push(field.value);
+				} else {
+					data[fieldName] = [field.value];
+				}
+			} else {
+				data[field.name] = field.value;
+			}
+		}
+	});
+
+	return $.ajax({
+		type: 'POST',
+		data: data,
+		url: getAjaxURL('get_estimated_cart_details')
+	}).done(function(response) {
+		return response;
+	}).fail(function(error) {
+		return {
+			success: false,
+			message: error,
+		}
+	});
+};
+
+/**
+ * Adds the current item on the page to the cart and return the cart details
+ *
+ * @returns 
+ */
+export const addToCart = () => {
+	let product_id     = $('.single_add_to_cart_button').val();
+
+	// Check if product is a variable product.
+	if ($('.single_variation_wrap').length) {
+		product_id = $('.single_variation_wrap').find('input[name="product_id"]').val();
+	}
+
+	let data = {
 		security: awxExpressCheckoutSettings.nonce.addToCart,
 		product_id: product_id,
 		qty: $('.quantity .qty').val(),
@@ -123,11 +172,11 @@ export const addToCart = () => {
 	};
 
 	// add addons data to the POST body
-	var formData = $('form.cart').serializeArray();
+	let formData = $('form.cart').serializeArray();
 	$.each(formData, function (i, field) {
 		if (/^addon-/.test(field.name)) {
 			if (/\[\]$/.test(field.name)) {
-				var fieldName = field.name.substring(0, field.name.length - 2);
+				let fieldName = field.name.substring(0, field.name.length - 2);
 				if (data[fieldName]) {
 					data[fieldName].push(field.value);
 				} else {
@@ -302,14 +351,14 @@ export const getConfirmPayload = (commonPayload, paymentMethodObj, paymentConsen
 };
 
 const getAttributes = () => {
-	var select      = $( '.variations_form' ).find( '.variations select' ),
+	let select      = $( '.variations_form' ).find( '.variations select' ),
 		data        = {},
 		count       = 0,
 		chosen      = 0;
 
 	select.each( function() {
-		var attribute_name = $( this ).data( 'attribute_name' ) || $( this ).attr( 'name' );
-		var value          = $( this ).val() || '';
+		let attribute_name = $( this ).data( 'attribute_name' ) || $( this ).attr( 'name' );
+		let value          = $( this ).val() || '';
 
 		if ( value.length > 0 ) {
 			chosen ++;

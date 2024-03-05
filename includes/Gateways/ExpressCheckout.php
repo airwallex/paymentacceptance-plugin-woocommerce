@@ -111,11 +111,11 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		add_action('wc_ajax_airwallex_create_order', [$this->orderController, 'createOrderFromCart']);
 		add_action('wc_ajax_airwallex_add_to_cart', [$this->orderController, 'addToCart']);
 		add_action('wc_ajax_airwallex_confirm_payment_intent', [$this->paymentIntentController, 'confirmPaymentIntent']);
-		add_action('wc_ajax_airwallex_3ds', [$this->paymentIntentController, 'threeDS']);
 		add_action('wc_ajax_airwallex_create_payment_consent', [$this->paymentConsentController, 'createPaymentConsent']);
 		add_action('wc_ajax_airwallex_create_consent_without_payment', [$this->paymentConsentController, 'createConsentWithoutPayment']);
 		add_action('wc_ajax_airwallex_start_payment_session', [$this->paymentSessionController, 'startPaymentSession']);
 		add_action('wc_ajax_airwallex_register_apple_pay_domain', [$this->gatewaySettingsController, 'registerDomain']);
+		add_action('wc_ajax_airwallex_get_estimated_cart_details', [$this->orderController, 'getEstimatedCartDetail']);
 
 		add_filter('woocommerce_registration_error_email_exists', [$this, 'registrationEmailExistsError'], 10, 2);
 
@@ -146,14 +146,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 					'title' => __('Apple Pay', 'airwallex-online-payments-gateway'),
 					'label' => __('Register', 'airwallex-online-payments-gateway'),
 					'class' => 'wc-airwallex-register-apple-pay-domain button-secondary',
-					'disabled'    => !$isCardGatewayEnabled,
-				],
-				'google_merchant_id' => [
-					'title'   => __( 'Google Pay', 'airwallex-online-payments-gateway' ),
-					'type'    => 'google_pay_instruction',
-					'label'   => __( 'Google Pay merchant id', 'airwallex-online-payments-gateway' ),
-					'default' => '',
-					'class' => 'input-text regular-input ',
 					'disabled'    => !$isCardGatewayEnabled,
 				],
 				'enabled'     => [
@@ -201,7 +193,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 					'default' => 'buy',
 					'disabled'    => !$isCardGatewayEnabled,
 				],
-				'appearance_size' => [
+				/*'appearance_size' => [
 					'title'       => __( 'Button Size', 'airwallex-online-payments-gateway' ),
 					'type' => 'select',
 					'class' => 'wc-enhanced-select',
@@ -212,7 +204,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 					],
 					'default' => 'default',
 					'disabled'    => !$isCardGatewayEnabled,
-				],
+				],*/
 				'appearance_theme' => [
 					'title'       => __( 'Button Theme', 'airwallex-online-payments-gateway' ),
 					'type' => 'select',
@@ -305,7 +297,8 @@ class ExpressCheckout extends WC_Payment_Gateway {
 	}
 
 	public function getButtonSize() {
-		return $this->get_option('appearance_size');
+		return 'default';
+		// return $this->get_option('appearance_size');
 	}
 
 	public function getButtonTheme() {
@@ -446,7 +439,8 @@ class ExpressCheckout extends WC_Payment_Gateway {
 			<?php endif; ?>
 		</div>
 	<?php
-		$dependencies = ['jquery', 'jquery-blockui'];
+		wp_enqueue_script( 'airwallex-lib-js', 'https://checkout.airwallex.com/assets/elements.bundle.min.js', array(), null, true );
+		$dependencies = ['jquery', 'jquery-blockui', 'airwallex-lib-js'];
 		wp_enqueue_script(
 			'airwallex-express-checkout',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-express-checkout.min.js',
@@ -501,7 +495,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 	 * @return boolean
 	 */
 	public function hasSubscriptionProduct() {
-		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || is_admin() ) {
 			return false;
 		}
 
@@ -823,6 +817,10 @@ class ExpressCheckout extends WC_Payment_Gateway {
 	}
 
 	public function getCheckoutDetail() {
+		if (is_admin()) {
+			return [];
+		}
+
 		$requiresShipping = false;
 		$subTotal         = 0;
 		if ($this->isProduct()) {
@@ -858,7 +856,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 	public function getExpressCheckoutScriptData($isBlock) {
 		$data = [];
 		try {
-
 			$data = [
 				'ajaxUrl' => WC_AJAX::get_endpoint('%%endpoint%%'),
 				'env' => $this->is_sandbox() ? 'demo' : 'prod',
@@ -871,7 +868,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 				'merchantInfo' => array_merge(
 					Util::getMerchantInfoFromJwtToken($this->cardClient->getToken()),
 					['businessName' => get_bloginfo('name')],
-					['googleMerchantId' => $this->get_option('google_merchant_id')]
 				),
 				'button' => [
 					'mode' => $this->hasSubscriptionProduct() ? 'recurring' : 'payment',
@@ -887,11 +883,12 @@ class ExpressCheckout extends WC_Payment_Gateway {
 					'checkout'                  => wp_create_nonce('woocommerce-process_checkout'),
 					'addToCart'               => wp_create_nonce('wc-airwallex-express-checkout-add-to-cart'),
 					'startPaymentSession' => wp_create_nonce('wc-airwallex-express-checkout-start-payment-session'),
+					'estimateCart' => wp_create_nonce('wc-airwallex-express-checkout-estimate-cart'),
 				],
 				'errorMsg' => [
 					'cannotShowPaymentSheet' => __('Failed to start the payment, please refresh and try again.', 'airwallex-online-payments-gateway')
 				],
-				'transactionId' => uniqid(),
+				'transactionId' => Util::generateUuidV4(),
 				'supports' => $this->supports,
 			];
 

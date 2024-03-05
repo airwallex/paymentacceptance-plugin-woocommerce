@@ -13,14 +13,10 @@ module.exports = {
 		...defaultConfig.optimization,
 		minimize: true,
 		minimizer: [
-			new TerserPlugin(),
-			...defaultConfig.optimization.minimizer.map((plugin) => {
-				if (plugin.constructor.name === 'TerserPlugin') {
-					// wp-scripts does not allow to override the Terser minimizer sourceMap option, without this
-					// `devtool: 'hidden-source-map'` is not generated for js files.
-					plugin.options.sourceMap = true;
-				}
-				return plugin;
+			new TerserPlugin({
+				terserOptions: {
+					sourceMap: true,
+				},
 			}),
 		],
 		usedExports: true,

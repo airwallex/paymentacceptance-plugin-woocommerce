@@ -282,11 +282,13 @@ const AWXApplePayButtonPreview = (props) => {
 	);
 };
 
-const canMakePayment           = () => {
+const canMakePayment           = (props) => {
+	const { billing } = props;
 	const { button, checkout } = settings;
 	const mode                 = button.mode === 'recurring' ? 'recurring' : 'oneoff';
 
-	return (settings.applePayEnabled
+	return (billing.cartTotal.value
+		&& settings.applePayEnabled
 		&& mode in checkout.allowedCardNetworks.applepay
 		&& checkout.allowedCardNetworks.applepay[mode].length > 0
 		&& deviceSupportApplePay()) ?? false;

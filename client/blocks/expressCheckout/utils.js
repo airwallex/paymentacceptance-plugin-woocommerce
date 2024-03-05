@@ -196,7 +196,7 @@ export const getAppleFormattedLineItems = (lineItems) => {
 
 export const getFormattedValueFromBlockAmount = (amount, currencyMinorUnit) => {
 	// google pay only allow 2 digits
-	return (parseInt( amount, 10 ) / 10 ** currencyMinorUnit).toFixed(2);
+	return (parseInt( amount, 10 ) / 10 ** currencyMinorUnit);
 };
 
 export const displayLoginConfirmation = (loginConfirmation = null) => {
