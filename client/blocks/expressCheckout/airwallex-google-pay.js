@@ -151,57 +151,38 @@ const AWXGooglePayButton = (props) => {
 
 		maskPageWhileLoading(50000);
 		if (orderResponse.result === 'success') {
-			if (result.redirect) {
-				// order does not require initial payment
-				const {
-					clientSecret,
-					autoCapture,
-					confirmationUrl,
-				} = await createPaymentConsent();
-				googlepay.createPaymentConsent({
+			const {
+				createConsent,
+				paymentIntentId,
+				clientSecret,
+				autoCapture,
+				confirmationUrl,
+			} = orderResponse.payload;
+
+			if (createConsent) {
+				elementRef.current?.createPaymentConsent({
+					intent_id: paymentIntentId,
 					client_secret: clientSecret,
-					autoCapture:  autoCapture,
+					autoCapture: autoCapture,
 				}).then(() => {
 					location.href = confirmationUrl;
 				}).catch((error) => {
 					removePageMask();
-					$('.awx-express-checkout-error').html(error.message).show();
+					setExpressPaymentError(error.message);
 					console.warn(error.message);
 				});
 			} else {
-				const {
-					createConsent,
-					paymentIntentId,
-					clientSecret,
-					autoCapture,
-					confirmationUrl,
-				} = orderResponse.payload;
-	
-				if (createConsent) {
-					elementRef.current?.createPaymentConsent({
-						intent_id: paymentIntentId,
-						client_secret: clientSecret,
-						autoCapture: autoCapture,
-					}).then(() => {
-						location.href = confirmationUrl;
-					}).catch((error) => {
-						removePageMask();
-						setExpressPaymentError(error.message);
-						console.warn(error.message);
-					});
-				} else {
-					elementRef.current?.confirmIntent({
-						intent_id: paymentIntentId,
-						client_secret: clientSecret,
-						autoCapture: autoCapture,
-					}).then(() => {
-						location.href = confirmationUrl;
-					}).catch((error) => {
-						removePageMask();
-						setExpressPaymentError(error.message);
-						console.warn(error.message);
-					});
-				}
+				elementRef.current?.confirmIntent({
+					intent_id: paymentIntentId,
+					client_secret: clientSecret,
+					autoCapture: autoCapture,
+				}).then(() => {
+					location.href = confirmationUrl;
+				}).catch((error) => {
+					removePageMask();
+					setExpressPaymentError(error.message);
+					console.warn(error.message);
+				});
 			}
 		} else {
 			elementRef.current?.confirmIntent({});
@@ -322,12 +303,13 @@ const AWXGooglePayButtonPreview = () => {
 	);
 };
 
-const canMakePayment = (props) => {
-	const { billing } = props;
+const canMakePayment = ({
+	cartTotals,
+}) => {
 	const { button, checkout } = settings;
 	const mode = button.mode === 'recurring' ? 'recurring' : 'oneoff';
 
-	return (billing.cartTotal.value
+	return (cartTotals.total_price != '0'
 		&& settings?.googlePayEnabled
 		&& mode in checkout.allowedCardNetworks.googlepay
 		&& checkout.allowedCardNetworks.googlepay[mode].length > 0

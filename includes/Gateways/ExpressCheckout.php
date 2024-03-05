@@ -19,6 +19,7 @@ use Exception;
 use WC_Payment_Gateway;
 use WC_AJAX;
 use WP_Error;
+use WC_Subscriptions_Product;
 
 if (!defined('ABSPATH')) {
 	exit;
@@ -636,6 +637,11 @@ class ExpressCheckout extends WC_Payment_Gateway {
 			return false;
 		}
 
+		// Trial subscriptions are not supported.
+		if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
+			return false;
+		}
+
 		// Pre Orders charge upon release not supported.
 		if ( $this->isPreOrderProductChargedUponRelease( $product ) ) {
 			return false;
@@ -686,6 +692,11 @@ class ExpressCheckout extends WC_Payment_Gateway {
 			$_product = apply_filters('woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key);
 
 			if (!in_array($_product->get_type(), $this->getSupportedProductTypes(), true)) {
+				return false;
+			}
+
+			// Trial subscriptions not supported.
+			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
 			}
 		}
