@@ -67,6 +67,10 @@ apple-pay-button {
 	--apple-pay-button-border-radius: 5px;
 }
 
+#awx-ec-google-pay-btn {
+	margin-top: -8px;
+}
+
 .awx-ec-button {
 	width: 100%;
 	line-height: normal;
