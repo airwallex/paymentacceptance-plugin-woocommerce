@@ -1,4 +1,4 @@
-import { useState } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import { getSetting } from '@woocommerce/settings';
 import { __ } from '@wordpress/i18n';
 import GooglePayButton from '@google-pay/button-react';
@@ -7,354 +7,278 @@ import {
 	createOrder,
 	updateShippingOptions,
 	updateShippingDetails,
-	getConfirmPayload,
-	confirmPaymentIntent,
-	paymentIntentCreateConsent,
-	processOrderWithoutPayment,
 } from './api.js'
 import {
 	maskPageWhileLoading,
 	removePageMask,
-	displayLoginConfirmation,
 	getFormattedValueFromBlockAmount,
 	getGoogleFormattedShippingOptions,
 } from './utils.js';
+import {
+	createElement as airwallexCreateElement,
+	loadAirwallex,
+	destroyElement,
+} from 'airwallex-payment-elements';
 
 const settings = getSetting('airwallex_express_checkout_data', {});
 
-const awxGoogleBaseRequest            = {
-	apiVersion: 2,
-	apiVersionMinor: 0
-};
-const awxGoogleAllowedCardNetworks    = ["MASTERCARD", "VISA"];
-const awxGoogleAllowedCardAuthMethods = ["PAN_ONLY", "CRYPTOGRAM_3DS"];
-
-const getGooglePaySupportedNetworks = (supportNetworks = []) => {
-	// Google pay don't support UNIONPAY
-	// Google pay support MAESTRO, but country code must be BR, otherwise it will not be supported;
-	const googlePayNetworks = supportNetworks
-		.map((brand) => brand.toUpperCase())
-		.filter((brand) => brand !== 'UNIONPAY' && brand !== 'MAESTRO' && brand !== 'DINERS');
-	return googlePayNetworks;
-};
-
-const getGoogleAllowedMethods                = () => {
-	const { button, checkout, merchantInfo } = settings;
-
-	return [{
-		type: 'CARD',
-		parameters: {
-			allowedAuthMethods: checkout.allowedAuthMethods || awxGoogleAllowedCardAuthMethods,
-			allowedCardNetworks: getGooglePaySupportedNetworks(
-				button.mode === 'recurring' ? checkout.allowedCardNetworks['googlepay']['recurring'] : checkout.allowedCardNetworks['googlepay']['oneoff']
-			) || awxGoogleAllowedCardNetworks,
-		allowPrepaidCards: true,
-		allowCreditCards: true,
-		assuranceDetailsRequired: false,
-		billingAddressRequired: true,
-		billingAddressParameters: {
-			format: 'FULL',
-			phoneNumberRequired: checkout.requiresPhone
-			},
-			cvcRequired: true,
-		},
-		tokenizationSpecification: {
-			type: 'PAYMENT_GATEWAY',
-			parameters: {
-				gateway: 'airwallex',
-				gatewayMerchantId: merchantInfo.accountId || '',
-			},
-		}
-	}];
-};
-
-const getGoogleTransactionInfo        = (cartDetails) => {
+const getGoogleTransactionInfo = (cartDetails) => {
 	const { checkout, transactionId } = settings;
 
 	return {
+		amount: {
+			value: cartDetails.orderInfo.total.amount || 0,
+			currency: cartDetails.currencyCode || checkout.currencyCode,
+		},
 		transactionId: transactionId,
-		totalPriceStatus: checkout.totalPriceStatus || 'FINAL',
 		totalPriceLabel: checkout.totalPriceLabel,
-		totalPrice: cartDetails.orderInfo.total.amount.toString() || '0.00',
-		currencyCode: cartDetails.currencyCode || checkout.currencyCode,
 		countryCode: cartDetails.countryCode || checkout.countryCode,
 		displayItems: cartDetails.orderInfo.displayItems,
 	};
 };
 
-const getGooglePaymentDataRequest    = (cartDetails) => {
-	const { merchantInfo, checkout } = settings;
-
-	const paymentDataRequest                 = Object.assign({}, awxGoogleBaseRequest);
-	paymentDataRequest.emailRequired         = true;
-	paymentDataRequest.allowedPaymentMethods = getGoogleAllowedMethods();
-	paymentDataRequest.merchantInfo          = {
-		merchantId: merchantInfo.googleMerchantId ? merchantInfo.googleMerchantId : AIRWALLEX_MERCHANT_ID,
-		merchantName: merchantInfo.businessName,
-	};
-	if (cartDetails) {
-		paymentDataRequest.transactionInfo = getGoogleTransactionInfo(cartDetails);
-		if (cartDetails.requiresShipping) {
-			paymentDataRequest.callbackIntents           = ["SHIPPING_ADDRESS", "SHIPPING_OPTION"];
-			paymentDataRequest.shippingAddressRequired   = true;
-			paymentDataRequest.shippingAddressParameters = {
-				phoneNumberRequired: checkout.requiresPhone,
-			};
-			paymentDataRequest.shippingOptionRequired    = true;
-		}
-		
-	}
-
-	return paymentDataRequest;
-};
-
-const buildGooglePayBilling = (paymentData) => {
-	const {
-		name,
-		locality,
-		countryCode,
-		postalCode,
-		administrativeArea,
-		address1,
-		address2,
-		address3,
-		phoneNumber
-	}                       = paymentData.paymentMethodData.info?.billingAddress || {};
-
-	const formattedBilling = {
-		first_name: name?.split(' ')[0],
-		last_name: name?.split(' ')[1] || name?.split(' ')[0],
-		email: paymentData.email,
-		phone_number: phoneNumber,
-	};
-
-	if (countryCode) {
-		formattedBilling.address = {
-		  // some areas may not contain city info, such as Hong Kong, we default country as city.
-			city: locality || countryCode,
-			country_code: countryCode,
-			postcode: postalCode,
-			state: administrativeArea,
-			street: `${address1 || ''} ${address2 || ''} ${address3 || ''}`.trim(),
-		};
-	}
-
-	  return formattedBilling;
-};
-
 const getFormattedCartDetails = (billing) => {
+	const { checkout, transactionId } = settings;
+
 	return {
-		total: {
-			amount: getFormattedValueFromBlockAmount(billing.cartTotal.value, billing.currency.minorUnit),
+		amount: {
+			value: getFormattedValueFromBlockAmount(billing.cartTotal.value, billing.currency.minorUnit) || 0,
+			currency: billing.currency.code || checkout.currencyCode,
 		},
+		transactionId: transactionId,
+		totalPriceLabel: checkout.totalPriceLabel,
+		countryCode: checkout.countryCode,
 		displayItems: [],
 	};
+};
+
+const getGooglePayRequestOptions = (billing, shippingData) => {
+	const { button, checkout, merchantInfo } = settings;
+
+	let paymentDataRequest = {
+		mode: button.mode,
+		buttonColor: button.theme,
+		buttonType: button.buttonType,
+		emailRequired: true,
+		billingAddressRequired: true,
+		billingAddressParameters: {
+			format: 'FULL',
+			phoneNumberRequired: checkout.requiresPhone
+		},
+		merchantInfo: {
+			merchantName: merchantInfo.businessName,
+		},
+	};
+
+	let callbackIntents = ['PAYMENT_AUTHORIZATION'];
+	if (shippingData.needsShipping) {
+		callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
+		paymentDataRequest.shippingAddressRequired = true;
+		paymentDataRequest.shippingOptionRequired = true;
+		paymentDataRequest.shippingAddressParameters = {
+			phoneNumberRequired: checkout.requiresPhone,
+		};
+	}
+	paymentDataRequest.callbackIntents = callbackIntents;
+	const transactionInfo = getFormattedCartDetails(billing);
+	paymentDataRequest = Object.assign(paymentDataRequest, transactionInfo);
+
+	return paymentDataRequest;
 };
 
 const AWXGooglePayButton = (props) => {
 	const {
 		locale,
 		env,
-		button,
-	}                    = settings;
+	} = settings;
 	const {
 		setExpressPaymentError,
 		shippingData,
 		billing,
-	}                    = props;
+	} = props;
 
 	let awxShippingOptions = {};
+	const ELEMENT_TYPE = 'googlePayButton';
+	const [element, setElement] = useState();
+	const elementRef = useRef(null);
 
-	const basePaymentRequest = getGooglePaymentDataRequest({
-		requiresShipping: shippingData.needsShipping,
-		countryCode: '',
-		currencyCode: billing.currency.code,
-		orderInfo: getFormattedCartDetails(billing)
-	});
+	const onShippingAddressChanged = async (event) => {
 
-	const onGooglePaymentButtonClicked = (event) => {
-		// If login is required for checkout, display redirect confirmation dialog.
-		if ( settings.loginConfirmation ) {
-			event.preventDefault();
-			displayLoginConfirmation();
-			return;
+		const { shippingAddress } = event.detail.intermediatePaymentData;
+
+		let paymentDataRequestUpdate = {};
+		const response = await updateShippingOptions(shippingAddress);
+		if (response && response.success) {
+			awxShippingOptions = {
+				shippingMethods: response.shipping.shippingMethods,
+				shippingOptions: getGoogleFormattedShippingOptions(response.shipping.shippingOptions),
+			};
+			paymentDataRequestUpdate.shippingOptionParameters = {
+				defaultSelectedOptionId: awxShippingOptions.shippingMethods[0],
+				shippingOptions: awxShippingOptions.shippingOptions
+			};
+			paymentDataRequestUpdate = Object.assign(paymentDataRequestUpdate, getGoogleTransactionInfo(response['cart']))
+		} else {
+			awxShippingOptions = [];
+			paymentDataRequestUpdate.error = {
+				reason: 'SHIPPING_ADDRESS_UNSERVICEABLE',
+				message: response.message,
+				intent: 'SHIPPING_ADDRESS'
+			};
+		}
+		elementRef.current?.update(paymentDataRequestUpdate);
+	};
+
+	const onShippingMethodChanged = async (event) => {
+		const { shippingOptionData } = event.detail.intermediatePaymentData;
+
+		let paymentDataRequestUpdate = {};
+		const response = await updateShippingDetails(shippingOptionData.id, awxShippingOptions.shippingMethods);
+		if (response && response.success) {
+			paymentDataRequestUpdate = getGoogleTransactionInfo(response['cart']);
+		} else {
+			paymentDataRequestUpdate.error = {
+				reason: 'SHIPPING_OPTION_INVALID',
+				message: response.message,
+				intent: 'SHIPPING_OPTION'
+			};
+		}
+		elementRef.current?.update(paymentDataRequestUpdate);
+	};
+
+	const onAuthorized = async (setExpressPaymentError, event) => {
+		const orderResponse = await createOrder(event.detail.paymentData, 'googlepay');
+
+		maskPageWhileLoading(50000);
+		if (orderResponse.result === 'success') {
+			const {
+				createConsent,
+				paymentIntentId,
+				clientSecret,
+				autoCapture,
+				confirmationUrl,
+			} = orderResponse.payload;
+
+			if (createConsent) {
+				elementRef.current?.createPaymentConsent({
+					intent_id: paymentIntentId,
+					client_secret: clientSecret,
+					autoCapture: autoCapture,
+				}).then(() => {
+					location.href = confirmationUrl;
+				}).catch((error) => {
+					removePageMask();
+					setExpressPaymentError(error.message);
+					console.warn(error.message);
+				});
+			} else {
+				elementRef.current?.confirmIntent({
+					intent_id: paymentIntentId,
+					client_secret: clientSecret,
+					autoCapture: autoCapture,
+				}).then(() => {
+					location.href = confirmationUrl;
+				}).catch((error) => {
+					removePageMask();
+					setExpressPaymentError(error.message);
+					console.warn(error.message);
+				});
+			}
+		} else {
+			elementRef.current?.confirmIntent({});
+			setExpressPaymentError(orderResponse.messages);
+			console.warn(orderResponse.messages);
 		}
 	};
-	
-	const onGooglePaymentDataChanged                                       = (intermediatePaymentData) => {
-		return new Promise(async (resolve, reject) => {
-			const { callbackTrigger, shippingAddress, shippingOptionData } = intermediatePaymentData;
-			let paymentDataRequestUpdate                                   = {};
 
-			if (callbackTrigger == "INITIALIZE" || callbackTrigger == "SHIPPING_ADDRESS") {
-				const response = await updateShippingOptions(shippingAddress);
-
-				if (response && response.success) {
-					awxShippingOptions                                   = {
-						shippingMethods: response.shipping.shippingMethods,
-						shippingOptions: getGoogleFormattedShippingOptions(response.shipping.shippingOptions),
-					};
-					paymentDataRequestUpdate.newShippingOptionParameters = {
-						defaultSelectedOptionId: awxShippingOptions.shippingMethods[0],
-						shippingOptions: awxShippingOptions.shippingOptions
-					};
-					paymentDataRequestUpdate.newTransactionInfo          = getGoogleTransactionInfo(response['cart']);
-				} else {
-					awxShippingOptions             = [];
-					paymentDataRequestUpdate.error = {
-						reason: 'SHIPPING_ADDRESS_UNSERVICEABLE',
-						message: response.message,
-						intent: 'SHIPPING_ADDRESS'
-					};
-				}
-			} else if (callbackTrigger == "SHIPPING_OPTION") {
-				const response = await updateShippingDetails(shippingOptionData.id, awxShippingOptions.shippingMethods);
-
-				if (response && response.success) {
-					paymentDataRequestUpdate.newTransactionInfo = getGoogleTransactionInfo(response['cart']);
-				} else {
-					paymentDataRequestUpdate.error = {
-						reason: 'SHIPPING_OPTION_INVALID',
-						message: response.message,
-						intent: 'SHIPPING_OPTION'
-					};
-				}
-			}
-
-			resolve(paymentDataRequestUpdate);
-		});
-	};
-	
-	const onGooglePaymentAuthorized = (paymentData) => {
-		// process payment here
-		return new Promise(async (resolve, reject) => {
-			maskPageWhileLoading();
-			const orderResponse = await createOrder(paymentData, 'googlepay');
-
-			if (orderResponse.result === 'success') {
-				const commonPayload = orderResponse.payload;
-		
-				const paymentMethodObj = {
-					type: 'googlepay',
-					googlepay: {
-						payment_data_type: 'encrypted_payment_token',
-						encrypted_payment_token: paymentData.paymentMethodData.tokenizationData.token,
-						billing: paymentData.paymentMethodData.info?.billingAddress ? buildGooglePayBilling(paymentData) : undefined,
-					},
-				};
-				let confirmResponse;
-				if (orderResponse.redirect) {
-					// if the order does not require payment, a redirect url will be returned,
-					// try to create consent if the order contains subscription product
-					confirmResponse = await processOrderWithoutPayment(orderResponse.redirect, paymentMethodObj);
-				} else if (orderResponse.payload.createConsent) {
-					const createConsentResponse       = await paymentIntentCreateConsent(commonPayload, paymentMethodObj);
-					const { paymentConsentId, error } = createConsentResponse;
-		
-					if (paymentConsentId) {
-						const confirmIntentPayload = getConfirmPayload(commonPayload, paymentMethodObj, paymentConsentId);
-						confirmResponse            = await confirmPaymentIntent(commonPayload, confirmIntentPayload);
-					} else {
-						removePageMask();
-						resolve({
-							transactionState: 'ERROR',
-							error: {
-								reason: "OTHER_ERROR",
-								message: error?.message,
-								intent: "PAYMENT_AUTHORIZATION"
-							}
-						});
-						setExpressPaymentError(error?.message);
-					}
-				} else {
-					const confirmIntentPayload = getConfirmPayload(commonPayload, paymentMethodObj);
-					confirmResponse            = await confirmPaymentIntent(commonPayload, confirmIntentPayload);
-				}
-				
-				const { confirmation, error } = confirmResponse || {};
-				if (confirmation) {
-					resolve({ transactionState: 'SUCCESS' });
-				} else {
-					removePageMask();
-					resolve({
-						transactionState: 'ERROR',
-						error: {
-							reason: "OTHER_ERROR",
-							message: error?.message,
-							intent: "PAYMENT_AUTHORIZATION"
-						}
-					});
-					setExpressPaymentError(error?.message);
-				}
-			} else {
-				removePageMask();
-				resolve({
-					transactionState: 'ERROR',
-					error: {
-						reason: "OTHER_ERROR",
-						message: orderResponse?.messages,
-						intent: "PAYMENT_AUTHORIZATION"
-					}
-				});
-				setExpressPaymentError(orderResponse?.message);
-			}
-		});
-	};
-
-	let gPayBtnProps = {
-		buttonLocale: locale,
-		environment: env === 'prod' ? 'PRODUCTION' : 'TEST',
-		buttonSizeMode: 'fill',
-		buttonColor: button.theme,
-		buttonType: button.buttonType,
-		style: { 
-			width: '100%',
-			height: button.height
-		},
-		paymentRequest: basePaymentRequest,
-		onCancel: (reason) => console.log(reason),
-		onClick: onGooglePaymentButtonClicked,
-		onError: (reason) => setExpressPaymentError(reason),
-		onLoadPaymentData: (paymentData) => onGooglePaymentAuthorized(paymentData),
-	};
-	if (shippingData.needsShipping) {
-		gPayBtnProps.onPaymentDataChanged = onGooglePaymentDataChanged;
+	const onError = (setExpressPaymentError, event) => {
+		const { error } = event.detail;
+		setExpressPaymentError(error.detail);
+		console.warn('There was an error', error);
 	}
 
+	const createGooglePayButton = () => {
+		const element = airwallexCreateElement(ELEMENT_TYPE, getGooglePayRequestOptions(billing, shippingData));
+		const googlePayElement = element.mount('awxGooglePayButton');
+		setElement(googlePayElement);
+		elementRef.current = element;
+
+		elementRef.current?.on('shippingAddressChange', (event) => {
+			onShippingAddressChanged(event);
+		});
+
+		elementRef.current?.on('shippingMethodChange', (event) => {
+			onShippingMethodChanged(event);
+		});
+
+		elementRef.current?.on('authorized', (event) => {
+			onAuthorized(setExpressPaymentError, event);
+		});
+
+		elementRef.current?.on('error',(event) => {
+			onError(setExpressPaymentError, event);
+		});
+	};
+
+	useEffect(() => {
+		loadAirwallex({
+			env: env,
+			origin: window.location.origin,
+			locale: locale,
+		}).then(() => {
+			createGooglePayButton();
+		});
+	}, []);
+
+	useEffect(() => {
+		if (!elementRef.current) return;
+
+		destroyElement(ELEMENT_TYPE);
+		createGooglePayButton();
+	}, [billing.cartTotal]);
+
 	return (
-		<>
-			<GooglePayButton
-				{...gPayBtnProps}
-			/>
-		</>
+		<div id="awxGooglePayButton" />
 	);
 };
 
-const AWXGooglePayButtonPreview = (props) => {
+const AWXGooglePayButtonPreview = () => {
 	const {
 		checkout,
 		locale,
 		button,
 		merchantInfo,
-	}                           = settings;
+	} = settings;
 
-	const paymentDataRequest                 = Object.assign(
-		{},
-		awxGoogleBaseRequest,
-	);
-	paymentDataRequest.allowedPaymentMethods = getGoogleAllowedMethods();
-	paymentDataRequest.merchantInfo          = {
-		merchantId: AIRWALLEX_MERCHANT_ID,
-		merchantName: merchantInfo.businessName,
-	};
-	paymentDataRequest.transactionInfo       = {
-		transactionId: 0,
-		totalPriceStatus: 'FINAL',
-		totalPriceLabel: checkout.totalPriceLabel,
-		totalPrice: '0.00',
-		currencyCode: checkout.currencyCode,
-		countryCode: checkout.countryCode,
-		displayItems: [],
+	const paymentDataRequest = {
+		apiVersion: 2,
+		apiVersionMinor: 0,
+		allowedPaymentMethods: {
+			type: 'CARD',
+			parameters: {
+				allowedAuthMethods: ["PAN_ONLY", "CRYPTOGRAM_3DS"],
+				allowedCardNetworks: ["MASTERCARD", "VISA"],
+			},
+			tokenizationSpecification: {
+				type: 'PAYMENT_GATEWAY',
+				parameters: {
+					gateway: 'airwallex',
+					gatewayMerchantId: merchantInfo.accountId || '',
+				},
+			}
+		},
+		merchantInfo: {
+			merchantId: AIRWALLEX_MERCHANT_ID,
+			merchantName: merchantInfo.businessName,
+		},
+		transactionInfo: {
+			totalPriceStatus: 'FINAL',
+			totalPriceLabel: checkout.totalPriceLabel,
+			totalPrice: '0.00',
+			currencyCode: checkout.currencyCode,
+			countryCode: checkout.countryCode,
+			displayItems: [],
+		},
 	};
 
 	let gPayBtnProps = {
@@ -363,12 +287,12 @@ const AWXGooglePayButtonPreview = (props) => {
 		buttonSizeMode: 'fill',
 		buttonColor: button.theme,
 		buttonType: button.buttonType,
-		style: { 
+		style: {
 			width: '100%',
 			height: button.height
 		},
 		paymentRequest: paymentDataRequest,
-		onClick: (e) => {e.preventDefault()},
+		onClick: (e) => { e.preventDefault() },
 	};
 	return (
 		<>
@@ -379,14 +303,17 @@ const AWXGooglePayButtonPreview = (props) => {
 	);
 };
 
-const canMakePayment           = () => {
+const canMakePayment = ({
+	cartTotals,
+}) => {
 	const { button, checkout } = settings;
-	const mode                 = button.mode === 'recurring' ? 'recurring' : 'oneoff';
+	const mode = button.mode === 'recurring' ? 'recurring' : 'oneoff';
 
-	return (settings?.googlePayEnabled
-			&& mode in checkout.allowedCardNetworks.googlepay
-			&& checkout.allowedCardNetworks.googlepay[mode].length > 0
-		) ?? false;
+	return (cartTotals.total_price != '0'
+		&& settings?.googlePayEnabled
+		&& mode in checkout.allowedCardNetworks.googlepay
+		&& checkout.allowedCardNetworks.googlepay[mode].length > 0
+	) ?? false;
 };
 
 export const airwallexGooglePayOption = {

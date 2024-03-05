@@ -118,7 +118,7 @@ export const ENV_HOST = {
 
 export const getGatewayUrl = (env) => `https://${ENV_HOST[env] || 'checkout.airwallex.com'}`;
 
-export const maskPageWhileLoading = function () {
+export const maskPageWhileLoading = function (timeout = 5000) {
 	jQuery.blockUI({
 		message: null,
 		overlayCSS: {
@@ -126,6 +126,9 @@ export const maskPageWhileLoading = function () {
 			opacity: 0.6
 		}
 	});
+	setTimeout(function () {
+		jQuery.unblockUI();
+	}, timeout);
 };
 
 export const removePageMask = function () {

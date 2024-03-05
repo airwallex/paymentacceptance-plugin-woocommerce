@@ -8,7 +8,8 @@ import {
 	paymentIntentCreateConsent,
 	processOrderWithoutPayment,
 	getConfirmPayload,
-	startPaymentSession
+	startPaymentSession,
+	getEstimatedCartDetails,
 } from './api.js';
 import {
 	airTrackerCommonData,
@@ -22,23 +23,16 @@ import {
 	getAppleFormattedLineItems,
 	getGoogleFormattedShippingOptions,
 	displayLoginConfirmation,
+	maskPageWhileLoading,
+	removePageMask,
 } from './utils.js';
 
 /* global awxExpressCheckoutSettings, Airwallex */
 jQuery(function ($) {
 	'use strict';
 
-	const googlePayJSLib                  = 'https://pay.google.com/gp/p/js/pay.js';
 	const applePayJSLib                   = 'https://applepay.cdn-apple.com/jsapi/v1.1.0/apple-pay-sdk.js';
-	const AIRWALLEX_MERCHANT_ID           = 'BCR2DN4TWD5IRR2E';
-	const awxGoogleBaseRequest            = {
-		apiVersion: 2,
-		apiVersionMinor: 0
-	};
-	const awxGoogleAllowedCardNetworks    = ["MASTERCARD", "VISA"];
-	const awxGoogleAllowedCardAuthMethods = ["PAN_ONLY", "CRYPTOGRAM_3DS"];
 
-	let awxGooglePaymentsClient = null;
 	let awxShippingOptions      = [], shippingMethods = [];
 	let globalCartDetails       = {};
 
@@ -48,6 +42,11 @@ jQuery(function ($) {
 			if (Object.keys(awxExpressCheckoutSettings).length === 0 && awxExpressCheckoutSettings.constructor === Object) {
 				return;
 			}
+
+			// get cart details
+			globalCartDetails = awxExpressCheckoutSettings.isProductPage ? await getEstimatedCartDetails() : await getCartDetails();
+			// if the order/product does not require initial payment, do not proceed
+			if (!globalCartDetails?.orderInfo?.total?.amount) return;
 
 			// register the device fingerprint
 			const fingerprintScriptId = 'airwallex-fraud-api';
@@ -60,11 +59,6 @@ jQuery(function ($) {
 				fingerprintScript.setAttribute('data-order-session-id', airTrackerCommonData.sessionId);
 				fingerprintScript.src = fingerprintJsUrl;
 				document.body.appendChild(fingerprintScript);
-			}
-			
-			// get cart details
-			if (!awxExpressCheckoutSettings.isProductPage) {
-				globalCartDetails = await getCartDetails();
 			}
 
 			const { button, checkout } = awxExpressCheckoutSettings;
@@ -88,23 +82,192 @@ jQuery(function ($) {
 					document.body.appendChild(appleScript);
 				}
 			}
-
-			// check the existence of google before init the button
-			const googlePayScriptId = 'airwallex-google-pay-js';
+			
 			if (awxExpressCheckoutSettings.googlePayEnabled
 				&& mode in checkout.allowedCardNetworks.googlepay
 				&& checkout.allowedCardNetworks.googlepay[mode].length > 0) {
-				if (document.getElementById(googlePayScriptId) === null) {
-					const googleScript  = document.createElement('script');
-					googleScript.src    = googlePayJSLib;
-					googleScript.async  = true;
-					googleScript.setAttribute('id', googlePayScriptId);
-					googleScript.onload = () => {
-						airwallexExpressCheckout.onGooglePayLoaded();
-					};
-					document.body.appendChild(googleScript);
-				}
+					// destroy the element first to prevent duplicate
+					Airwallex.destroyElement('googlePayButton');
+					airwallexExpressCheckout.initGooglePayButton();
 			}
+		},
+
+		initGooglePayButton: async function() {
+			const googlePayRequestOptions = await airwallexExpressCheckout.getGooglePayRequestOptions();
+			const googlepay = Airwallex.createElement('googlePayButton', googlePayRequestOptions);
+			const domElement = googlepay.mount('awx-ec-google-pay-btn');
+
+			googlepay.on('ready', (event) => {
+				$('#awx-express-checkout-wrapper').show();
+				$('.awx-google-pay-btn').show();
+				$('#awx-express-checkout-button-separator').show();
+				$('.awx-express-checkout-error').html('').hide();
+			});
+
+			googlepay.on('click', (event) => {
+				$('.awx-express-checkout-error').html('').hide();
+			});
+
+			googlepay.on('shippingAddressChange', async (event) => {
+				const { callbackTrigger, shippingAddress } = event.detail.intermediatePaymentData;
+
+				// add product to the cart which is required for shipping calculation
+				if (callbackTrigger == 'INITIALIZE' && awxExpressCheckoutSettings.isProductPage) {
+					await addToCart();
+				}
+
+				let paymentDataRequestUpdate = {};
+				const response = await updateShippingOptions(shippingAddress);
+				if (response && response.success) {
+					awxShippingOptions = {
+						shippingMethods: response.shipping.shippingMethods,
+						shippingOptions: getGoogleFormattedShippingOptions(response.shipping.shippingOptions),
+					};
+					paymentDataRequestUpdate.shippingOptionParameters = {
+						defaultSelectedOptionId: awxShippingOptions.shippingMethods[0],
+						shippingOptions: awxShippingOptions.shippingOptions
+					};
+					paymentDataRequestUpdate = Object.assign(paymentDataRequestUpdate,  airwallexExpressCheckout.getGoogleTransactionInfo(response['cart']))
+				} else {
+					awxShippingOptions = [];
+					paymentDataRequestUpdate.error = {
+						reason: 'SHIPPING_ADDRESS_UNSERVICEABLE',
+						message: response.message,
+						intent: 'SHIPPING_ADDRESS'
+					};
+				}
+				googlepay.update(paymentDataRequestUpdate);
+			});
+
+			googlepay.on('shippingMethodChange', async (event) => {
+				const { shippingOptionData } = event.detail.intermediatePaymentData;
+
+				let paymentDataRequestUpdate = {};
+				const response = await updateShippingDetails(shippingOptionData.id, awxShippingOptions.shippingMethods);
+				if (response && response.success) {
+					paymentDataRequestUpdate = airwallexExpressCheckout.getGoogleTransactionInfo(response['cart']);
+				} else {
+					paymentDataRequestUpdate.error = {
+						reason: 'SHIPPING_OPTION_INVALID',
+						message: response.message,
+						intent: 'SHIPPING_OPTION'
+					};
+				}
+
+				googlepay.update(paymentDataRequestUpdate);
+			});
+
+			googlepay.on('authorized', async (event) => {
+				if (awxExpressCheckoutSettings.isProductPage) await addToCart();
+				const orderResponse = await createOrder(event.detail.paymentData, 'googlepay');
+
+				maskPageWhileLoading(50000);
+				if (orderResponse.result === 'success') {
+					const {
+						createConsent,
+						paymentIntentId,
+						clientSecret,
+						autoCapture,
+						confirmationUrl,
+					} = orderResponse.payload;
+
+					if (createConsent) {
+						googlepay.createPaymentConsent({
+							intent_id: paymentIntentId,
+							client_secret: clientSecret,
+							autoCapture:  autoCapture,
+						}).then(() => {
+							location.href = confirmationUrl;
+						}).catch((error) => {
+							removePageMask();
+							$('.awx-express-checkout-error').html(error.message).show();
+							console.warn(error.message);
+						});
+					} else {
+						googlepay.confirmIntent({
+							intent_id: paymentIntentId,
+							client_secret: clientSecret,
+							autoCapture:  autoCapture,
+						}).then(() => {
+							location.href = confirmationUrl;
+						}).catch((error) => {
+							removePageMask();
+							$('.awx-express-checkout-error').html(error.message).show();
+							console.warn(error.message);
+						});
+					}
+				} else {
+					removePageMask();
+					googlepay.confirmIntent({});
+					$('.awx-express-checkout-error').html(orderResponse?.messages).show();
+					console.warn(orderResponse);
+				}
+			});
+
+			googlepay.on('error', (event) => {
+				console.error('There was an error', event);
+			});
+		},
+
+		getGooglePayRequestOptions: async function() {
+			const cartDetails = awxExpressCheckoutSettings.isProductPage ? await getEstimatedCartDetails() : await getCartDetails();
+			const { button, checkout, merchantInfo, transactionId } = awxExpressCheckoutSettings;
+
+			if (!cartDetails.success) {
+				console.warn(response.message);
+				return [];
+			}
+
+			let paymentDataRequest = {
+				mode: button.mode,
+				buttonColor: button.theme,
+				buttonType: button.buttonType,
+				emailRequired: true,
+				billingAddressRequired: true,
+				billingAddressParameters: {
+					format: 'FULL',
+					phoneNumberRequired: checkout.requiresPhone
+				},
+				merchantInfo: {
+					merchantName: merchantInfo.businessName,
+				},
+			};
+
+			let callbackIntents = ['PAYMENT_AUTHORIZATION'];
+			if (cartDetails.requiresShipping) {
+				callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
+				paymentDataRequest.shippingAddressRequired = true;
+				paymentDataRequest.shippingOptionRequired = true;
+				paymentDataRequest.shippingAddressParameters = {
+					phoneNumberRequired: checkout.requiresPhone,
+				};
+			}
+			paymentDataRequest.callbackIntents = callbackIntents;
+			const transactionInfo = airwallexExpressCheckout.getGoogleTransactionInfo(cartDetails);
+			paymentDataRequest = Object.assign(paymentDataRequest, transactionInfo);
+
+			return paymentDataRequest;
+		},
+
+		/**
+		 * Provide Google Pay API with a payment amount, currency, and amount status
+		 * 
+		 * @param {Object} Cart details
+		 * @returns {Object}
+		 */
+		getGoogleTransactionInfo: function (cartDetails) {
+			const { checkout, transactionId } = awxExpressCheckoutSettings;
+
+			return {
+				amount: {
+					value: cartDetails.orderInfo.total.amount || 0,
+					currency: cartDetails.currencyCode || checkout.currencyCode,
+				},
+				transactionId: transactionId,
+				totalPriceLabel: checkout.totalPriceLabel,
+				countryCode: cartDetails.countryCode || checkout.countryCode,
+				displayItems: cartDetails.orderInfo.displayItems,
+			};
 		},
 
 		/**
@@ -117,7 +280,7 @@ jQuery(function ($) {
 			$('.awx-google-pay-btn button').css('height', height);
 		},
 
-		onApplePayLoaded: function() {
+		onApplePayLoaded: async function() {
 			$('#awx-express-checkout-wrapper').show();
 			$('.awx-apple-pay-btn').show();
 			$('#awx-express-checkout-button-separator').show();
@@ -248,7 +411,7 @@ jQuery(function ($) {
 				requiredShippingContactFields: applePayRequiredShippingContactFields,
 				total: {
 					label: orderInfo ? orderInfo.total.label : checkout.totalPriceLabel,
-					amount: isProductPage ? airwallexExpressCheckout.getEstimatedSubtotal(checkout.subTotal) : (orderInfo ? orderInfo.total.amount : checkout.subTotal),
+					amount: orderInfo ? orderInfo.total.amount : checkout.subTotal,
 				},
 			};
 		},
@@ -357,385 +520,13 @@ jQuery(function ($) {
 
 			  return formattedBilling;
 		},
-
-		/**
-		 * Remove and recreate the google pay button in the button container
-		 */
-		reloadGooglePayButton: function () {
-			$('.awx-google-pay-btn').empty();
-			airwallexExpressCheckout.addGooglePayButton();
-		},
-
-		/**
-		 * Create google pay button on load, check whether google pay is supported in the current environment first 
-		 */
-		onGooglePayLoaded: function () {
-			const client = airwallexExpressCheckout.getGooglePaymentsClient(awxExpressCheckoutSettings.checkout.requiresShipping);
-			client.isReadyToPay(airwallexExpressCheckout.getGoogleIsReadyToPayRequest())
-				.then(function (response) {
-					if (response.result) {
-						$('#awx-express-checkout-wrapper').show();
-						$('.awx-google-pay-btn').show();
-						$('#awx-express-checkout-button-separator').show();
-						airwallexExpressCheckout.reloadGooglePayButton();
-						airwallexExpressCheckout.setButtonHeight();
-					}
-				})
-				.catch(function (err) {
-					console.error(err);
-				});
-		},
-
-		/**
-		 * Get google isReadyToPayRequest object
-		 * 
-		 * @returns {Object} Google Pay API version, payment methods supported by the site
-		 */
-		getGoogleIsReadyToPayRequest: function () {
-			return Object.assign(
-				{},
-				awxGoogleBaseRequest,
-				{
-					allowedPaymentMethods: airwallexExpressCheckout.getGoogleAllowedMethods(),
-				}
-			);
-		},
-
-		/**
-		 * Return an active google PaymentsClient or initialize
-		 * 
-		 * @returns {google.payments.api.PaymentsClient} Google Pay API client
-		 */
-		getGooglePaymentsClient: function (requiresShipping = false) {
-			const { merchantInfo } = awxExpressCheckoutSettings;
-
-			if (awxGooglePaymentsClient === null) {
-				let paymentOptions = {
-					environment: awxExpressCheckoutSettings.env === 'prod' ? 'PRODUCTION' : "TEST",
-					merchantInfo: {
-						merchantName: merchantInfo.businessName,
-						merchantId: merchantInfo.googleMerchantId ? merchantInfo.googleMerchantId : AIRWALLEX_MERCHANT_ID
-					},
-					paymentDataCallbacks: {
-						onPaymentAuthorized: airwallexExpressCheckout.onGooglePaymentAuthorized,
-					},
-				};
-
-				if (requiresShipping) {
-					paymentOptions.paymentDataCallbacks['onPaymentDataChanged'] = airwallexExpressCheckout.onGooglePaymentDataChanged;
-				};
-				awxGooglePaymentsClient = new google.payments.api.PaymentsClient(paymentOptions);
-			}
-
-			return awxGooglePaymentsClient;
-
-		},
-
-		/**
-		 * Add the google pay button
-		 */
-		addGooglePayButton: function () {
-			const { checkout, button } = awxExpressCheckoutSettings;
-			const client               = airwallexExpressCheckout.getGooglePaymentsClient(checkout.requiresShipping);
-			const googleButton         = client.createButton({
-				buttonColor: button.theme,
-				buttonType: button.buttonType,
-				buttonSizeMode: 'fill',
-				onClick: airwallexExpressCheckout.onGooglePaymentButtonClicked,
-			});
-			$('.awx-google-pay-btn').append(googleButton);
-		},
-
-		/**
-		 * Show Google Pay payment sheet when Google Pay payment button is clicked
-		 */
-		onGooglePaymentButtonClicked: async function () {
-			$('.awx-express-checkout-error').html('').hide();
-			// If login is required for checkout, display redirect confirmation dialog.
-			if ( awxExpressCheckoutSettings.loginConfirmation ) {
-				displayLoginConfirmation();
-				return;
-			}
-
-			let response;
-			if (awxExpressCheckoutSettings.isProductPage) {
-				response = await addToCart();
-			} else {
-				response = await getCartDetails();
-			}
-
-			if (response.success) {
-				const paymentDataRequest = airwallexExpressCheckout.getGooglePaymentDataRequest(response);
-				const client             = airwallexExpressCheckout.getGooglePaymentsClient(response.requiresShipping);
-				client.loadPaymentData(paymentDataRequest);
-			} else {
-				alter(awxExpressCheckoutSettings.errorMsg.cannotShowPaymentSheet);
-				console.warn(response.message);
-			}
-		},
-
-		/**
-		 * Configure support for the Google Pay API
-		 * 
-		 * @param {Object} Cart details
-		 * @returns {Object} PaymentDataRequest
-		 */
-		getGooglePaymentDataRequest: function (cartDetails) {
-			const { merchantInfo, checkout } = awxExpressCheckoutSettings;
-
-			const paymentDataRequest                 = Object.assign({}, awxGoogleBaseRequest);
-			paymentDataRequest.emailRequired         = true;
-			paymentDataRequest.allowedPaymentMethods = airwallexExpressCheckout.getGoogleAllowedMethods();
-			paymentDataRequest.merchantInfo          = {
-				merchantId: merchantInfo.googleMerchantId ? merchantInfo.googleMerchantId : AIRWALLEX_MERCHANT_ID,
-				merchantName: merchantInfo.businessName,
-			};
-			paymentDataRequest.transactionInfo       = airwallexExpressCheckout.getGoogleTransactionInfo(cartDetails);
-			paymentDataRequest.callbackIntents       = ["PAYMENT_AUTHORIZATION"];
-			if (cartDetails.requiresShipping) {
-				paymentDataRequest.callbackIntents.push("SHIPPING_ADDRESS", "SHIPPING_OPTION");
-				paymentDataRequest.shippingAddressRequired   = true;
-				paymentDataRequest.shippingAddressParameters = {
-					phoneNumberRequired: checkout.requiresPhone,
-				};
-				paymentDataRequest.shippingOptionRequired    = true;
-			}
-
-			return paymentDataRequest;
-		},
-
-		/**
-		 * Specifies support for one or more payment methods supported by the Google Pay API.
-		 * 
-		 * @returns {Object} Allowed payment methods 
-		 */
-		getGoogleAllowedMethods: function () {
-			const { button, checkout, merchantInfo } = awxExpressCheckoutSettings;
-
-			return [{
-				type: 'CARD',
-				parameters: {
-					allowedAuthMethods: checkout.allowedAuthMethods || awxGoogleAllowedCardAuthMethods,
-					allowedCardNetworks: airwallexExpressCheckout.getGooglePaySupportedNetworks(
-						button.mode === 'recurring' ? checkout.allowedCardNetworks['googlepay']['recurring'] : checkout.allowedCardNetworks['googlepay']['oneoff']
-					) || awxGoogleAllowedCardNetworks,
-				allowPrepaidCards: true,
-				allowCreditCards: true,
-				assuranceDetailsRequired: false,
-				billingAddressRequired: true,
-				billingAddressParameters: {
-					format: 'FULL',
-					phoneNumberRequired: checkout.requiresPhone
-					},
-					cvcRequired: true,
-				},
-				tokenizationSpecification: {
-					type: 'PAYMENT_GATEWAY',
-					parameters: {
-						gateway: 'airwallex',
-						gatewayMerchantId: merchantInfo.accountId || '',
-					},
-				}
-			}];
-		},
-
-		/**
-		 * Provide Google Pay API with a payment amount, currency, and amount status
-		 * 
-		 * @param {Object} Cart details
-		 * @returns {Object}
-		 */
-		getGoogleTransactionInfo: function (cartDetails) {
-			const { checkout, transactionId } = awxExpressCheckoutSettings;
-
-			return {
-				transactionId: transactionId,
-				totalPriceStatus: checkout.totalPriceStatus || 'FINAL',
-				totalPriceLabel: checkout.totalPriceLabel,
-				totalPrice: cartDetails.orderInfo.total.amount.toString() || '0.00',
-				currencyCode: cartDetails.currencyCode || checkout.currencyCode,
-				countryCode: cartDetails.countryCode || checkout.countryCode,
-				displayItems: cartDetails.orderInfo.displayItems,
-			};
-		},
-
-		/**
-		 * Get google pay supported networks
-		 * 
-		 * @param {Array} supportNetworks 
-		 * @returns {Object} Filtered support network
-		 */
-		getGooglePaySupportedNetworks: function (supportNetworks = []) {
-			// Google pay don't support UNIONPAY
-			// Google pay support MAESTRO, but country code must be BR, otherwise it will not be supported;
-			const googlePayNetworks = supportNetworks
-				.map((brand) => brand.toUpperCase())
-				.filter((brand) => brand !== 'UNIONPAY' && brand !== 'MAESTRO' && brand !== 'DINERS');
-			return googlePayNetworks;
-		},
-
-		/**
-		 * Handles dynamic buy flow shipping address and shipping options callback intents.
-		 * 
-		 * @param {object} itermediatePaymentData response from Google Pay API a shipping address or shipping option is selected in the payment sheet.
-		 */
-		onGooglePaymentDataChanged: async function (intermediatePaymentData) {
-			const { callbackTrigger, shippingAddress, shippingOptionData } = intermediatePaymentData;
-			let paymentDataRequestUpdate                                   = {};
-
-			if (callbackTrigger == "INITIALIZE" || callbackTrigger == "SHIPPING_ADDRESS") {
-				const response = await updateShippingOptions(shippingAddress);
-
-				if (response && response.success) {
-					awxShippingOptions                                   = {
-						shippingMethods: response.shipping.shippingMethods,
-						shippingOptions: getGoogleFormattedShippingOptions(response.shipping.shippingOptions),
-					};
-					paymentDataRequestUpdate.newShippingOptionParameters = {
-						defaultSelectedOptionId: awxShippingOptions.shippingMethods[0],
-						shippingOptions: awxShippingOptions.shippingOptions
-					};
-					paymentDataRequestUpdate.newTransactionInfo          = airwallexExpressCheckout.getGoogleTransactionInfo(response['cart']);
-				} else {
-					awxShippingOptions             = [];
-					paymentDataRequestUpdate.error = {
-						reason: 'SHIPPING_ADDRESS_UNSERVICEABLE',
-						message: response.message,
-						intent: 'SHIPPING_ADDRESS'
-					};
-				}
-			} else if (callbackTrigger == "SHIPPING_OPTION") {
-				const response = await updateShippingDetails(shippingOptionData.id, awxShippingOptions.shippingMethods);
-
-				if (response && response.success) {
-					paymentDataRequestUpdate.newTransactionInfo = airwallexExpressCheckout.getGoogleTransactionInfo(response['cart']);
-				} else {
-					paymentDataRequestUpdate.error = {
-						reason: 'SHIPPING_OPTION_INVALID',
-						message: response.message,
-						intent: 'SHIPPING_OPTION'
-					};
-				}
-			}
-
-			return new Promise(function (resolve, reject) {
-				resolve(paymentDataRequestUpdate);
-			});
-		},
-
-		/**
-		 * Create and confirm payment intent on google payment authorized
-		 */
-		onGooglePaymentAuthorized: async function (paymentData) {
-			// process payment here
-			const orderResponse = await createOrder(paymentData, 'googlepay');
-
-			if (orderResponse.result === 'success') {
-				const commonPayload = orderResponse.payload;
-
-				const paymentMethodObj = {
-					type: 'googlepay',
-					googlepay: {
-						payment_data_type: 'encrypted_payment_token',
-						encrypted_payment_token: paymentData.paymentMethodData.tokenizationData.token,
-						billing: paymentData.paymentMethodData.info?.billingAddress ? airwallexExpressCheckout.buildGooglePayBilling(paymentData) : undefined,
-					},
-				};
-
-				let confirmResponse;
-				if (orderResponse.redirect) {
-					// if the order does not require payment, a redirect url will be returned,
-					// try to create consent if the order contains subscription product
-					confirmResponse = await processOrderWithoutPayment(orderResponse.redirect, paymentMethodObj);
-				} else if (orderResponse.payload.createConsent) {
-					const createConsentResponse       = await paymentIntentCreateConsent(commonPayload, paymentMethodObj);
-					const { paymentConsentId, error } = createConsentResponse;
-
-					if (paymentConsentId) {
-						const confirmIntentPayload = getConfirmPayload(commonPayload, paymentMethodObj, paymentConsentId);
-						confirmResponse            = await confirmPaymentIntent(commonPayload, confirmIntentPayload);
-					} else {
-						return new Promise(function (resolve, reject) {
-							resolve({
-								transactionState: 'ERROR',
-								error: {
-									reason: "OTHER_ERROR",
-									message: error?.message,
-									intent: "PAYMENT_AUTHORIZATION"
-								}
-							});
-						});
-					}
-				} else {
-					const confirmIntentPayload = getConfirmPayload(commonPayload, paymentMethodObj);
-					confirmResponse            = await confirmPaymentIntent(commonPayload, confirmIntentPayload);
-				}
-				
-				const { confirmation, error } = confirmResponse || {};
-				if (confirmation) {
-					return new Promise(function (resolve, reject) {
-						resolve({ transactionState: 'SUCCESS' });
-					});
-				} else {
-					return new Promise(function (resolve, reject) {
-						resolve({
-							transactionState: 'ERROR',
-							error: {
-								reason: "OTHER_ERROR",
-								message: error?.message,
-								intent: "PAYMENT_AUTHORIZATION"
-							}
-						});
-					});
-				}
-			} else {
-				return new Promise(function (resolve, reject) {
-					resolve({
-						transactionState: 'ERROR',
-						error: {
-							reason: "OTHER_ERROR",
-							message: orderResponse?.messages,
-							intent: "PAYMENT_AUTHORIZATION"
-						}
-					});
-				});
-			}
-		},
-
-		buildGooglePayBilling: function(paymentData) {
-			const {
-				name,
-				locality,
-				countryCode,
-				postalCode,
-				administrativeArea,
-				address1,
-				address2,
-				address3,
-				phoneNumber
-			} = paymentData.paymentMethodData.info?.billingAddress || {};
-
-			const formattedBilling = {
-				first_name: name?.split(' ')[0],
-				last_name: name?.split(' ')[1] || name?.split(' ')[0],
-				email: paymentData.email,
-				phone_number: phoneNumber,
-			};
-
-			if (countryCode) {
-				formattedBilling.address = {
-				  // some areas may not contain city info, such as Hong Kong, we default country as city.
-					city: locality || countryCode,
-					country_code: countryCode,
-					postcode: postalCode,
-					state: administrativeArea,
-					street: `${address1 || ''} ${address2 || ''} ${address3 || ''}`.trim(),
-				};
-			}
-
-			  return formattedBilling;
-		},
 	};
+
+	Airwallex.init({
+		env: awxExpressCheckoutSettings.env,
+		origin: window.location.origin,
+		locale: awxExpressCheckoutSettings.locale,
+	});
 
 	// hide the express checkout gateway in the payment options
 	$(document.body).on('updated_checkout', function () {

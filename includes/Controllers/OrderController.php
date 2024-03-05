@@ -15,6 +15,58 @@ use WC_Checkout;
 use WC_Validation;
 
 class OrderController {
+
+	/**
+	 * Get estimated cart details without adding the product to the cart
+	 */
+	public function getEstimatedCartDetail() {
+		check_ajax_referer( 'wc-airwallex-express-checkout-estimate-cart', 'security' );
+
+		$productId   = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : 0;
+		$qty         = isset( $_POST['qty'] ) ? absint( $_POST['qty'] ) : 1;
+		$attributes  = isset( $_POST['attributes'] ) ? wc_clean( wp_unslash( $_POST['attributes'] ) ) : [];
+
+		$data = $this->calculateCartForProduct($productId, $qty, $attributes);
+		wp_send_json( $data );
+	}
+
+	/**
+	 * Perform cart calculation for a given product
+	 * 
+	 * @param int $productId
+	 * @param int $qty
+	 * @param array $attributes
+	 * @return array Cart details
+	 */
+	public function calculateCartForProduct($productId, $qty, $attributes) {
+		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
+			define( 'WOOCOMMERCE_CART', true );
+		}
+
+		$cart = clone WC()->cart;
+		$cart->empty_cart();
+		
+		$product     = wc_get_product( $productId );
+		$productType = $product->get_type();
+		if ( ( 'variable' === $productType || 'variable-subscription' === $productType ) && $attributes ) {
+			$data_store   = WC_Data_Store::load( 'product' );
+			$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
+
+			$cart->add_to_cart( $product->get_id(), $qty, $variation_id, $attributes );
+		}
+
+		if ( 'simple' === $productType || 'subscription' === $productType ) {
+			$cart->add_to_cart( $product->get_id(), $qty );
+		}
+
+		$cart->calculate_totals();
+
+		$data              = $this->getCartBasics($cart);
+		$data['orderInfo'] = $this->getDisplayItems($cart);
+		$data['success']   = true;
+
+		return $data;
+	}
 	
 	/**
 	 * Add product to cart action. Used on product detail page to add the current product into the cart.
@@ -51,22 +103,11 @@ class OrderController {
 
 		WC()->cart->calculate_totals();
 		
-		$data              = $this->getCartBasics();
-		$data['orderInfo'] = $this->getDisplayItems();
+		$data              = $this->getCartBasics(WC()->cart);
+		$data['orderInfo'] = $this->getDisplayItems(WC()->cart);
 		$data['success']   = true;
 
 		wp_send_json( $data );
-	}
-
-	/**
-	 * Get basic information of the cart
-	 */
-	public function getCartBasics() {
-		return [
-			'requiresShipping' => WC()->cart->needs_shipping(),
-			'currencyCode'     => get_woocommerce_currency(),
-			'countryCode' => wc_get_base_location()['country'],
-		];
 	}
 
 	/**
@@ -82,17 +123,34 @@ class OrderController {
 		WC()->cart->calculate_totals();
 
 		// Set mandatory payment details.
-		$data              = $this->getCartBasics();
-		$data['orderInfo'] = $this->getDisplayItems();
+		$data              = $this->getCartBasics(WC()->cart);
+		$data['orderInfo'] = $this->getDisplayItems(WC()->cart);
 		$data['success']   = true;
 
 		wp_send_json( $data );
 	}
 
 	/**
-	 * Get the line items to display in the payment sheet
+	 * Get basic information of the cart
+	 * 
+	 * @param WC_Cart $cart
+	 * @return array Cart basics
 	 */
-	public function getDisplayItems() {
+	public function getCartBasics($cart) {
+		return [
+			'requiresShipping' => $cart->needs_shipping(),
+			'currencyCode'     => get_woocommerce_currency(),
+			'countryCode' => wc_get_base_location()['country'],
+		];
+	}
+
+	/**
+	 * Get the line items to display in the payment sheet
+	 * 
+	 * @param WC_Cart $cart
+	 * @return array Cart details with display items
+	 */
+	public function getDisplayItems($cart) {
 		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
 			define( 'WOOCOMMERCE_CART', true );
 		}
@@ -101,14 +159,14 @@ class OrderController {
 		$lines     = [];
 		$discounts = 0;
 
-		foreach ( WC()->cart->get_cart() as $key => $cartItem ) {
+		foreach ( $cart->get_cart() as $key => $cartItem ) {
 			$amount        = $cartItem['line_subtotal'];
 			$quantityLabel = 1 < $cartItem['quantity'] ? ' (x' . $cartItem['quantity'] . ')' : '';
 			$product_name  = $cartItem['data']->get_name();
 
 			$lines[] = [
 				'label'  => $product_name . $quantityLabel,
-				'price' => wc_format_decimal( $amount, WC()->cart->dp ),
+				'price' => wc_format_decimal( $amount, $cart->dp ),
 				'type' => 'LINE_ITEM'
 			];
 		}
@@ -116,20 +174,20 @@ class OrderController {
 		$items = array_merge( $items, $lines );
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '3.2', '<' ) ) {
-			$discounts = wc_format_decimal( WC()->cart->get_cart_discount_total(), WC()->cart->dp );
+			$discounts = wc_format_decimal( $cart->get_cart_discount_total(), $cart->dp );
 		} else {
-			$appliedCoupons = array_values( WC()->cart->get_coupon_discount_totals() );
+			$appliedCoupons = array_values( $cart->get_coupon_discount_totals() );
 
 			foreach ( $appliedCoupons as $amount ) {
 				$discounts += (float) $amount;
 			}
 		}
 
-		$discounts  = wc_format_decimal( $discounts, WC()->cart->dp );
-		$tax        = wc_format_decimal( WC()->cart->tax_total + WC()->cart->shipping_tax_total, WC()->cart->dp );
-		$shipping   = wc_format_decimal( WC()->cart->shipping_total, WC()->cart->dp );
-		$itemsTotal = wc_format_decimal( WC()->cart->cart_contents_total, WC()->cart->dp ) + $discounts;
-		$orderTotal = defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $itemsTotal + $tax + $shipping - $discounts, WC()->cart->dp ) : WC()->cart->get_total( false );
+		$discounts  = wc_format_decimal( $discounts, $cart->dp );
+		$tax        = wc_format_decimal( $cart->tax_total + $cart->shipping_tax_total, $cart->dp );
+		$shipping   = wc_format_decimal( $cart->shipping_total, $cart->dp );
+		$itemsTotal = wc_format_decimal( $cart->cart_contents_total, $cart->dp ) + $discounts;
+		$orderTotal = defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '3.2', '<' ) ? wc_format_decimal( $itemsTotal + $tax + $shipping - $discounts, $cart->dp ) : $cart->get_total( false );
 
 		if ( wc_tax_enabled() ) {
 			$items[] = [
@@ -139,7 +197,7 @@ class OrderController {
 			];
 		}
 
-		if ( WC()->cart->needs_shipping() ) {
+		if ( $cart->needs_shipping() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Shipping', 'airwallex-online-payments-gateway' ) ),
 				'price' => $shipping,
@@ -147,7 +205,7 @@ class OrderController {
 			];
 		}
 
-		if ( WC()->cart->has_discount() ) {
+		if ( $cart->has_discount() ) {
 			$items[] = [
 				'label'  => esc_html( __( 'Discount', 'airwallex-online-payments-gateway' ) ),
 				'price' => $discounts,
@@ -156,9 +214,9 @@ class OrderController {
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '3.2', '<' ) ) {
-			$cart_fees = WC()->cart->fees;
+			$cart_fees = $cart->fees;
 		} else {
-			$cart_fees = WC()->cart->get_fees();
+			$cart_fees = $cart->get_fees();
 		}
 
 		// Include fees and taxes as display items.
@@ -240,8 +298,8 @@ class OrderController {
 		WC()->cart->calculate_totals();
 
 		$data['success']           = true;
-		$data['cart']              = $this->getCartBasics();
-		$data['cart']['orderInfo'] = $this->getDisplayItems();
+		$data['cart']              = $this->getCartBasics(WC()->cart);
+		$data['cart']['orderInfo'] = $this->getDisplayItems(WC()->cart);
 
 		wp_send_json( $data );
 	}
@@ -551,8 +609,8 @@ class OrderController {
 
 			WC()->cart->calculate_totals();
 			$data['success']           = !empty($data['shipping']['shippingOptions']);
-			$data['cart']              = $this->getCartBasics();
-			$data['cart']['orderInfo'] = $this->getDisplayItems();
+			$data['cart']              = $this->getCartBasics(WC()->cart);
+			$data['cart']['orderInfo'] = $this->getDisplayItems(WC()->cart);
 		} catch (Exception $e) {
 			$data['success'] = false;
 			$data['message'] = __( 'No available shipping method for this shipping address.', 'airwallex-online-payments-gateway' );
