@@ -1,5 +1,11 @@
 *** WooCommerce Airwallex Online Payments Gateway Changelog ***
 
+2024-03-06 - version 1.7.0
+
+* Add - Google Pay express checkout onboarding enhancement
+* Add - Cache enhancement
+* Fix - Broken card method when no payment methods available
+
 2024-02-07 - version 1.6.1
 
 * Fix - Issue with WooCommerce order pay page
