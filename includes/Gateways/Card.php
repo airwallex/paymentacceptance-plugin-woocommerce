@@ -332,12 +332,17 @@ class Card extends WC_Payment_Gateway {
 			if ( empty( $orderId ) ) {
 				$orderId = (int) WC()->session->get( 'order_awaiting_payment' );
 			}
+			if (empty($orderId)) {
+				$this->logService->debug(__METHOD__ . ' - Detect order id from URL.');
+				$orderId = isset($_GET['order_id']) ? absint($_GET['order_id']) : 0;
+			}
 			$order = wc_get_order( $orderId );
 			if ( empty( $order ) ) {
 				throw new Exception( 'Order not found: ' . $orderId );
 			}
 
 			$paymentIntentId = WC()->session->get( 'airwallex_payment_intent_id' );
+			$paymentIntentId = empty( $paymentIntentId ) ? $order->get_meta('_tmp_airwallex_payment_intent') : $paymentIntentId;
 			$apiClient                 = CardClient::getInstance();
 			$paymentIntent             = $apiClient->getPaymentIntent( $paymentIntentId );
 			$paymentIntentClientSecret = $paymentIntent->getClientSecret();
