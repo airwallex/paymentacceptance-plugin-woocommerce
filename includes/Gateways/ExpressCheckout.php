@@ -878,7 +878,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 				'supportedProductTypes' => $this->getSupportedProductTypes(),
 				'merchantInfo' => array_merge(
 					Util::getMerchantInfoFromJwtToken($this->cardClient->getToken()),
-					['businessName' => get_bloginfo('name')],
+					['businessName' => get_bloginfo('name')]
 				),
 				'button' => [
 					'mode' => $this->hasSubscriptionProduct() ? 'recurring' : 'payment',
