@@ -1,5 +1,10 @@
 *** WooCommerce Airwallex Online Payments Gateway Changelog ***
 
+2024-03-25 - version 1.8.0
+
+* Add - Apple Pay express checkout button enhancement
+* Add - Sign up instructions for new merchants
+
 2024-03-06 - version 1.7.0
 
 * Add - Google Pay express checkout onboarding enhancement
