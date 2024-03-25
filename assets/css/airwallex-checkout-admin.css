@@ -77,6 +77,41 @@ apple-pay-button {
 	width: 400px;
 }
 
+.wc-airwallex-connect-wrapper {
+	padding: 0px 20px 32px 0px;
+}
+
+.wc-airwallex-connect-banner {
+	display: flex;
+	background-color: #fff;
+	border: 1px solid #E8EAED;
+	border-radius: 6px;
+	padding: 16px 24px;
+	align-items: center;
+}
+
+.wc-airwallex-connect-banner-text {
+	margin-left: 16px;
+	flex-grow: 1;
+}
+
+.wc-airwallex-connect-banner-text div {
+	line-height: 20px;
+}
+
+.wc-airwallex-connect-banner-button {
+	display: flex;
+    color: #fff;
+    align-items: center;
+    padding: 0px 20px;
+    border-radius: 6px;
+	height: 40px;
+	font-weight: 700;
+	line-height: 1.2em;
+	background-color: #612FFF;
+	cursor: pointer;
+}
+
 @media only screen and (max-width: 782px) {
 	.wc-airwallex-settings-field-container {
 		flex-direction: column;

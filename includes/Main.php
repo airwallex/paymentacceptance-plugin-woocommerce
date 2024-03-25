@@ -77,6 +77,7 @@ class Main {
 		$this->registerCron();
 		$this->registerSettings();
 		$this->registerExpressCheckoutButtons($this->expressCheckout);
+		$this->noticeApiKeyMissing();
 	}
 
 	public function registerEvents() {
