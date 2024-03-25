@@ -389,7 +389,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 			'airwallex-express-checkout',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-express-checkout.min.js',
 			$dependencies,
-			time(),
+			AIRWALLEX_VERSION,
 			true
 		);
 	}
