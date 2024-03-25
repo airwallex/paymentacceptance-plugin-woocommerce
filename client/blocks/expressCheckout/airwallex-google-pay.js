@@ -68,6 +68,7 @@ const getGooglePayRequestOptions = (billing, shippingData) => {
 		merchantInfo: {
 			merchantName: merchantInfo.businessName,
 		},
+		autoCapture: checkout.autoCapture,
 	};
 
 	let callbackIntents = ['PAYMENT_AUTHORIZATION'];
@@ -95,6 +96,7 @@ const AWXGooglePayButton = (props) => {
 		setExpressPaymentError,
 		shippingData,
 		billing,
+		onError,
 	} = props;
 
 	let awxShippingOptions = {};
@@ -146,54 +148,50 @@ const AWXGooglePayButton = (props) => {
 		elementRef.current?.update(paymentDataRequestUpdate);
 	};
 
-	const onAuthorized = async (setExpressPaymentError, event) => {
+	const onAuthorized = async (event) => {
 		const orderResponse = await createOrder(event.detail.paymentData, 'googlepay');
 
 		maskPageWhileLoading(50000);
 		if (orderResponse.result === 'success') {
 			const {
 				createConsent,
-				paymentIntentId,
 				clientSecret,
-				autoCapture,
 				confirmationUrl,
 			} = orderResponse.payload;
 
 			if (createConsent) {
 				elementRef.current?.createPaymentConsent({
-					intent_id: paymentIntentId,
 					client_secret: clientSecret,
-					autoCapture: autoCapture,
 				}).then(() => {
 					location.href = confirmationUrl;
 				}).catch((error) => {
 					removePageMask();
-					setExpressPaymentError(error.message);
+					onError(error.message);
 					console.warn(error.message);
 				});
 			} else {
 				elementRef.current?.confirmIntent({
-					intent_id: paymentIntentId,
 					client_secret: clientSecret,
-					autoCapture: autoCapture,
 				}).then(() => {
 					location.href = confirmationUrl;
 				}).catch((error) => {
 					removePageMask();
-					setExpressPaymentError(error.message);
+					onError(error.message);
 					console.warn(error.message);
 				});
 			}
 		} else {
-			elementRef.current?.confirmIntent({});
-			setExpressPaymentError(orderResponse.messages);
+			elementRef.current?.fail({
+				message: order.messages,
+			});
+			onError(orderResponse.messages);
 			console.warn(orderResponse.messages);
 		}
 	};
 
-	const onError = (setExpressPaymentError, event) => {
+	const onAWXError = (event) => {
 		const { error } = event.detail;
-		setExpressPaymentError(error.detail);
+		onError(error.detail);
 		console.warn('There was an error', error);
 	}
 
@@ -212,22 +210,18 @@ const AWXGooglePayButton = (props) => {
 		});
 
 		elementRef.current?.on('authorized', (event) => {
-			onAuthorized(setExpressPaymentError, event);
+			onAuthorized(event);
 		});
 
 		elementRef.current?.on('error',(event) => {
-			onError(setExpressPaymentError, event);
+			onAWXError(event);
 		});
 	};
 
 	useEffect(() => {
-		loadAirwallex({
-			env: env,
-			origin: window.location.origin,
-			locale: locale,
-		}).then(() => {
+		if ('Airwallex' in window) {
 			createGooglePayButton();
-		});
+		}
 	}, []);
 
 	useEffect(() => {

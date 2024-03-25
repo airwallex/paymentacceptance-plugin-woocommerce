@@ -178,4 +178,20 @@ class Util {
 		// Output the 36 character UUID.
 		return vsprintf( '%s%s-%s-%s-%s-%s%s%s', str_split( bin2hex($data), 4 ) );
 	}
+
+	/**
+	 * Get the host for checkout UI according to the environment
+	 * 
+	 * @param string $env
+	 * @return string
+	 */
+	public static function getCheckoutUIEnvHost($env) {
+		$envHosts = [
+			'staging' => 'https://checkout-staging.airwallex.com',
+			'demo' => 'https://checkout-demo.airwallex.com',
+			'prod' => 'https://checkout.airwallex.com',
+		];
+
+		return isset($envHosts[$env]) ? $envHosts[$env] : $envHosts['prod'];
+	}
 }

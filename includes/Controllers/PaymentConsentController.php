@@ -29,45 +29,6 @@ class PaymentConsentController {
 		$this->orderService = $orderService;
 	}
 
-	public function createPaymentConsent() {
-		check_ajax_referer('wc-airwallex-express-checkout', 'security');
-
-		$customerId           = isset($_POST['commonPayload']['customerId']) ? sanitize_text_field(wp_unslash($_POST['commonPayload']['customerId'])) : '';
-		$paymentMethodPayload = isset($_POST['paymentMethodObj']) ? wc_clean(wp_unslash($_POST['paymentMethodObj'])) : [];
-
-		LogService::getInstance()->debug(__METHOD__ . " - Create payment consent for {$customerId} with {$paymentMethodPayload['type']}.");
-		try {
-			$paymentMethodType = $paymentMethodPayload['type'];
-			if ( ! in_array( $paymentMethodType, ['applepay', 'googlepay'] ) ) {
-				throw new Exception('Payment method type ' . $paymentMethodType . ' is not allowed.');
-			}
-
-			$paymentConsentId  = $this->cardClient->createPaymentConsent($customerId, [
-					'type' => $paymentMethodType,
-					$paymentMethodType => $paymentMethodPayload[$paymentMethodType],
-			]);
-
-			LogService::getInstance()->debug(__METHOD__ . ' - Payment consent created.', $paymentConsentId);
-
-			wp_send_json([
-				'success' => true,
-				'paymentConsentId' => $paymentConsentId,
-			]);
-		} catch (Exception $e) {
-			LogService::getInstance()->error(__METHOD__ . " - Create payment const {$paymentMethodType} failed.", $e->getMessage());
-			wp_send_json([
-				'success' => false,
-				'error' => [
-					'message' => sprintf(
-						/* translators: Placeholder 1: Error message */
-						__('Failed to complete payment: %s', 'airwallex-online-payments-gateway'),
-						$e->getMessage()
-					),
-				],
-			]);
-		}
-	}
-
 	public function createConsentWithoutPayment() {
 		check_ajax_referer('wc-airwallex-express-checkout', 'security');
 
@@ -112,37 +73,17 @@ class PaymentConsentController {
 				throw new Exception('Payment method type ' . $paymentMethodType . ' is not allowed.');
 			}
 			
-			$paymentConsentId  = $this->cardClient->createPaymentConsent($customerId, [
+			$paymentConsent  = $this->cardClient->createPaymentConsent($customerId, [
 					'type' => $paymentMethodType,
 					$paymentMethodType => $paymentMethodPayload[$paymentMethodType],
 			]);
 
-			LogService::getInstance()->debug(__METHOD__ . ' - Payment consent created.', $paymentConsentId);
-			LogService::getInstance()->debug(__METHOD__ . ' - Verify payment consent.', $paymentConsentId);
-
-			$paymentConsent = $this->cardClient->verifyPaymentConsent($paymentConsentId, [
-				'device_data' => $deviceData,
-				'verification_options' => [
-					$paymentMethodType => [
-						'currency' => get_woocommerce_currency(),
-					],
-				],
-				'return_url' => $origin . WC_AJAX::get_endpoint( sprintf(
-					'airwallex_3ds&consent_id=%s&origin=%s',
-					$paymentConsentId,
-					$origin
-				))
-			]);
-
-			// store the consent id to intent id map for later use
-			$this->cacheService->set('awx_consent_to_intent_id_' . $paymentConsent->getId(), $paymentConsent->getInitialPaymentIntentId(), HOUR_IN_SECONDS);
+			LogService::getInstance()->debug(__METHOD__ . ' - Payment consent created.', $paymentConsent->getId());
 
 			WC()->session->set( 'airwallex_payment_intent_id', $paymentConsent->getInitialPaymentIntentId() );
 			$order->update_meta_data( '_tmp_airwallex_payment_intent', $paymentConsent->getInitialPaymentIntentId() );
 			$order->save();
 			WC()->session->set( 'airwallex_order', $orderId );
-
-			LogService::getInstance()->debug(__METHOD__ . ' - Payment consent verified.', $paymentConsentId);
 
 			$confirmationUrl  = WC()->api_request_url( Main::ROUTE_SLUG_CONFIRMATION );
 			$confirmationUrl .= ( strpos( $confirmationUrl, '?' ) === false ) ? '?' : '&';

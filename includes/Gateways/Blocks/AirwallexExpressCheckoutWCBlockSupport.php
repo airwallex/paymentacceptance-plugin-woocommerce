@@ -8,7 +8,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Airwallex\Gateways\Card;
 use Airwallex\Controllers\OrderController;
-use Airwallex\Controllers\PaymentIntentController;
 use Airwallex\Services\OrderService;
 use Airwallex\Client\CardClient;
 use Airwallex\Controllers\GatewaySettingsController;
@@ -36,7 +35,6 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 			new Card(),
 			new GatewaySettingsController($cardClient),
 			new OrderController(),
-			new PaymentIntentController($cardClient, $cacheService, $orderService),
 			new PaymentConsentController($cardClient, $cacheService, $orderService),
 			new PaymentSessionController($cardClient),
 			$orderService,

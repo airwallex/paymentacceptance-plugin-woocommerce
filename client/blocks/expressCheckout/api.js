@@ -1,11 +1,5 @@
 import { getSetting } from '@woocommerce/settings';
-import { checkoutResponseFlow } from './threeDs.js';
 import $ from 'jquery';
-import {
-	getBrowserInfo,
-	airTrackerCommonData,
-} from './utils.js';
-import VersionData from '../../../version.json';
 
 const settings = getSetting('airwallex_express_checkout_data', {});
 
@@ -116,111 +110,6 @@ export const createOrder = (paymentData, paymentMethodType) => {
 	}).fail(function (error) {
 		return error;
 	});
-};
-
-export const confirmPaymentIntent = (commonPayload, confirmPayload) => {
-	const data                    = {
-		security: settings.nonce.payment,
-		confirmPayload: confirmPayload,
-		commonPayload: commonPayload,
-		origin: window.location.origin,
-	};
-
-	return $.ajax({
-		type: 'POST',
-		data: data,
-		url: getAjaxURL('confirm_payment_intent'),
-	}).done(function (response) {
-		const { confirmation, error } = response;
-		if (confirmation) {
-			checkoutResponseFlow(confirmation, settings.env, settings.locale, commonPayload.confirmationUrl);
-			
-			return { confirmation };
-		} else {
-			return {
-				error: {
-					message: error?.message,
-				}
-			};
-		}
-	}).fail(function (err) {
-		return {error: err};
-	});
-};
-
-export const paymentIntentCreateConsent = (commonPayload, paymentMethodObj) => {
-	const data                          = {
-		security: settings.nonce.payment,
-		commonPayload: commonPayload,
-		paymentMethodObj: paymentMethodObj,
-	}
-
-	return $.ajax({
-		type: 'POST',
-		data: data,
-		url: getAjaxURL('create_payment_consent'),
-	}).done(function(response) {
-		return response;
-	}).fail(function(error) {
-		return {
-			success: false,
-			error: error,
-		}
-	});
-};
-
-export const processOrderWithoutPayment = (redirectUrl, paymentMethodObj) => {
-	const data                          = {
-		security: settings.nonce.payment,
-		redirectUrl: redirectUrl,
-		paymentMethodObj: paymentMethodObj,
-		deviceData: getBrowserInfo(airTrackerCommonData.sessionId),
-		origin: window.location.origin,
-	}
-
-	return $.ajax({
-		type: 'POST',
-		data: data,
-		url: getAjaxURL('create_consent_without_payment'),
-	}).done(function(response) {
-		const { confirmation, error, confirmationUrl } = response;
-		if (confirmation) {
-			checkoutResponseFlow(confirmation, settings.env, settings.locale, confirmationUrl);
-			
-			return { confirmation };
-		} else {
-			return {
-				error: {
-					message: error?.message,
-				}
-			};
-		}
-	}).fail(function(error) {
-		return {
-			success: false,
-			error: error,
-		}
-	});
-};
-
-export const getConfirmPayload = (commonPayload, paymentMethodObj, paymentConsentId = null) => {
-	let confirmPayload         = {
-		device_data: getBrowserInfo(airTrackerCommonData.sessionId),
-		payment_method: paymentMethodObj,
-		payment_method_options: {
-			card: {
-				auto_capture: commonPayload.autoCapture,
-			},
-		},
-	};
-
-	if (paymentConsentId) {
-		confirmPayload['payment_consent_reference'] = {
-			id: paymentConsentId,
-		}
-	}
-
-	return confirmPayload;
 };
 
 const getOrderDataForGooglePay = (paymentData) => {

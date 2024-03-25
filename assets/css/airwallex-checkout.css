@@ -71,6 +71,10 @@ apple-pay-button {
 	margin-top: -8px;
 }
 
+#awx-ec-apple-pay-btn {
+	margin-bottom: 8px;
+}
+
 .awx-ec-button {
 	width: 100%;
 	line-height: normal;
