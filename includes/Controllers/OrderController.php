@@ -223,7 +223,7 @@ class OrderController {
 		foreach ( $cart_fees as $key => $fee ) {
 			$items[] = [
 				'label'  => $fee->name,
-				'price' => $fee->amount,
+				'price' => wc_format_decimal( $fee->amount, $cart->dp ),
 				'type'   => 'LINE_ITEM',
 			];
 		}

@@ -18,7 +18,6 @@ use Airwallex\Client\CardClient;
 use Airwallex\Controllers\GatewaySettingsController;
 use Airwallex\Controllers\OrderController;
 use Airwallex\Controllers\PaymentConsentController;
-use Airwallex\Controllers\PaymentIntentController;
 use Airwallex\Controllers\PaymentSessionController;
 use Airwallex\Gateways\Blocks\AirwallexExpressCheckoutWCBlockSupport;
 use Airwallex\Gateways\ExpressCheckout;
@@ -64,7 +63,6 @@ class Main {
 			new Card(),
 			new GatewaySettingsController($cardClient),
 			new OrderController(),
-			new PaymentIntentController($cardClient, $cacheService, $orderService),
 			new PaymentConsentController($cardClient, $cacheService, $orderService),
 			new PaymentSessionController($cardClient),
 			$orderService,

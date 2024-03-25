@@ -4,7 +4,6 @@ namespace Airwallex\Gateways;
 
 use Airwallex\Client\CardClient;
 use Airwallex\Controllers\OrderController;
-use Airwallex\Controllers\PaymentIntentController;
 use Airwallex\Gateways\Settings\AirwallexSettingsTrait;
 use Airwallex\Services\OrderService;
 use Airwallex\Controllers\GatewaySettingsController;
@@ -44,7 +43,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 	protected $cardGateway;
 	protected $gatewaySettingsController;
 	protected $orderController;
-	protected $paymentIntentController;
 	protected $paymentConsentController;
 	protected $paymentSessionController;
 	protected $orderService;
@@ -55,7 +53,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		Card $cardGateway,
 		GatewaySettingsController $gatewaySettingsController,
 		OrderController $orderController,
-		PaymentIntentController $paymentIntentController,
 		PaymentConsentController $paymentConsentController,
 		PaymentSessionController $paymentSessionController,
 		OrderService $orderService,
@@ -87,7 +84,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		$this->cardGateway               = $cardGateway;
 		$this->gatewaySettingsController = $gatewaySettingsController;
 		$this->orderController           = $orderController;
-		$this->paymentIntentController   = $paymentIntentController;
 		$this->paymentConsentController  = $paymentConsentController;
 		$this->paymentSessionController  = $paymentSessionController;
 		$this->cacheService              = $cacheService;
@@ -105,15 +101,13 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		add_action( 'woocommerce_airwallex_settings_checkout_' . $this->id, array( $this, 'enqueueAdminScripts' ) );
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'addOrderMeta' ], 10, 2 );
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueueScripts' ] );
 
 		add_action('wc_ajax_airwallex_get_cart_details', [$this->orderController, 'getCartDetails']);
 		add_action('wc_ajax_airwallex_get_shipping_options', [$this->orderController, 'getShippingOptions']);
 		add_action('wc_ajax_airwallex_update_shipping_method', [$this->orderController, 'updateShippingMethod']);
 		add_action('wc_ajax_airwallex_create_order', [$this->orderController, 'createOrderFromCart']);
 		add_action('wc_ajax_airwallex_add_to_cart', [$this->orderController, 'addToCart']);
-		add_action('wc_ajax_airwallex_confirm_payment_intent', [$this->paymentIntentController, 'confirmPaymentIntent']);
-		add_action('wc_ajax_airwallex_create_payment_consent', [$this->paymentConsentController, 'createPaymentConsent']);
-		add_action('wc_ajax_airwallex_create_consent_without_payment', [$this->paymentConsentController, 'createConsentWithoutPayment']);
 		add_action('wc_ajax_airwallex_start_payment_session', [$this->paymentSessionController, 'startPaymentSession']);
 		add_action('wc_ajax_airwallex_register_apple_pay_domain', [$this->gatewaySettingsController, 'registerDomain']);
 		add_action('wc_ajax_airwallex_get_estimated_cart_details', [$this->orderController, 'getEstimatedCartDetail']);
@@ -388,6 +382,18 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		);
 	}
 
+	public function enqueueScripts() {
+		wp_enqueue_script( 'airwallex-lib-js', Util::getCheckoutUIEnvHost(Util::getEnvironment()) . '/assets/elements.bundle.min.js', array(), null, true );
+		$dependencies = ['jquery', 'jquery-blockui', 'airwallex-lib-js'];
+		wp_enqueue_script(
+			'airwallex-express-checkout',
+			AIRWALLEX_PLUGIN_URL . '/build/airwallex-express-checkout.min.js',
+			$dependencies,
+			AIRWALLEX_VERSION,
+			true
+		);
+	}
+
 	public function displayExpressCheckoutButtonHtml() {
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 
@@ -419,12 +425,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 
 			<?php if ($this->isMethodEnabled('apple_pay')) : ?>
 				<div id="awx-ec-apple-pay-btn" class="awx-ec-button awx-apple-pay-btn">
-					<apple-pay-button
-						locale="<?php echo esc_attr(Util::getLocale()); ?>"
-						buttonstyle="<?php echo esc_attr($this->getButtonTheme()); ?>"
-						type="<?php echo esc_attr($this->getButtonType()); ?>"
-						>
-					</apple-pay-button>
 				</div>
 			<?php endif; ?>
 
@@ -440,15 +440,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 			<?php endif; ?>
 		</div>
 	<?php
-		wp_enqueue_script( 'airwallex-lib-js', 'https://checkout.airwallex.com/assets/elements.bundle.min.js', array(), null, true );
-		$dependencies = ['jquery', 'jquery-blockui', 'airwallex-lib-js'];
-		wp_enqueue_script(
-			'airwallex-express-checkout',
-			AIRWALLEX_PLUGIN_URL . '/build/airwallex-express-checkout.min.js',
-			$dependencies,
-			AIRWALLEX_VERSION,
-			true
-		);
 		wp_add_inline_script(
 			'airwallex-express-checkout',
 			'var awxExpressCheckoutSettings = ' . wp_json_encode($this->getExpressCheckoutScriptData(false))
@@ -852,6 +843,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 
 		$countryCode = wc_get_base_location()['country'];
 		return [
+			'autoCapture'   => $this->cardGateway->is_capture_immediately(),
 			'countryCode' => $countryCode,
 			'currencyCode' => get_woocommerce_currency(),
 			'requiresShipping'    => $requiresShipping,

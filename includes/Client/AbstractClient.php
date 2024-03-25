@@ -587,46 +587,13 @@ abstract class AbstractClient {
 	}
 
 	/**
-	 * Send confirm continue request to Airwallex for 3ds
-	 * 
-	 * @param string $paymentIntentId
-	 * @param array $payload
-	 * @return PaymentIntent
-	 */
-	final public function paymentConfirmContinue( $paymentIntentId, $payload ) {
-		if ( empty( $paymentIntentId ) ) {
-			throw new Exception( 'payment intent id empty' );
-		}
-		
-		$client   = $this->getHttpClient();
-		$response = $client->call(
-			'POST',
-			$this->getPciUrl( 'pa/payment_intents/' . $paymentIntentId . '/confirm_continue' ),
-			wp_json_encode(
-				$payload
-				+ ['request_id' => uniqid(),]
-				+ $this->getReferrer()
-			),
-			array(
-				'Authorization' => 'Bearer ' . $this->getToken(),
-			)
-		);
-
-		if (in_array($response->status, HttpClient::HTTP_STATUSES_FAILED, true)) {
-			throw new Exception( 'Failed to confirm the intent, ' . isset($response->data['message']) ? $response->data['message'] : '' );
-		}
-
-		return new PaymentIntent( $response->data );
-	}
-
-	/**
 	 * Create payment method for subscription payment
 	 * 
 	 * @param $customerId
 	 * @param array $paymentMethod payment method detail
 	 * @param string $nextTriggeredBy One of merchant, customer
 	 * @param string $merchantTriggerReason Whether the subsequent payments are scheduled. Only applicable when next_triggered_by is merchant. One of scheduled, unscheduled.
-	 * @return integer Payment consent id
+	 * @return PaymentConsent Payment consent
 	 */
 	final public function createPaymentConsent( $customerId, $paymentMethod, $nextTriggeredBy = 'merchant', $merchantTriggerReason = 'scheduled' ) {
 		if ( empty( $customerId ) ) {
@@ -657,42 +624,7 @@ abstract class AbstractClient {
 			throw new Exception( 'Failed to create payment consent, ' . isset($response->data['message']) ? $response->data['message'] : '' );
 		}
 
-		return $response->data['id'];
-	}
-
-	/**
-	 * Create payment method for subscription payment
-	 * 
-	 * @param $paymentConsentId
-	 * @param array $payload
-	 * @return PaymentConsent
-	 */
-	final public function verifyPaymentConsent( $paymentConsentId, $payload ) {
-		if ( empty( $paymentConsentId ) ) {
-			throw new Exception( 'Payment consent ID is empty.' );
-		}
-
-		$client   = $this->getHttpClient();
-		$response = $client->call(
-			'POST',
-			$this->getPciUrl( sprintf( 'pa/payment_consents/%s/verify', $paymentConsentId ) ),
-			wp_json_encode(
-				[
-					'request_id' => uniqid(),
-				]
-				+ $payload
-				+ $this->getReferrer()
-			),
-			array(
-				'Authorization' => 'Bearer ' . $this->getToken(),
-			)
-		);
-
-		if (in_array($response->status, HttpClient::HTTP_STATUSES_FAILED, true)) {
-			throw new Exception( 'Failed to create payment consent, ' . isset($response->data['message']) ? $response->data['message'] : '' );
-		}
-
-		return new PaymentConsent( $response->data );
+		return new PaymentConsent($response->data);
 	}
 
 	final public function startPaymentSession($validationUrl, $initiativeContext) {
