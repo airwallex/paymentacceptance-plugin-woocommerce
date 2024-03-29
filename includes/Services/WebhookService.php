@@ -81,7 +81,7 @@ class WebhookService {
 						}
 				}
 
-				$order->add_order_note( 'Airwallex Webhook notification: ' . $eventType . "\n\n" . 'Amount: ' . $paymentIntent->getAmount() . "\n\nCaptured amount: " . $paymentIntent->getCapturedAmount() );
+				$order->add_order_note( 'Airwallex Webhook notification: ' . $eventType . "\n\n" . 'Amount: ' . $paymentIntent->getAmount() . $paymentIntent->getCurrency() . "\n\nCaptured amount: " . $paymentIntent->getCapturedAmount() );
 			}
 		} elseif ( 'refund.processing' === $eventType || 'refund.succeeded' === $eventType ) {
 			$logService->debug( '🖧 received refund webhook' );

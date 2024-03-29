@@ -16,3 +16,11 @@ export const getBillingInformation = (billingData) => {
 		email: billingData.email,
 	};
 }
+
+export const getReplacedText = function(template, values) {
+	for (const key in values) {
+		template = template.replace(key, values[key]);
+	}
+
+	return template;
+}

@@ -56,6 +56,10 @@ apple-pay-button {
 	margin: 1.5em 0.5em;
 }
 
+.wc-airwallex-settings-container {
+	padding-left: 0.5em;
+}
+
 .wc-airwallex-settings-field-container {
 	display: flex;
 	align-items: center;
@@ -110,6 +114,15 @@ apple-pay-button {
 	line-height: 1.2em;
 	background-color: #612FFF;
 	cursor: pointer;
+}
+
+.airwallex-settings-nav-local-payment-methods {
+	margin: 1em 0 0 0.5em;
+}
+
+.airwallex-settings-nav-local-payment-methods .awx-nav-link-active {
+	color: #555;
+    font-weight: 500;
 }
 
 @media only screen and (max-width: 782px) {

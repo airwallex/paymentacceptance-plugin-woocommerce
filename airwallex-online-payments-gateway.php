@@ -56,7 +56,6 @@ function airwallex_init() {
             require_once $includeFile;
         }
     }
-    require_once $autoloader;
 
 	$airwallex = \Airwallex\Main::getInstance();
 	$airwallex->init();

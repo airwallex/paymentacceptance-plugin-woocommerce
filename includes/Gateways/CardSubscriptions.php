@@ -63,7 +63,7 @@ class CardSubscriptions extends Card {
 			$originalOrder             = wc_get_order( $originalOrderId );
 			$airwallexCustomerId       = $originalOrder->get_meta( 'airwallex_customer_id' );
 			$airwallexPaymentConsentId = $originalOrder->get_meta( 'airwallex_consent_id' );
-			$cardClient                = new CardClient();
+			$cardClient                = CardClient::getInstance();
 			$paymentIntent             = $cardClient->createPaymentIntent( $amount, $order->get_id(), false, $airwallexCustomerId );
 			$paymentIntentAfterCapture = $cardClient->confirmPaymentIntent( $paymentIntent->getId(), [ 'payment_consent_reference' => [ 'id' => $airwallexPaymentConsentId ] ] );
 

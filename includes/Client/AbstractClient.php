@@ -48,6 +48,12 @@ abstract class AbstractClient {
 		return static::$instance;
 	}
 
+	public function __construct() {
+		$this->clientId = Util::getClientSecret();
+		$this->apiKey = Util::getApiKey();
+		$this->isSandbox = in_array( get_option( 'airwallex_enable_sandbox' ), array( true, 'yes' ), true );
+	}
+
 	final public function getAuthUrl( $action ) {
 		return ( $this->isSandbox ? self::AUTH_URL_SANDBOX : self::AUTH_URL_LIVE ) . $action;
 	}
@@ -69,6 +75,18 @@ abstract class AbstractClient {
 			$this->cacheService = new CacheService( $this->apiKey );
 		}
 		return $this->cacheService;
+	}
+
+	public function setClientId( $clientId ) {
+		$this->clientId = $clientId;
+	}
+
+	public function setApiKey( $apiKey ) {
+		$this->apiKey = $apiKey;
+	}
+
+	public function setIsSandbox( $isSandbox ) {
+		$this->isSandbox = $isSandbox;
 	}
 
 	/**

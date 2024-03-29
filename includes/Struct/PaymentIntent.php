@@ -34,6 +34,8 @@ class PaymentIntent extends AbstractBase {
 	protected $clientSecret;
 	protected $supplementaryAmount;
 	protected $returnUrl;
+	protected $baseAmount;
+	protected $baseCurrency;
 
 	/**
 	 * Get customer ID
@@ -455,6 +457,46 @@ class PaymentIntent extends AbstractBase {
 	 */
 	public function setNextAction( $nextAction ) {
 		$this->nextAction = $nextAction;
+		return $this;
+	}
+
+	/**
+	 * Get base amount
+	 * 
+	 * @return mixed
+	 */
+	public function getBaseAmount() {
+		return $this->baseAmount;
+	}
+
+	/**
+	 * Set base amount
+	 * 
+	 * @param mixed $baseAmount
+	 * @return PaymentIntent
+	 */
+	public function setBaseAmount( $baseAmount ) {
+		$this->baseAmount = $baseAmount;
+		return $this;
+	}
+
+	/**
+	 * Get base currency
+	 * 
+	 * @return mixed
+	 */
+	public function getBaseCurrency() {
+		return $this->baseCurrency;
+	}
+
+	/**
+	 * Set base currency
+	 * 
+	 * @param mixed $baseCurrency
+	 * @return PaymentIntent
+	 */
+	public function setBaseCurrency( $baseCurrency ) {
+		$this->baseCurrency = $baseCurrency;
 		return $this;
 	}
 }

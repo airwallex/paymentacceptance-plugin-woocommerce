@@ -156,8 +156,6 @@ export const InlineCard                             = ({
 
 	useEffect(() => {
 		const onSubmit = async () => {
-			setErrorMessage('');
-
 			return {
 				type: emitResponse.responseTypes.SUCCESS,
 				meta: {

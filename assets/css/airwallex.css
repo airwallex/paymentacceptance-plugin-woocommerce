@@ -37,6 +37,10 @@
 	margin-bottom: 20px;
 }
 
+#airwallex-error-message::before {
+	position: static;
+}
+
 
 @-webkit-keyframes dash {
 	0% {

@@ -58,7 +58,8 @@ module.exports = {
 	entry: {
 		'airwallex-wc-blocks': './client/blocks/index.js',
 		'airwallex-wc-ec-blocks': './client/blocks/expressCheckout/index.js',
-		'airwallex-express-checkout': './assets/js/expressCheckout/airwallex-express-checkout.js', 
+		'airwallex-express-checkout': './assets/js/expressCheckout/airwallex-express-checkout.js',
+		'airwallex-lpm': './assets/js/airwallex-lpm.js',
 	},
 	output: {
 		path: path.resolve(__dirname, './build/'),
