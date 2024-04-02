@@ -31,14 +31,14 @@ abstract class AirwallexWCBlockSupport extends AbstractPaymentMethodType {
 			'airwallex-block-css',
 			AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout-blocks.css',
 			array(),
-			AIRWALLEX_VERSION
+			time()
 		);
 
 		wp_register_script(
 			'airwallex-wc-blocks-integration',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-wc-blocks.min.js',
 			array(),
-			AIRWALLEX_VERSION,
+			time(),
 			true
 		);
 
@@ -62,7 +62,7 @@ abstract class AirwallexWCBlockSupport extends AbstractPaymentMethodType {
 			'airwallex-wc-blocks-integration',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-wc-blocks.min.js',
 			array(),
-			AIRWALLEX_VERSION,
+			time(),
 			true
 		);
 
@@ -85,5 +85,20 @@ abstract class AirwallexWCBlockSupport extends AbstractPaymentMethodType {
 	 */
 	public function get_supported_features() {
 		return $this->gateway->supports;
+	}
+
+	/**
+	 * Returns an associative array of data to be exposed for the payment method's client side.
+	 */
+	public function get_payment_method_data() {
+		$data = [
+			'enabled'     => $this->is_active(),
+			'name'        => $this->name,
+			'title'       => $this->settings['title'],
+			'description' => $this->settings['description'],
+			'supports'    => $this->get_supported_features(),
+		];
+
+		return $data;
 	}
 }

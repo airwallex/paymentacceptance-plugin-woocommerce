@@ -825,6 +825,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 
 		$requiresShipping = false;
 		$subTotal         = 0;
+
 		if ($this->isProduct()) {
 			$product = $this->getProduct();
 			if ($product) {

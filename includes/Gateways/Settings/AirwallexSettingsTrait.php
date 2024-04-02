@@ -35,13 +35,19 @@ trait AirwallexSettingsTrait {
 		}
 		$this->displayErrors();
 		$this->outputSettingsNav();
-		$this->displayCustomHeader();
-		parent::admin_options();
+		$this->outputOptions();
 		$this->adminOutput = true;
 	}
 
 	public function outputSettingsNav() {
 		include AIRWALLEX_PLUGIN_PATH . 'includes/Gateways/Settings/views/settings-nav.php';
+	}
+
+	public function outputOptions() {
+		echo '<div class="wc-airwallex-settings-container ' . $this->id . '">';
+		$this->displayCustomHeader();
+		parent::admin_options();
+		echo '</div>';
 	}
 
 	public function displayCustomHeader() {
@@ -114,7 +120,7 @@ trait AirwallexSettingsTrait {
 			'airwallex-admin-css',
 			AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout-admin.css',
 			[],
-			AIRWALLEX_VERSION
+			time()
 		);
 		wp_enqueue_script(
 			'airwallex-admin-settings',

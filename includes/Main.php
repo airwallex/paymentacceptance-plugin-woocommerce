@@ -24,6 +24,8 @@ use Airwallex\Gateways\ExpressCheckout;
 use Airwallex\Gateways\Settings\AdminSettings;
 use Airwallex\Gateways\Settings\APISettings;
 use Airwallex\Services\Util;
+use Airwallex\Gateways\Blocks\AirwallexKlarnaWCBlockSupport;
+use Airwallex\Gateways\Klarna;
 use Exception;
 use WC_Order;
 use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
@@ -41,7 +43,7 @@ class Main {
 	public static $instance;
 
 	public $apiSettings;
-
+	
 	private $expressCheckout;
 
 	public static function getInstance() {
@@ -186,23 +188,14 @@ class Main {
 		if ( empty( get_option( 'airwallex_client_id' ) ) || empty( get_option( 'airwallex_api_key' ) ) ) {
 			return;
 		}
-		$country = null;
+
 		try {
-			$client  = new AdminClient( get_option( 'airwallex_client_id' ), get_option( 'airwallex_api_key' ), false );
+			$client  =  AdminClient::getInstance();
 			$country = $client->getMerchantCountry();
+			update_option( self::OPTION_KEY_MERCHANT_COUNTRY, $country );
 		} catch ( Exception $e ) {
 			LogService::getInstance()->error( __METHOD__ . ' failed to get merchant country.', $e->getMessage() );
 		}
-		if ( empty( $country ) ) {
-			//try in sandbox
-			try {
-				$client  = new AdminClient( get_option( 'airwallex_client_id' ), get_option( 'airwallex_api_key' ), true );
-				$country = $client->getMerchantCountry();
-			} catch ( Exception $e ) {
-				LogService::getInstance()->error( __METHOD__ . ' failed to get merchant country.', $e->getMessage() );
-			}
-		}
-		update_option( self::OPTION_KEY_MERCHANT_COUNTRY, $country );
 	}
 
 	public function getMerchantCountry() {
@@ -396,6 +389,11 @@ class Main {
 		}
 		$gateways[] = WeChat::class;
 		$gateways[] = $this->expressCheckout;
+		LogService::getInstance()->log('is_wc_endpoint_url', is_wc_endpoint_url('order-pay'));
+		if (!is_wc_endpoint_url('order-pay')) {
+			$gateways[] = Klarna::class;
+		}
+
 		return $gateways;
 	}
 
@@ -506,7 +504,7 @@ class Main {
 		wp_enqueue_script( 'airwallex-lib-js', $jsUrl, array(), null, true );
 		wp_enqueue_script( 'airwallex-local-js', $jsUrlLocal, array(), AIRWALLEX_VERSION, true );
 
-		wp_enqueue_style( 'airwallex-css', $cssUrl, array(), AIRWALLEX_VERSION );
+		wp_enqueue_style( 'airwallex-css', $cssUrl, array(), time() );
 		/* translators: Placeholder 1: error message returned from Airwallex. */
 		$errorMessage      = __( 'An error has occurred. Please check your payment details (%s)', 'airwallex-online-payments-gateway' );
 		$incompleteMessage = __( 'Your credit card details are incomplete', 'airwallex-online-payments-gateway' );
@@ -651,7 +649,8 @@ AIRWALLEX;
 					$payment_method_registry->register( new AirwallexMainWCBlockSupport() );
 					$payment_method_registry->register( new AirwallexCardWCBlockSupport() );
 					$payment_method_registry->register( new AirwallexWeChatWCBlockSupport() );
-					$payment_method_registry->register( new AirwallexExpressCheckoutWCBlockSupport());
+					$payment_method_registry->register( new AirwallexExpressCheckoutWCBlockSupport() );
+					$payment_method_registry->register( new AirwallexKlarnaWCBlockSupport() );
 				}
 			);
 		}

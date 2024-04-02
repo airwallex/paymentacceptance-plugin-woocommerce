@@ -455,7 +455,10 @@ class AirwallexController {
 		}
 
 		try {
-			$apiClient = new AdminClient($clientId, $apiKey, 'checked' === $isSandbox);
+			$apiClient = AdminClient::getInstance();
+			$apiClient->setClientId($clientId);
+			$apiClient->setApiKey($apiKey);
+			$apiClient->setIsSandbox('checked' === $isSandbox);
 
 			if ( $apiClient->testAuth() ) {
 				wp_send_json([

@@ -704,4 +704,11 @@ class OrderController {
 
 		return $currencyFormat['currencyPrefix'] . $rate->get_cost() . $currencyFormat['currencySuffix'] . ':' . $rate->get_label();
 	}
+
+	public function getStoreCurrency() {
+		wp_send_json([
+			'success' => true,
+			'currency' => get_woocommerce_currency()
+		]);
+	}
 }

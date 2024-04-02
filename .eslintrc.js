@@ -21,6 +21,8 @@ module.exports = {
                 singleQuote: true,
             },
         ],
+        'prettier/prettier': 0,
+        'no-console': 'off',
     },
     settings: {
         react: {

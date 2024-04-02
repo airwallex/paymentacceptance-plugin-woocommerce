@@ -20,7 +20,7 @@ const canMakePayment = () => {
 	return settings?.enabled ?? false;
 }
 
-export const airwallexWeChatInOption = {
+export const airwallexWeChatOption = {
 	name: settings?.name ?? 'airwallex_wechat',
 	label: <AirwallexLabel />,
 	content: <AirwallexContent />,

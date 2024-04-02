@@ -40,7 +40,7 @@ class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 			'airwallex-css',
 			AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout.css',
 			array(),
-			AIRWALLEX_VERSION
+			time()
 		);
 	}
 
