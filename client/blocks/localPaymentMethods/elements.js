@@ -3,13 +3,11 @@ import { dispatch } from '@wordpress/data';
 import { CART_STORE_KEY } from '@woocommerce/block-data';
 import { __ } from '@wordpress/i18n';
 import {
+	getReplacedText,
 	getBrowserInfo,
-	airTrackerCommonData
-} from '../expressCheckout/utils';
-import { getReplacedText } from '../utils';
+	airTrackerCommonData,
+} from '../utils';
 import { createQuote } from '../api';
-
-let count = 0;
 
 export const AirwallexLpmLabel = ({
 	title,

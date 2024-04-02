@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 trait AirwallexSettingsTrait {
 	protected $tabTitle;
 	protected $customTitle;
-	protected $customDescription;
+	protected $customDescription = '';
 	public static $connected = null;
 
 	private $adminOutput = false;

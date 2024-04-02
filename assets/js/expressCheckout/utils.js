@@ -111,18 +111,3 @@ export const displayLoginConfirmation = (loginConfirmation = null) => {
 		window.location.href = loginConfirmation.redirect_url;
 	}
 };
-
-export const injectDeviceFingerprintJS = (env, sessionId) => {
-	// register the device fingerprint
-	const fingerprintScriptId = 'airwallex-fraud-api';
-	if (document.getElementById(fingerprintScriptId) === null) {
-		const hostSuffix        = env === 'prod' ? '' : '-demo';
-		const fingerprintJsUrl  = `https://static${hostSuffix}.airwallex.com/webapp/fraud/device-fingerprint/index.js`;
-		const fingerprintScript = document.createElement('script');
-		fingerprintScript.defer = true;
-		fingerprintScript.setAttribute('id', fingerprintScriptId);
-		fingerprintScript.setAttribute('data-order-session-id', sessionId);
-		fingerprintScript.src = fingerprintJsUrl;
-		document.body.appendChild(fingerprintScript);
-	}
-};

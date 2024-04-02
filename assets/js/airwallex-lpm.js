@@ -2,7 +2,7 @@ import {
     getBrowserInfo,
     airTrackerCommonData,
     injectDeviceFingerprintJS,
-} from "./expressCheckout/utils";
+} from "./utils";
 import {
     getStoreCurrency,
     createQuote,
