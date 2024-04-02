@@ -85,7 +85,7 @@ class GatewayClient extends AbstractClient {
 	 */
 	public function createQuoteForCurrencySwitching($paymentCurrency, $targetCurrency, $paymentAmount) {
 		$cacheKey = 'quote_' . $paymentCurrency . $targetCurrency . $paymentAmount;
-		$quote = $this->cacheService->get( $cacheKey );
+		$quote = $this->getCacheService()->get( $cacheKey );
 		if ( isset( $quote['refresh_at'] ) && strtotime( $quote['refresh_at'] ) > time() ) {
 			return new Quote($quote);
 		}
@@ -111,7 +111,7 @@ class GatewayClient extends AbstractClient {
 			throw new Exception( 'Failed to create quote for currency switching, ' . isset($response->data['message']) ? $response->data['message'] : '' );
 		}
 
-		$this->cacheService->set($cacheKey, $response->data, HOUR_IN_SECONDS);
+		$this->getCacheService()->set($cacheKey, $response->data, HOUR_IN_SECONDS);
 
 		return new Quote($response->data);
 	}

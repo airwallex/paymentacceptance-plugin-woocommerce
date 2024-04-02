@@ -14,7 +14,6 @@ class GatewayFactory {
      */
     public static function create($gateway) {
         $name = self::getPropertyNameForGateway($gateway);
-        error_log($name . '-------------------------------------');
         if ( class_exists($gateway) && property_exists(self::class, $name) ) {
             if (self::${$name}) {
                 return self::${$name};
@@ -45,6 +44,6 @@ class GatewayFactory {
      * @return string
      */
     public static function getPropertyNameForGateway($gateway) {
-        return lcfirst($gateway) . 'Gateway';
+        return lcfirst(substr($gateway, strrpos($gateway, '\\') + 1)) . 'Gateway';
     }
 }

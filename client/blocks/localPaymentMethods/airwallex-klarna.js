@@ -9,8 +9,6 @@ import {
 const settings = getSetting('airwallex_klarna_data', {});
 const icon = settings.icon ?? {};
 
-console.log(settings);
-
 const title       = settings?.title ?? __('Klarna', 'airwallex-online-payments-gateway');
 const description = settings?.description ?? '';
 

@@ -52,6 +52,7 @@ abstract class AbstractClient {
 		$this->clientId = Util::getClientSecret();
 		$this->apiKey = Util::getApiKey();
 		$this->isSandbox = in_array( get_option( 'airwallex_enable_sandbox' ), array( true, 'yes' ), true );
+		$this->paymentDescriptor = '';
 	}
 
 	final public function getAuthUrl( $action ) {

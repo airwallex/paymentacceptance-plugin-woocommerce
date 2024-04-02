@@ -389,7 +389,10 @@ class Main {
 		}
 		$gateways[] = WeChat::class;
 		$gateways[] = $this->expressCheckout;
-		$gateways[] = Klarna::class;
+		LogService::getInstance()->log('is_wc_endpoint_url', is_wc_endpoint_url('order-pay'));
+		if (!is_wc_endpoint_url('order-pay')) {
+			$gateways[] = Klarna::class;
+		}
 
 		return $gateways;
 	}

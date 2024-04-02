@@ -167,7 +167,6 @@ abstract class AirwallexGatewayLocalPaymentMethod extends AbstractAirwallexGatew
             $this->logService->debug(__METHOD__ . ' payment intent created', [ 'payment intent' => $paymentIntent->toArray() ] );
 
             $this->logService->debug(__METHOD__ . ' confirm payment intent', [ 'payment intent id' => $paymentIntent->getId() ] );
-            error_log('confirm payment intent id ' . $paymentIntent->getId());
             $confirmPayload = [
                 'device_data' => $deviceData,
                 'payment_method' => $this->getPaymentMethod($order, $paymentIntent->getId()),
@@ -206,7 +205,6 @@ abstract class AirwallexGatewayLocalPaymentMethod extends AbstractAirwallexGatew
                 'result' => 'failed',
                 'message' => $e->getMessage(),
             ];
-            error_log($e->getMessage());
             wc_add_notice($e->getMessage(), 'error');
         }
 

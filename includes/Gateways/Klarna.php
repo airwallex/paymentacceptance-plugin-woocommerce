@@ -2,12 +2,6 @@
 
 namespace Airwallex\Gateways;
 
-use Airwallex\Services\LogService;
-use Airwallex\Services\CacheService;
-use Airwallex\Client\GatewayClient;
-use Airwallex\Controllers\OrderController;
-use Airwallex\Controllers\QuoteController;
-use Airwallex\Services\OrderService;
 use Airwallex\Services\Util;
 
 defined( 'ABSPATH' ) || exit();

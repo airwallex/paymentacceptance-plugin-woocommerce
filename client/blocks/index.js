@@ -17,7 +17,6 @@ registerPaymentMethod(airwallexExpressCheckoutOption);
 registerPaymentMethod(airwallexKlarnaOption);
 
 const CurrencySwitchingDetail = ({ cart, extensions }) => {
-    console.log(extensions);
     const { airwallex } = extensions;
     const { showElement, conversionRate, convertedAmount } = airwallex || {};
 

@@ -40,15 +40,10 @@ jQuery(function ($) {
         const selectedCountry = getSelectedCountry();
         const selectedPaymentMethod = getSelectedPaymentMethod();
 
-        console.log('selected country', selectedCountry);
-
         if (selectedPaymentMethod in awxEmbeddedLPMData) {
             const { availableCurrencies } = awxEmbeddedLPMData;
             const { supportedCountryCurrency } = awxEmbeddedLPMData[selectedPaymentMethod];
             const { currencyIneligibleCWOff } = awxEmbeddedLPMData.textTemplate;
-            
-            console.log('original currency', originalCurrency);
-            console.log('supported currency', supportedCountryCurrency);
 
             if (selectedCountry in supportedCountryCurrency) {
                 requiredCurrency = supportedCountryCurrency[selectedCountry];
@@ -56,8 +51,6 @@ jQuery(function ($) {
                     '$$original_currency$$': originalCurrency,
                     '$$converted_currency$$': requiredCurrency,
                 };
-
-                console.log('required currency', requiredCurrency);
 
                 if (originalCurrency === requiredCurrency) {
                     // no action here
@@ -78,9 +71,6 @@ jQuery(function ($) {
     }
 
     const handleQuoteExpire = function() {
-        console.log('checkout place order');
-        console.log(getSelectedPaymentMethod());
-        console.log('start checking...');
         if (currentQuote && currentQuote.refreshAt && new Date(currentQuote.refreshAt).getTime() >= new Date().getTime()) {
             return Promise.resolve(true);
         } else {
@@ -92,11 +82,9 @@ jQuery(function ($) {
 
             return new Promise(function(resolve, reject) {
                 $('.wc-airwallex-currency-switching-quote-expire-close, .wc-airwallex-currency-switching-quote-expire-place-back').on('click', function() {
-                    console.log('close');
                     reject(false);
                 });
                 $('.wc-airwallex-currency-switching-quote-expire-place-order').on('click', function() {
-                    console.log('place order');
                     resolve(true);
                 });
             });
@@ -109,7 +97,6 @@ jQuery(function ($) {
         disableConfirmButton(true);
         showLoading();
         createQuote(originalCurrency, requiredCurrency).done(function(response) {
-            console.log(response);
             const { quote } = response;
             const { currencyIneligibleCWOff, currencyIneligibleCWOn, conversionRate, convertedAmount } = awxEmbeddedLPMData.textTemplate;
             if (quote) {
@@ -142,7 +129,6 @@ jQuery(function ($) {
             }
         }).fail(function(error) {
             hideCurrencySwitchingInfo();
-            console.log(error);
         }).always(function() {
             isLoading = false;
             hideLoading();
@@ -194,7 +180,6 @@ jQuery(function ($) {
     }
 
     const disablePlaceOrderButton = function (disable) {
-        console.log('disable place order ' + disable);
         $('.woocommerce-checkout #place_order').prop('disabled', disable);
     }
 
@@ -211,16 +196,13 @@ jQuery(function ($) {
             hideCurrencySwitchingInfo();
             $('.woocommerce-checkout .wc-airwallex-alert-box').hide();
             const canMakePayment = handleCurrencySwitching();
-            console.log('can male payment ' + canMakePayment);
             disablePlaceOrderButton(!canMakePayment || isLoading);
         });
 
         $(document.body).on('click', '#place_order', function (event) {
-            console.log('place order');
             if (getSelectedPaymentMethod() in awxEmbeddedLPMData) {
                 event.preventDefault();
                 handleQuoteExpire().then(function(result) {
-                    console.log('result: ' + result);
                     $('form.checkout').trigger( 'submit' );
                 }).catch(function(error) {
                     console.warn(error);
@@ -240,8 +222,6 @@ jQuery(function ($) {
     }
 
     if (awxEmbeddedLPMData) {
-        console.log(awxEmbeddedLPMData);
-
         injectDeviceFingerprintJS(awxEmbeddedLPMData.env, airTrackerCommonData.sessionId);
 
         getStoreCurrency().done(function(response) {

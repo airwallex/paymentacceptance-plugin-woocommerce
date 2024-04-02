@@ -49,7 +49,6 @@ export const AirwallexLpmContent = ({
 		disablePlaceOrderButton(true);
 		disableConfirmButton(true);
 		await createQuote(currency.code, requiredCurrency, settings).then((response) => {
-			console.log(response);
 			const { quote } = response;
 			if (quote) {
 				setCurrentQuote(quote);
@@ -100,21 +99,14 @@ export const AirwallexLpmContent = ({
 	};
 
 	const handleCurrencySwitching = (country, paymentMethod) => {
-		console.log('selected country', country);
-		console.log('selected payment method', paymentMethod);
 		setIsLoadingCurrencySwitching(true);
 		if (paymentMethod in settings) {
 			const { availableCurrencies } = settings;
 			const { supportedCountryCurrency } = settings[paymentMethod];
 
-			console.log('original currency', currency.code);
-			console.log('supported currency', supportedCountryCurrency);
-
 			if (country in supportedCountryCurrency) {
 				const requiredCurrency = supportedCountryCurrency[country];
 				setConvertCurrency(requiredCurrency);
-
-				console.log('required currency', requiredCurrency);
 
 				if (currency.code === requiredCurrency) {
 					setShowCountryIneligible(false);
@@ -122,7 +114,6 @@ export const AirwallexLpmContent = ({
 					setShowCurrencyIneligibleCWOn(false);
 					setIsLoadingCurrencySwitching(false);
 				} else if (availableCurrencies && availableCurrencies.includes(requiredCurrency)) {
-					console.log('display currency switching info');
 					updateCurrencySwitchingInfo(requiredCurrency);
 					setShowCountryIneligible(false);
 				} else {
@@ -203,9 +194,6 @@ export const AirwallexLpmContent = ({
     }
 	
 	useEffect( () => {
-		console.log(count++ + 'billingAddress', billing);
-		console.log(shippingData.selectedRates);
-
 		handleCurrencySwitching(billing.billingAddress.country, activePaymentMethod);
 	}, [
 		billing.billingAddress.country,
@@ -214,7 +202,6 @@ export const AirwallexLpmContent = ({
 
 	useEffect(() => {
 		const onValidation = () => {
-			console.log('onValidation');
 			if (currentQuote && currentQuote.refreshAt && new Date(currentQuote.refreshAt).getTime() >= new Date().getTime()) {
 				return true;
 			} else {
@@ -232,7 +219,6 @@ export const AirwallexLpmContent = ({
 					}
 	
 					close.onclick = () => {
-						console.log('close');
 						hideQuoteExpire();
 						resolve({
 							context: emitResponse.noticeContexts.PAYMENTS,
@@ -240,7 +226,6 @@ export const AirwallexLpmContent = ({
 						});
 					};
 					back.onclick = () => {
-						console.log('back');
 						hideQuoteExpire();
 						resolve({
 							context: emitResponse.noticeContexts.PAYMENTS,
@@ -248,7 +233,6 @@ export const AirwallexLpmContent = ({
 						});
 					};
 					order.onclick = () => {
-						console.log('order');
 						hideQuoteExpire();
 						resolve(true);
 					};
@@ -269,7 +253,6 @@ export const AirwallexLpmContent = ({
 	useEffect(() => {
 		const onSubmit = async () => {
 			const deviceData = getBrowserInfo(airTrackerCommonData.sessionId);
-			console.log(deviceData);
 			return {
 				type: emitResponse.responseTypes.SUCCESS,
 				meta: {
@@ -294,7 +277,6 @@ export const AirwallexLpmContent = ({
 
 	useEffect(() => {
 		const onError = ({ processingResponse }) => {
-			console.log(processingResponse);
 			if (processingResponse?.paymentDetails?.message) {
 				return {
 					type: emitResponse.responseTypes.ERROR,
@@ -362,7 +344,6 @@ const CountryIneligibleAlert = ({
 	shouldDisplay,
 	test
 }) => {
-	console.log('is loading', test);
 	return (
 		<div style={{ display: shouldDisplay ? 'flex' : 'none' }} className='wc-airwallex-alert-box wc-airwallex-error'>
 			<img src={icon}></img>
