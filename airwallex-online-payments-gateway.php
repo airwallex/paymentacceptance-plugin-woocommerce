@@ -44,17 +44,7 @@ function airwallex_init() {
     if ( file_exists( $autoloader ) && PHP_VERSION_ID >= 50600 ) {
         require_once $autoloader;
     } else {
-        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Main.php';
-        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Struct/AbstractBase.php';
-        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Client/AbstractClient.php';
-        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Gateways/AirwallexGatewayTrait.php';
-        foreach (glob(AIRWALLEX_PLUGIN_PATH . 'includes/*/*.php') as $includeFile) {
-            require_once $includeFile;
-        }
-        require_once AIRWALLEX_PLUGIN_PATH . 'includes/Gateways/Blocks/AirwallexWCBlockSupport.php';
-        foreach (glob(AIRWALLEX_PLUGIN_PATH . 'includes/*/*/*.php') as $includeFile) {
-            require_once $includeFile;
-        }
+        return;
     }
 
 	$airwallex = \Airwallex\Main::getInstance();

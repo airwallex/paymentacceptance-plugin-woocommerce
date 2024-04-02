@@ -13,14 +13,14 @@ module.exports = {
             'error',
             { definedTags: ['jest-environment'] },
         ],
-        // 'prettier/prettier': [
-        //     'error',
-        //     {
-        //         useTabs: false,
-        //         tabWidth: 4,
-        //         singleQuote: true,
-        //     },
-        // ],
+        'prettier/prettier': [
+            'error',
+            {
+                useTabs: false,
+                tabWidth: 4,
+                singleQuote: true,
+            },
+        ],
         'prettier/prettier': 0,
         'no-console': 'off',
     },
