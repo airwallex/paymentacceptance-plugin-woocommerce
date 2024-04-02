@@ -491,9 +491,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 			return false;
 		}
 
-		if (is_admin()) {
-			return false;
-		} elseif ( $this->isProduct() ) {
+		if ( $this->isProduct() ) {
 			$product = $this->getProduct();
 			if ( \WC_Subscriptions_Product::is_subscription( $product ) ) {
 				return true;
@@ -828,10 +826,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		$requiresShipping = false;
 		$subTotal         = 0;
 
-		if (is_admin()) {
-			$requiresShipping = true;
-			$subTotal         = 0;
-		} elseif ($this->isProduct()) {
+		if ($this->isProduct()) {
 			$product = $this->getProduct();
 			if ($product) {
 				$requiresShipping = $product->needs_shipping();
