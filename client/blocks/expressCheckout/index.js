@@ -1,7 +1,7 @@
 import { registerExpressPaymentMethod } from '@woocommerce/blocks-registry';
 import { airwallexGooglePayOption } from './airwallex-google-pay.js';
 import { airwallexApplePayOption } from './airwallex-apple-pay.js';
-import { loadAirwallex } from 'airwallex-payment-elements';
+import { loadAirwallex, init as initAirwallex } from 'airwallex-payment-elements';
 import { getSetting } from '@woocommerce/settings';
 
 const settings = getSetting('airwallex_express_checkout_data', {});
@@ -13,6 +13,10 @@ loadAirwallex({
     env,
     locale,
     origin: window.location.origin,
+}).then(() => {
+    initAirwallex({
+        env: settings.environment,
+    });
 });
 
 registerExpressPaymentMethod(airwallexApplePayOption);
