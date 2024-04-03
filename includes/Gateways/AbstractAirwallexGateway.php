@@ -18,7 +18,6 @@ use Exception;
 use WC_Payment_Gateway;
 use WP_Error;
 use WC_HTTPS;
-use WCML\MultiCurrency\ExchangeRateServices\Service;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -47,6 +46,7 @@ abstract class AbstractAirwallexGateway extends WC_Payment_Gateway {
 
 		$this->plugin_id   = AIRWALLEX_PLUGIN_NAME;
 		$this->init_settings();
+		$this->enabled = 'yes' === $this->enabled ? $this->isAvailable() : 'no';
 		$this->title       = $this->get_option( 'title' );
 		$this->description = $this->get_option( 'description' );
 		$this->registerHooks();
@@ -67,6 +67,10 @@ abstract class AbstractAirwallexGateway extends WC_Payment_Gateway {
 		return true;
 	}
 
+	public function isAvailable() {
+		return isset($this->getPaymentMethodTypesNew()[$this->paymentMethodType]) ? 'yes' : 'no';
+	}
+
 	public function get_icon() {
 		$icon = $this->getIcon();
 
@@ -80,7 +84,7 @@ abstract class AbstractAirwallexGateway extends WC_Payment_Gateway {
 	}
 
 	public function getIcon() {
-		$paymentMethodTypes = $this->getPaymentMethodTypes();
+		$paymentMethodTypes = $this->getPaymentMethodTypesNew();
 		$iconUrl = '';
 		if ( ! empty( $paymentMethodTypes[$this->paymentMethodType]['oneoff']['resources']['logos']['svg'] ) ) {
 			$iconUrl = $paymentMethodTypes[$this->paymentMethodType]['oneoff']['resources']['logos']['svg'];
@@ -99,7 +103,7 @@ abstract class AbstractAirwallexGateway extends WC_Payment_Gateway {
 	 * 
 	 * @return array|null
 	 */
-	public function getPaymentMethodTypes() {
+	public function getPaymentMethodTypesNew() {
 		$paymentMethodTypes = $this->cacheService->get( self::PAYMENT_METHOD_TYPE_CACHE_KEY );
 
 		if ( empty( $paymentMethodTypes ) ) {
@@ -118,7 +122,7 @@ abstract class AbstractAirwallexGateway extends WC_Payment_Gateway {
 
 				$this->cacheService->set( self::PAYMENT_METHOD_TYPE_CACHE_KEY, $paymentMethodTypes, HOUR_IN_SECONDS );
 			} catch ( Exception $e ) {
-				$this->logService->error(__METHOD__ . ' Failed to get payment method types.');
+				$this->logService->error(__METHOD__ . ' Failed to get payment method types.', $e->getMessage());
 			}
 		}
 
@@ -146,7 +150,7 @@ abstract class AbstractAirwallexGateway extends WC_Payment_Gateway {
 
 				$this->cacheService->set( self::CURRENCY_SETTINGS_CACHE_KEY, $currencySettings, HOUR_IN_SECONDS );
 			} catch (Exception $e) {
-				$this->logService->error(__METHOD__ . ' Failed to get currency settings.');
+				$this->logService->error(__METHOD__ . ' Failed to get currency settings.', $e->getMessage());
 			}
 		}
 
