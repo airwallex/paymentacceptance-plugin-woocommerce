@@ -5,6 +5,7 @@ import {
 	confirmPaymentIntent as confirmAirwallexPaymentIntent,
 	createPaymentConsent as createAirwallexPaymentConsent,
 	getElement as getAirwallexElement,
+	init as initAirwallex,
 } from 'airwallex-payment-elements';
 import { __ } from '@wordpress/i18n';
 import { getCardHolderName, getBillingInformation } from '../utils';
@@ -97,6 +98,10 @@ export const InlineCard                             = ({
 			origin: window.location.origin,
 			locale: settings.locale,
 		}).then(() => {
+			initAirwallex({
+				env: settings.environment,
+			});
+			
 			const card = createAirwallexElement('card');
 			card.mount('airwallex-card');
 		});

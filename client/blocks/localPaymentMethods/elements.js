@@ -305,7 +305,7 @@ export const AirwallexLpmContent = ({
 				) }
 			>
 				{description}
-				<span style={{ display: isLoadingCurrencySwitching ? 'inline-block' : 'none' }} class="wc-airwallex-loader"></span>
+				<span style={{ display: isLoadingCurrencySwitching ? 'inline-block' : 'none' }} className="wc-airwallex-loader"></span>
 				<CountryIneligibleAlert
 					shouldDisplay={showCountryIneligible}
 					methodName={paymentMethodName}

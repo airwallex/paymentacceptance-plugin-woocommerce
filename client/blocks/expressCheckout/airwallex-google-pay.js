@@ -16,7 +16,6 @@ import {
 } from './utils.js';
 import {
 	createElement as airwallexCreateElement,
-	loadAirwallex,
 	destroyElement,
 } from 'airwallex-payment-elements';
 
