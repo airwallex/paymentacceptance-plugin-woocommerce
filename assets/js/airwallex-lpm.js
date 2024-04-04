@@ -71,7 +71,9 @@ jQuery(function ($) {
     }
 
     const handleQuoteExpire = function() {
-        if (currentQuote && currentQuote.refreshAt && new Date(currentQuote.refreshAt).getTime() >= new Date().getTime()) {
+        if (Object.keys(currentQuote).length === 0) {
+            return Promise.resolve(true);
+        } else if (currentQuote && currentQuote.refreshAt && new Date(currentQuote.refreshAt).getTime() >= new Date().getTime()) {
             return Promise.resolve(true);
         } else {
             displayCurrencySwitchingInfo(originalCurrency, requiredCurrency);

@@ -196,11 +196,13 @@ export const AirwallexLpmContent = ({
 
 	useEffect(() => {
 		const onValidation = () => {
-			if (Object.keys(currentQuote).length === 0) {
+			if (showCountryIneligible || showCurrencyIneligibleCWOff) {
 				return {
 					context: emitResponse.noticeContexts.PAYMENTS,
 					errorMessage: __('Please use a different payment method.', 'airwallex-online-payments-gateway'),
 				};
+			} else if (Object.keys(currentQuote).length === 0) {
+				return true;
 			} else if (currentQuote && currentQuote.refreshAt && new Date(currentQuote.refreshAt).getTime() >= new Date().getTime()) {
 				return true;
 			} else {
@@ -244,6 +246,8 @@ export const AirwallexLpmContent = ({
 			unsubscribeAfterProcessing();
 		};
 	}, [
+		showCountryIneligible,
+		showCurrencyIneligibleCWOff,
 		currentQuote,
 		convertCurrency,
 		onCheckoutValidation,
