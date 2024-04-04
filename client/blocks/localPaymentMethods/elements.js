@@ -44,7 +44,6 @@ export const AirwallexLpmContent = ({
 
 	const updateCurrencySwitchingInfo = async (requiredCurrency) => {
 		let showElement = false, conversionRate = '', convertedAmount = '';
-		disablePlaceOrderButton(true);
 		disableConfirmButton(true);
 		await createQuote(currency.code, requiredCurrency, settings).then((response) => {
 			const { quote } = response;
@@ -67,7 +66,6 @@ export const AirwallexLpmContent = ({
 				});
 				setShowCurrencyIneligibleCWOn(true);
 				setShowCurrencyIneligibleCWOff(false);
-				disablePlaceOrderButton(false);
 				disableConfirmButton(false);
 			} else {
 				showElement = false;
@@ -75,7 +73,6 @@ export const AirwallexLpmContent = ({
 				convertedAmount = '';
 				setShowCurrencyIneligibleCWOn(false);
 				setShowCurrencyIneligibleCWOff(true);
-				disablePlaceOrderButton(true);
 				disableConfirmButton(true);
 			}
 		}).catch((error) => {
@@ -115,7 +112,6 @@ export const AirwallexLpmContent = ({
 					updateCurrencySwitchingInfo(requiredCurrency);
 					setShowCountryIneligible(false);
 				} else {
-					disablePlaceOrderButton(true);
 					setShowCountryIneligible(false);
 					setShowCurrencyIneligibleCWOff(true);
 					setShowCurrencyIneligibleCWOn(false);
