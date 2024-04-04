@@ -15,7 +15,7 @@ loadAirwallex({
     origin: window.location.origin,
 }).then(() => {
     initAirwallex({
-        env: settings.environment,
+        env: settings.env,
     });
 });
 
