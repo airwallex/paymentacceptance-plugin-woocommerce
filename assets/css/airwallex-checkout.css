@@ -86,13 +86,13 @@ apple-pay-button {
 }
 
 @media(max-width: 800px) {
-	#awx-express-checkout-button-set {
+	#awx-express-checkout-button {
 		flex-flow: column;
 		padding: 1em;
 	}
 
-	.awx-ec-button {
-		margin: 0;
+	.awx-express-checkout-button-set .awx-ec-button {
+		margin: 0 auto;
 	}
 
 	.awx-apple-pay-btn {
