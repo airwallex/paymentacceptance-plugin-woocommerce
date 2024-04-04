@@ -196,7 +196,12 @@ export const AirwallexLpmContent = ({
 
 	useEffect(() => {
 		const onValidation = () => {
-			if (currentQuote && currentQuote.refreshAt && new Date(currentQuote.refreshAt).getTime() >= new Date().getTime()) {
+			if (Object.keys(currentQuote).length === 0) {
+				return {
+					context: emitResponse.noticeContexts.PAYMENTS,
+					errorMessage: __('Please use a different payment method.', 'airwallex-online-payments-gateway'),
+				};
+			} else if (currentQuote && currentQuote.refreshAt && new Date(currentQuote.refreshAt).getTime() >= new Date().getTime()) {
 				return true;
 			} else {
 				updateCurrencySwitchingInfo(convertCurrency);
