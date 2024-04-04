@@ -226,7 +226,6 @@ class Card extends WC_Payment_Gateway {
 					'currency'      => $order->get_currency( '' ),
 					'clientSecret'  => $paymentIntent->getClientSecret(),
 					'messages'      => __('Processing payment.', 'airwallex-online-payments-gateway'),
-					'redirect'      => '',
 				];
 			}
 			
