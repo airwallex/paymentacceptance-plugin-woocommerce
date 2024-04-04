@@ -138,7 +138,6 @@ export const AirwallexLpmContent = ({
 			document.getElementById('wc-airwallex-currency-switching-base-amount').innerHTML = baseAmount;
 			document.getElementById('wc-airwallex-currency-switching-conversion-rate').innerHTML = conversionRate;
 			document.getElementById('wc-airwallex-currency-switching-converted-amount').innerHTML = convertedAmount;
-			document.getElementById('wc-airwallex-quote-expire-confirm').innerHTML = document.getElementsByClassName('wc-block-components-checkout-place-order-button')[0].innerText;
 		} catch (error) {
 			console.warn(error);	
 		}
@@ -188,6 +187,11 @@ export const AirwallexLpmContent = ({
 	
 	useEffect( () => {
 		handleCurrencySwitching(billing.billingAddress.country, activePaymentMethod);
+		try {
+			document.getElementById('wc-airwallex-quote-expire-confirm').innerHTML = document.getElementsByClassName('wc-block-components-checkout-place-order-button')[0].innerText;
+		} catch (error) {
+			console.warn(error);
+		}
 	}, [
 		billing.billingAddress.country,
 		shippingData.selectedRates,
