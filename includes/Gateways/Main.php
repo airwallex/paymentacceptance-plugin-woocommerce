@@ -72,7 +72,7 @@ class Main extends WC_Payment_Gateway {
 	}
 
 	public function registerHooks() {
-		add_filter( 'wc_airwallex_settings_nav_tabs', array( $this, 'adminNavTab' ), 14 );
+		add_filter( 'wc_airwallex_settings_nav_tabs', array( $this, 'adminNavTab' ), 15 );
 		add_action( 'woocommerce_airwallex_settings_checkout_' . $this->id, array( $this, 'enqueueAdminScripts' ) );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 		if ( class_exists( 'WC_Subscriptions_Order' ) ) {

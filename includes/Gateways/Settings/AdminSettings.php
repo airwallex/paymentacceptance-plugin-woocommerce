@@ -27,7 +27,7 @@ class AdminSettings {
 
 	public static function adminSettingsTabs( $tabs ) {
 		// set the tab name for the first local payment method in alphabetical order
-		$tabs['airwallex_klarna'] = __( 'Local Payment Methods', 'airwallex-online-payments-gateway' );
+		// $tabs['airwallex_klarna'] = __( 'Local Payment Methods', 'airwallex-online-payments-gateway' );
 
 		return $tabs;
 	}
