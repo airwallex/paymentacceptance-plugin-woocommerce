@@ -12,6 +12,7 @@ class LoggingClient extends AbstractClient {
 	const LOG_SEVERITY_ERROR   = 'error';
 
 	protected static $sessionId;
+	protected static $accountId;
 
 	private $isActive = false;
 
@@ -30,6 +31,15 @@ class LoggingClient extends AbstractClient {
 		return self::$sessionId;
 	}
 
+	protected function getAccountId() {
+		if ( ! isset( self::$accountId ) ) {
+			$merchantInfo = Util::getMerchantInfoFromJwtToken( $this->getToken() );
+			self::$accountId = isset( $merchantInfo['accountId'] ) ? $merchantInfo['accountId'] : 'unknown';
+		}
+
+		return self::$accountId;
+	}
+
 	public function log( $severity, $eventName, $message, $details = array(), $type = 'unknown' ) {
 		if ( ! $this->isActive ) {
 			return;
@@ -37,6 +47,7 @@ class LoggingClient extends AbstractClient {
 
 		$data = array(
 			'commonData' => array(
+				'accountId'  => $this->getAccountId(),
 				'appName'    => 'pa_plugin',
 				'source'     => 'woo_commerce',
 				'deviceId'   => 'unknown',
