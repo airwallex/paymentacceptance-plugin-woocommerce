@@ -14,8 +14,8 @@ abstract class AirwallexGatewayLocalPaymentMethod extends AbstractAirwallexGatew
 
     public function registerHooks() {
         parent::registerHooks();
-        remove_filter( 'wc_airwallex_settings_nav_tabs', [ $this, 'adminNavTab' ] );
-		add_filter( 'wc_airwallex_local_gateways_tab', [ $this, 'adminNavTab' ] );
+        // remove_filter( 'wc_airwallex_settings_nav_tabs', [ $this, 'adminNavTab' ] );
+		// add_filter( 'wc_airwallex_local_gateways_tab', [ $this, 'adminNavTab' ] );
         add_filter( 'airwallex-lpm-script-data', [ $this, 'getLPMMethodScriptData' ] );
         add_action('wc_ajax_airwallex_currency_switcher_create_quote', [$this->quoteController, 'createQuoteForCurrencySwitching']);
         add_action('wc_ajax_airwallex_get_store_currency', [$this->orderController, 'getStoreCurrency']);
@@ -34,7 +34,7 @@ abstract class AirwallexGatewayLocalPaymentMethod extends AbstractAirwallexGatew
 
     public function outputSettingsNav() {
 		parent::outputSettingsNav();
-		include AIRWALLEX_PLUGIN_PATH . 'includes/Gateways/Settings/views/settings-local-payment-methods-nav.php';
+		// include AIRWALLEX_PLUGIN_PATH . 'includes/Gateways/Settings/views/settings-local-payment-methods-nav.php';
 	}
 
     public function getLPMScriptData() {
