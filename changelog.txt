@@ -1,5 +1,10 @@
 *** WooCommerce Airwallex Online Payments Gateway Changelog ***
 
+2024-04-09 - version 1.9.0
+
+* Add - Klarna standalone with currency switcher
+* Fix - Express Checkout display issue on small screen
+
 2024-03-25 - version 1.8.0
 
 * Add - Apple Pay express checkout button enhancement
