@@ -11,7 +11,7 @@ class Quote extends AbstractBase {
     protected $currencyPair;
     protected $clientRate;
     protected $createdAt;
-    protected $validateFrom;
+    protected $validFrom;
     protected $validTo;
     protected $targetCurrency;
     protected $paymentAmount;
@@ -143,18 +143,18 @@ class Quote extends AbstractBase {
      *
      * @return mixed
      */
-    public function getValidateFrom() {
-        return $this->validateFrom;
+    public function getValidFrom() {
+        return $this->validFrom;
     }
 
     /**
      * Set the validation start date and time.
      *
-     * @param mixed $validateFrom
+     * @param mixed $validFrom
      * @return $this
      */
-    public function setValidateFrom($validateFrom) {
-        $this->validateFrom = $validateFrom;
+    public function setValidFrom($validFrom) {
+        $this->validFrom = $validFrom;
         return $this;
     }
 
