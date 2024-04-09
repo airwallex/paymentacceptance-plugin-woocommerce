@@ -503,7 +503,7 @@ class Main {
 		wp_enqueue_script( 'airwallex-lib-js', $jsUrl, array(), null, true );
 		wp_enqueue_script( 'airwallex-local-js', $jsUrlLocal, array(), AIRWALLEX_VERSION, true );
 
-		wp_enqueue_style( 'airwallex-css', $cssUrl, array(), time() );
+		wp_enqueue_style( 'airwallex-css', $cssUrl, array(), AIRWALLEX_VERSION );
 		/* translators: Placeholder 1: error message returned from Airwallex. */
 		$errorMessage      = __( 'An error has occurred. Please check your payment details (%s)', 'airwallex-online-payments-gateway' );
 		$incompleteMessage = __( 'Your credit card details are incomplete', 'airwallex-online-payments-gateway' );

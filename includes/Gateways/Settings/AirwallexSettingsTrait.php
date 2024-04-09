@@ -120,7 +120,7 @@ trait AirwallexSettingsTrait {
 			'airwallex-admin-css',
 			AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout-admin.css',
 			[],
-			time()
+			AIRWALLEX_VERSION
 		);
 		wp_enqueue_script(
 			'airwallex-admin-settings',
