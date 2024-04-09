@@ -6,6 +6,7 @@ use Airwallex\Services\Util;
 use Exception;
 
 class LoggingClient extends AbstractClient {
+	public static $instance = null;
 
 	const LOG_SEVERITY_INFO    = 'info';
 	const LOG_SEVERITY_WARNING = 'warn';
@@ -32,12 +33,15 @@ class LoggingClient extends AbstractClient {
 	}
 
 	protected function getAccountId() {
-		if ( ! isset( self::$accountId ) ) {
-			$merchantInfo = Util::getMerchantInfoFromJwtToken( $this->getToken() );
-			self::$accountId = isset( $merchantInfo['accountId'] ) ? $merchantInfo['accountId'] : 'unknown';
+		try {
+			if ( ! isset( self::$accountId ) ) {
+				$merchantInfo = Util::getMerchantInfoFromJwtToken( $this->getToken() );
+				self::$accountId = isset( $merchantInfo['accountId'] ) ? $merchantInfo['accountId'] : 'unknown';
+			}
+			return self::$accountId;
+		} catch (Exception $e) {
+			return 'unknown';
 		}
-
-		return self::$accountId;
 	}
 
 	public function log( $severity, $eventName, $message, $details = array(), $type = 'unknown' ) {

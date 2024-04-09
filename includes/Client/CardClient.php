@@ -5,6 +5,7 @@ namespace Airwallex\Client;
 use Airwallex\Gateways\Card;
 
 class CardClient extends AbstractClient {
+	public static $instance = null;
 
 	public function __construct() {
 		parent::__construct();

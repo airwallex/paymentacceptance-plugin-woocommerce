@@ -9,6 +9,8 @@ use Exception;
 defined( 'ABSPATH' ) || exit;
 
 class GatewayClient extends AbstractClient {
+	public static $instance = null;
+	
     /**
      * Get active payment method types from Airwallex
 	 * 

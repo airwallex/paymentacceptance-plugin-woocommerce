@@ -26,7 +26,6 @@ abstract class AbstractClient {
 	const LOG_URL_LIVE        = 'https://api.airwallex.com/';
 	const LOG_URL_SANDBOX     = 'https://api-demo.airwallex.com/';
 
-	public static $instance;
 	protected $clientId;
 	protected $apiKey;
 	protected $isSandbox;
