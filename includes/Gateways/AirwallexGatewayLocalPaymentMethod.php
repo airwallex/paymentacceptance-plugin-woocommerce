@@ -25,7 +25,7 @@ abstract class AirwallexGatewayLocalPaymentMethod extends AbstractAirwallexGatew
     }
 
     public function enqueueScripts() {
-		wp_enqueue_script('airwallex-js-lpm', AIRWALLEX_PLUGIN_URL . '/build/airwallex-lpm.min.js', ['jquery'], time(), false );
+		wp_enqueue_script('airwallex-js-lpm', AIRWALLEX_PLUGIN_URL . '/build/airwallex-lpm.min.js', ['jquery'], AIRWALLEX_VERSION, false );
 		wp_add_inline_script('airwallex-js-lpm', 'var awxEmbeddedLPMData = ' . json_encode($this->getLPMScriptData()));
 	}
 

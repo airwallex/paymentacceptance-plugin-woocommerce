@@ -31,14 +31,14 @@ abstract class AirwallexWCBlockSupport extends AbstractPaymentMethodType {
 			'airwallex-block-css',
 			AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout-blocks.css',
 			array(),
-			time()
+			AIRWALLEX_VERSION
 		);
 
 		wp_register_script(
 			'airwallex-wc-blocks-integration',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-wc-blocks.min.js',
 			array(),
-			time(),
+			AIRWALLEX_VERSION,
 			true
 		);
 
@@ -62,7 +62,7 @@ abstract class AirwallexWCBlockSupport extends AbstractPaymentMethodType {
 			'airwallex-wc-blocks-integration',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-wc-blocks.min.js',
 			array(),
-			time(),
+			AIRWALLEX_VERSION,
 			true
 		);
 

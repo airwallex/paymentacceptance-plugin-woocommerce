@@ -277,7 +277,7 @@ abstract class AbstractClient {
 			$orderData['shipping'] = array(
 				'first_name'      => $order->get_shipping_first_name(),
 				'last_name'       => $order->get_shipping_last_name(),
-				'shipping_method' => $order->get_shipping_method(),
+				'shipping_method' => Util::truncateString($order->get_shipping_method(), 117, '...'),
 			);
 			if ( $order->get_shipping_city() && $order->get_shipping_country() && $order->get_shipping_address_1() ) {
 				$orderData['shipping']['address'] = $shippingAddress;
@@ -294,7 +294,7 @@ abstract class AbstractClient {
 			$orderData['shipping'] = array(
 				'first_name'      => $order->get_billing_first_name(),
 				'last_name'       => $order->get_billing_last_name(),
-				'shipping_method' => $order->get_shipping_method(),
+				'shipping_method' => Util::truncateString($order->get_shipping_method(), 117, '...'),
 			);
 			if ( $order->get_billing_city() && $order->get_billing_country() && $order->get_billing_address_1() ) {
 				$orderData['shipping']['address'] = $billingAddress;
