@@ -3,7 +3,7 @@ Contributors: airwallex
 Tags: credit card, airwallex, payments, wechat, alipay, apple pay
 Requires at least: 4.5
 Tested up to: 6.4
-Stable tag: 1.8.0
+Stable tag: 1.9.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Author URI: https://www.airwallex.com
@@ -54,6 +54,12 @@ If you encounter any unexpected behavior, first check your configuration against
 Airwallex is a global payments platform with a mission to empower businesses of all sizes to grow without borders, and by doing so, contribute to the global economy. With technology at its core, Airwallex has built a financial infrastructure and platform to help businesses manage online payments, treasury and payout globally, without the constraints of the traditional financial system. Airwallex has raised over US$900 million since it was established in 2015, and is backed by world-leading investors. Today, the business operates with a team of over 1,200 employees across 19 locations globally.
 
 == Changelog ==
+
+= 1.9.0 =
+* Release Date - 09 April 2024*
+
+* Add - Klarna standalone with currency switcher
+* Fix - Express Checkout display issue on small screen
 
 = 1.8.0 =
 * Release Date - 25 March 2024*
