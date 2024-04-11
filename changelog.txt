@@ -1,5 +1,9 @@
 *** WooCommerce Airwallex Online Payments Gateway Changelog ***
 
+2024-04-11 - version 1.9.2
+
+* Fix - The pop-up notification for the currency switcher quote expiration is appearing in an unexpected location
+
 2024-04-09 - version 1.9.1
 
 * Fix - Payment cannot proceed if the name of the shipping method surpass the allowable character limit
