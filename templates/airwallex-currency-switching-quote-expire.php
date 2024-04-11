@@ -1,8 +1,8 @@
 <?php
 defined( 'ABSPATH' ) || exit();
 ?>
-<div class="wc-airwallex-currency-switching-quote-expire-mask"></div>
-<div class="wc-airwallex-currency-switching-quote-expire">
+<div class="wc-airwallex-currency-switching-quote-expire-mask" style="display: none;"></div>
+<div class="wc-airwallex-currency-switching-quote-expire" style="display: none;">
     <div class="wc-airwallex-currency-switching-quote-expire-inner">
         <div class="wc-airwallex-currency-switching-quote-expire-close">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
