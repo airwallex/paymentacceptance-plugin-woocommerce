@@ -71,7 +71,7 @@ class GatewayClient extends AbstractClient {
 		);
 
 		if ( empty( $response->data['items'] ) ) {
-			return null;
+			return [];
 		}
         
 		return $response->data;

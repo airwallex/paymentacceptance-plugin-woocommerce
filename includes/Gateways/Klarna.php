@@ -141,6 +141,6 @@ class Klarna extends AirwallexGatewayLocalPaymentMethod {
     }
 
     public function getPaymentMethodDocURL() {
-        return 'https://www.airwallex.com/docs/payments__global__klarna-beta';
+        return 'https://help.airwallex.com/hc/en-gb/articles/9514119772047-What-countries-can-I-use-Klarna-in';
     }
 }

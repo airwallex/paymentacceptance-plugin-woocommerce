@@ -132,7 +132,7 @@ abstract class AbstractAirwallexGateway extends WC_Payment_Gateway {
 	public function getCurrencySettings() {
 		$currencySettings = $this->cacheService->get( self::CURRENCY_SETTINGS_CACHE_KEY );
 
-		if ( empty( $currencySettings ) ) {
+		if ( is_null( $currencySettings ) ) {
 			try {
 				$pageNum = 0;
 				$currencySettings = [];

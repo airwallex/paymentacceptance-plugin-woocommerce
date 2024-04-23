@@ -1,5 +1,9 @@
 *** WooCommerce Airwallex Online Payments Gateway Changelog ***
 
+2024-04-23 - version 1.9.3
+
+* Add - Update the link for Klarna's list of compatible countries
+
 2024-04-11 - version 1.9.2
 
 * Fix - The pop-up notification for the currency switcher quote expiration is appearing in an unexpected location
