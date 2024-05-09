@@ -35,7 +35,7 @@ test.describe('Redirect card element - Block checkout page - Auto capture - WP p
 
   test('Success transaction - Simple product - No 3DS', async ({ page }) => {
     await addProductToCart(page, 'simple_product');
-    await page.goto('/checkout-block/');
+    await page.goto('./checkout-block/');
     await fillCustomerInCheckoutBlock(page, 'DE');
     await selectPaymentMethodInCheckout(page, 'Credit Card');
     await placeOrderCheckoutBlock(page, 'Place Order');
@@ -52,7 +52,7 @@ test.describe('Redirect card element - Block checkout page - Auto capture - WP p
   test('Success transaction - Subscription product - 3DS Challenge - Renew subscription', async ({ page }) => {
     await loginToAccount(page, WP_NORMAL_USER_EMAIL_FOR_CARD, WP_NORMAL_USER_PASSWORD_FOR_CARD);
     await addProductToCart(page, 'subscription_product');
-    await page.goto('/checkout-block/');
+    await page.goto('./checkout-block/');
     await fillCustomerInCheckoutBlock(page, 'DE');
     await selectPaymentMethodInCheckout(page, 'Credit Card');
     await placeOrderCheckoutBlock(page, 'Sign up now');
@@ -74,7 +74,7 @@ test.describe('Redirect card element - Block checkout page - Manual capture - WP
 
   test('Success transaction - Simple product - No 3DS', async ({ page }) => {
     await addProductToCart(page, 'simple_product');
-    await page.goto('/checkout-block/');
+    await page.goto('./checkout-block/');
     await fillCustomerInCheckoutBlock(page, 'DE');
     await selectPaymentMethodInCheckout(page, 'Credit Card');
     await placeOrderCheckoutBlock(page, 'Place Order');
@@ -93,7 +93,7 @@ test.describe('Redirect card element - Block checkout page - Manual capture - WP
   test('Success transaction - Subscription product - 3DS Challenge - Renew subscription', async ({ page }) => {
     await loginToAccount(page, WP_NORMAL_USER_EMAIL_FOR_CARD, WP_NORMAL_USER_PASSWORD_FOR_CARD);
     await addProductToCart(page, 'subscription_product');
-    await page.goto('/checkout-block/');
+    await page.goto('./checkout-block/');
     await fillCustomerInCheckoutBlock(page, 'DE');
     await selectPaymentMethodInCheckout(page, 'Credit Card');
     await placeOrderCheckoutBlock(page, 'Sign up now');

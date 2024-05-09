@@ -25,7 +25,7 @@ import {
 test.describe('Drop in element - Block checkout page - WP page payment template', () => {
     test('Success transaction - Simple product - Card no 3DS', async ({ page }) => {
         await addProductToCart(page, 'simple_product');
-        await page.goto('/checkout-block/');
+        await page.goto('./checkout-block/');
         await fillCustomerInCheckoutBlock(page, 'DE');
         await selectPaymentMethodInCheckout(page, 'Pay with cards and more');
         await placeOrderCheckoutBlock(page, 'Place order');
@@ -42,7 +42,7 @@ test.describe('Drop in element - Block checkout page - WP page payment template'
     test('Success transaction - Subscription product - Card 3DS Challenge - Renew subscription', async ({ page }) => {
         await loginToAccount(page, WP_NORMAL_USER_EMAIL_FOR_DROP_IN, WP_NORMAL_USER_PASSWORD_FOR_DROP_IN);
         await addProductToCart(page, 'subscription_product');
-        await page.goto('/checkout-block/');
+        await page.goto('./checkout-block/');
         await fillCustomerInCheckoutBlock(page, 'DE');
         await selectPaymentMethodInCheckout(page, 'Pay with cards and more');
         await placeOrderCheckoutBlock(page, 'Sign up now');
@@ -59,7 +59,7 @@ test.describe('Drop in element - Block checkout page - WP page payment template'
     test('Success transaction - Simple product - Klarna', async ({ page }) => {
         await changeStoreCurrency(page, 'USD');
         await addProductToCart(page, 'simple_product');
-        await page.goto('/checkout-block/');
+        await page.goto('./checkout-block/');
         await fillCustomerInCheckoutBlock(page, 'US');
         await selectPaymentMethodInCheckout(page, 'Pay with cards and more');
         await placeOrderCheckoutBlock(page, 'Place order');

@@ -20,7 +20,7 @@ test.describe('Klarna - Shortcode checkout page', () => {
   test('Success transaction - Klarna - USD', async ({ page }) => {
     await changeStoreCurrency(page, 'USD');
     await addProductToCart(page, 'simple_product');
-    await page.goto('/checkout/');
+    await page.goto('./checkout/');
     await fillCustomerInCheckout(page, 'US');
     await selectPaymentMethodInCheckout(page, 'Klarna');
     await placeOrderCheckout(page, 'Place order');
@@ -40,7 +40,7 @@ test.describe('Klarna - Shortcode checkout page', () => {
   test('Success transaction - Klarna - Currency switcher HKD to USD', async ({ page }) => {
     await changeStoreCurrency(page, 'HKD');
     await addProductToCart(page, 'simple_product');
-    await page.goto('/checkout/');
+    await page.goto('./checkout/');
     await fillCustomerInCheckout(page, 'HK');
     await selectPaymentMethodInCheckout(page, 'Klarna');
     await expect(page.locator('.wc-airwallex-lpm-country-ineligible')).toBeVisible();

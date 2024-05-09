@@ -13,7 +13,7 @@ import { verifyAirwallexPaymentStatus } from '../Shared/airwallexUtils';
 test.describe('Wechat element - Block checkout page - Legacy payment template', () => {
   test('Success transaction - Simple product - WeChat element', async ({ page }) => {
     await addProductToCart(page, 'simple_product');
-    await page.goto('/checkout-block/');
+    await page.goto('./checkout-block/');
     await fillCustomerInCheckoutBlock(page, 'DE');
     await selectPaymentMethodInCheckout(page, 'WeChat Pay');
     await placeOrderCheckoutBlock(page, 'Place order');

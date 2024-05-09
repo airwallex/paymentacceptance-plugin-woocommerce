@@ -15,7 +15,7 @@ test.describe('Klarna - Block checkout page', () => {
   test('Success transaction - Simple Product - Klarna - USD', async ({ page }) => {
     await changeStoreCurrency(page, 'USD');
     await addProductToCart(page, 'simple_product');
-    await page.goto('/checkout-block/');
+    await page.goto('./checkout-block/');
     await fillCustomerInCheckoutBlock(page, 'US');
     await selectPaymentMethodInCheckout(page, 'Klarna');
     await placeOrderCheckoutBlock(page, 'Place order');
@@ -35,7 +35,7 @@ test.describe('Klarna - Block checkout page', () => {
   test('Success transaction - Simple product - Klarna - Currency switcher HKD to USD', async ({ page }) => {
     await changeStoreCurrency(page, 'HKD');
     await addProductToCart(page, 'simple_product');
-    await page.goto('/checkout-block/');
+    await page.goto('./checkout-block/');
     await fillCustomerInCheckoutBlock(page, 'HK');
     await selectPaymentMethodInCheckout(page, 'Klarna');
     await expect(page.getByText(/Klarna is not available in your country.*/)).toBeVisible();

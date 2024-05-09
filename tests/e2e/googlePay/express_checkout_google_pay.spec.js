@@ -10,7 +10,7 @@ import { loginAdmin, logoutAdmin } from '../Shared/wpUtils';
 test.describe('Google Pay express checkout', () => {
     test('Google Pay button is visible', async ({ page }) => {
         await loginAdmin(page);
-        await page.goto('/wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_express_checkout');
+        await page.goto('./wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_express_checkout');
         await page.locator('#airwallex-online-payments-gatewayairwallex_express_checkout_show_button_on').selectOption(
             ['checkout', 'product_detail', 'cart']
         );
@@ -21,23 +21,23 @@ test.describe('Google Pay express checkout', () => {
         await page.locator('id=awx-ec-google-pay-btn').click();
         await useShortCodeCheckout(page);
         await addProductToCart(page, 'simple_product');
-        await page.goto('/cart/');
+        await page.goto('./cart/');
         await expect(page.frameLocator('iframe[name="Airwallex google pay button iframe"]').getByLabel('Buy with GPay')).toBeVisible();
         await page.locator('id=awx-ec-google-pay-btn').click();
-        await page.goto('/checkout/');
+        await page.goto('./checkout/');
         await expect(page.frameLocator('iframe[name="Airwallex google pay button iframe"]').getByLabel('Buy with GPay')).toBeVisible();
         await page.locator('id=awx-ec-google-pay-btn').click();
         await useBlockCheckout(page);
         await addProductToCart(page, 'simple_product');
-        await page.goto('/cart-block/');
+        await page.goto('./cart-block/');
         await expect(page.frameLocator('iframe[name="Airwallex google pay button iframe"]').getByLabel('Buy with GPay')).toBeVisible();
         await page.locator('id=awxGooglePayButton').click();
-        await page.goto('/checkout-block/');
+        await page.goto('./checkout-block/');
         await expect(page.frameLocator('iframe[name="Airwallex google pay button iframe"]').getByLabel('Buy with GPay')).toBeVisible();
         await page.locator('id=awxGooglePayButton').click();
 
         await loginAdmin(page);
-        await page.goto('/wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_express_checkout');
+        await page.goto('./wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_express_checkout');
         await page.locator('#airwallex-online-payments-gatewayairwallex_express_checkout_show_button_on').selectOption(
             ['product_detail']
         );
@@ -48,19 +48,19 @@ test.describe('Google Pay express checkout', () => {
         await page.locator('id=awx-ec-google-pay-btn').click();
         await useShortCodeCheckout(page);
         await addProductToCart(page, 'simple_product');
-        await page.goto('/cart/');
+        await page.goto('./cart/');
         await expect(page.locator('id=awx-ec-google-pay-btn')).not.toBeAttached();
-        await page.goto('/checkout/');
+        await page.goto('./checkout/');
         await expect(page.locator('id=awx-ec-google-pay-btn')).not.toBeAttached();
         await useBlockCheckout(page);
         await addProductToCart(page, 'simple_product');
-        await page.goto('/cart-block/');
+        await page.goto('./cart-block/');
         await expect(page.locator('id=awxGooglePayButton')).not.toBeAttached();
-        await page.goto('/checkout-block/');
+        await page.goto('./checkout-block/');
         await expect(page.locator('id=awxGooglePayButton')).not.toBeAttached();
 
         await loginAdmin(page);
-        await page.goto('/wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_express_checkout');
+        await page.goto('./wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_express_checkout');
         await page.locator('#airwallex-online-payments-gatewayairwallex_express_checkout_show_button_on').selectOption(
             ['checkout']
         );
@@ -70,21 +70,21 @@ test.describe('Google Pay express checkout', () => {
         await expect(page.locator('id=awx-ec-google-pay-btn')).not.toBeAttached();
         await useShortCodeCheckout(page);
         await addProductToCart(page, 'simple_product');
-        await page.goto('/cart/');
+        await page.goto('./cart/');
         await expect(page.locator('id=awx-ec-google-pay-btn')).not.toBeAttached();
-        await page.goto('/checkout/');
+        await page.goto('./checkout/');
         await expect(page.frameLocator('iframe[name="Airwallex google pay button iframe"]').getByLabel('Buy with GPay')).toBeVisible();
         await page.locator('id=awx-ec-google-pay-btn').click();
         await useBlockCheckout(page);
         await addProductToCart(page, 'simple_product');
-        await page.goto('/cart-block/');
+        await page.goto('./cart-block/');
         await expect(page.locator('id=awxGooglePayButton')).not.toBeAttached();
-        await page.goto('/checkout-block/');
+        await page.goto('./checkout-block/');
         await expect(page.frameLocator('iframe[name="Airwallex google pay button iframe"]').getByLabel('Buy with GPay')).toBeVisible();
         await page.locator('id=awxGooglePayButton').click();
 
         await loginAdmin(page);
-        await page.goto('/wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_express_checkout');
+        await page.goto('./wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_express_checkout');
         await page.locator('#airwallex-online-payments-gatewayairwallex_express_checkout_show_button_on').selectOption(
             ['cart']
         );
@@ -94,21 +94,21 @@ test.describe('Google Pay express checkout', () => {
         await expect(page.locator('id=awx-ec-google-pay-btn')).not.toBeAttached();
         await useShortCodeCheckout(page);
         await addProductToCart(page, 'simple_product');
-        await page.goto('/cart/');
+        await page.goto('./cart/');
         await expect(page.frameLocator('iframe[name="Airwallex google pay button iframe"]').getByLabel('Buy with GPay')).toBeVisible();
         await page.locator('id=awx-ec-google-pay-btn').click();
-        await page.goto('/checkout/');
+        await page.goto('./checkout/');
         await expect(page.locator('id=awx-ec-google-pay-btn')).not.toBeAttached();
         await useBlockCheckout(page);
         await addProductToCart(page, 'simple_product');
-        await page.goto('/cart-block/');
+        await page.goto('./cart-block/');
         await expect(page.frameLocator('iframe[name="Airwallex google pay button iframe"]').getByLabel('Buy with GPay')).toBeVisible();
         await page.locator('id=awxGooglePayButton').click();
-        await page.goto('/checkout-block/');
+        await page.goto('./checkout-block/');
         await expect(page.locator('id=awxGooglePayButton')).not.toBeAttached();
 
         await loginAdmin(page);
-        await page.goto('/wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_express_checkout');
+        await page.goto('./wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_express_checkout');
         await page.locator('#airwallex-online-payments-gatewayairwallex_express_checkout_show_button_on').selectOption(
             ['checkout', 'product_detail', 'cart']
         );

@@ -9,11 +9,11 @@ async function gotoWPPage(page, url) {
 }
 
 async function gotoWPLogin(page) {
-    await gotoWPPage(page, '/wp-login.php');
+    await gotoWPPage(page, './wp-login.php');
 }
 
 async function gotoWPPlugins(page) {
-    await gotoWPPage(page, '/wp-admin/plugins.php');
+    await gotoWPPage(page, './wp-admin/plugins.php');
 }
 
 const loginAdmin = async (page) => {
@@ -22,7 +22,7 @@ const loginAdmin = async (page) => {
     await page.locator('#user_pass').fill(WP_ADMIN_PASSWORD);
     await page.locator('input:has-text("Log In")').click();
     await expect(async () => {
-        await page.goto('/wp-admin');
+        await page.goto('./wp-admin');
         await page.waitForURL('**/wp-admin/**', { timeout: 5000 });
     }).toPass();
 };
@@ -98,7 +98,7 @@ const fillNumberSettings = async (page, settingName, settingsTabUrl, value) => {
 };
 
 const loginToAccount = async(page, username, password) => {
-    await page.goto('/my-account');
+    await page.goto('./my-account');
     await expect(page.locator('input[name="username"]')).toBeVisible();
     await page.locator('input[name="username"]').fill(username);
     await page.locator('input[name="password"]').fill(password);
@@ -106,7 +106,7 @@ const loginToAccount = async(page, username, password) => {
 };
 
 const logoutFromAccount = async(page) => {
-    await page.goto('/my-account');
+    await page.goto('./my-account');
     await page.locator('li').filter({ hasText: 'Log out' }).getByRole('link').click();
 }
 

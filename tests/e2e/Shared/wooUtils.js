@@ -4,7 +4,7 @@ import { loginAdmin, logoutAdmin } from './wpUtils';
 const path = require('path');
 const fs = require('fs');
 const wooUrls = {
-    settingsPaymentTab: '/wp-admin/admin.php?page=wc-settings&tab=checkout',
+    settingsPaymentTab: './wp-admin/admin.php?page=wc-settings&tab=checkout',
 };
 async function gotoWPPage(page, url) {
     await page.goto(url);
@@ -17,7 +17,7 @@ async function gotoWooPaymentTab(page) {
  * @param                                   productSku
  */
 const addProductToCart = async (page, productSku) => {
-    await page.goto('/shop/');
+    await page.goto('./shop/');
     await expect(page.getByRole('heading', { name: 'Shop' })).toBeVisible();
     await page
         .locator('[data-product_sku="' + productSku + '"].button.add_to_cart_button')
@@ -26,7 +26,7 @@ const addProductToCart = async (page, productSku) => {
 };
 
 const emptyCart = async (page) => {
-    await page.goto('/cart/');
+    await page.goto('./cart/');
     const canRemove = await page
         .getByRole('cell', { name: 'Remove this item' })
         .isVisible();
@@ -184,7 +184,7 @@ const createManualOrder = async (page, productLabel = 'Simple') => {
 
 const useAutoCapture = async (page) => {
     await loginAdmin(page);
-    await gotoWPPage(page, '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_card');
+    await gotoWPPage(page, './wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_card');
     await page.getByRole('group', { name: 'Capture immediately' }).locator('label').check('Capture immediately');
     await page.getByRole('button', { name: 'Save changes' }).click();
     await logoutAdmin(page);
@@ -192,7 +192,7 @@ const useAutoCapture = async (page) => {
 
 const useManualCapture = async (page) => {
     await loginAdmin(page);
-    await gotoWPPage(page, '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_card');
+    await gotoWPPage(page, './wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_card');
     await page.getByRole('group', { name: 'Capture immediately' }).locator('label').uncheck('Capture immediately');
     await page.locator('select[name="airwallex-online-payments-gatewayairwallex_card_capture_trigger_order_status"]').selectOption('wc-completed');
     await page.getByRole('button', { name: 'Save changes' }).click();
@@ -201,7 +201,7 @@ const useManualCapture = async (page) => {
 
 const capturePayment = async (page, orderId) => {
     await loginAdmin(page);
-    await gotoWPPage(page, '/wp-admin/admin.php?page=wc-orders&action=edit&id=' + orderId);
+    await gotoWPPage(page, './wp-admin/admin.php?page=wc-orders&action=edit&id=' + orderId);
     page.locator('select[name="order_status"]').selectOption('wc-completed');
     await page.locator('button[name="save"]').click();
     await expect(page.getByText('Airwallex payment capture success')).toBeVisible();
@@ -209,7 +209,7 @@ const capturePayment = async (page, orderId) => {
 
 const useShortCodeCheckout = async (page) => {
     await loginAdmin(page);
-    await gotoWPPage(page, '/wp-admin/admin.php?page=wc-settings&tab=advanced');
+    await gotoWPPage(page, './wp-admin/admin.php?page=wc-settings&tab=advanced');
     await page.locator('#select2-woocommerce_cart_page_id-container').click();
     await page.keyboard.type('cart');
     await page.getByText(/^cart \(ID: \d+\)$/i).click();
@@ -222,7 +222,7 @@ const useShortCodeCheckout = async (page) => {
 
 const useBlockCheckout = async (page) => {
     await loginAdmin(page);
-    await gotoWPPage(page, '/wp-admin/admin.php?page=wc-settings&tab=advanced');
+    await gotoWPPage(page, './wp-admin/admin.php?page=wc-settings&tab=advanced');
     await page.locator('#select2-woocommerce_cart_page_id-container').click();
     await page.keyboard.type('cart');
     await page.getByText(/^cart block \(ID: \d+\)$/i).click();
@@ -239,7 +239,7 @@ const gotoProductPage = async (page, productSku) => {
 
 const verifyPaymentSuccess = async (page, orderId, verifySubscription = false) => {
     await loginAdmin(page);
-    await gotoWPPage(page, '/wp-admin/admin.php?page=wc-orders&action=edit&id=' + orderId);
+    await gotoWPPage(page, './wp-admin/admin.php?page=wc-orders&action=edit&id=' + orderId);
     await expect(page.locator('#order_status')).toHaveValue('wc-processing', );
     if (verifySubscription) {
         await verifySubscriptionSuccess(page);
@@ -262,7 +262,7 @@ const verifySubscriptionSuccess = async (page) => {
 
 const refundOrder = async (page, orderId) => {
     await loginAdmin(page);
-    await gotoWPPage(page, '/wp-admin/admin.php?page=wc-orders&action=edit&id=' + orderId);
+    await gotoWPPage(page, './wp-admin/admin.php?page=wc-orders&action=edit&id=' + orderId);
     await page.getByRole('button', { name: 'Refund' }).click();
     await page.locator('.refund_order_item_qty').first().fill('1');
     await page.locator('.refund_order_item_qty').first().blur();
@@ -286,7 +286,7 @@ const mockPayment = async (page, sandboxUrl) => {
 
 const changeStoreCurrency = async (page, currency) => {
     await loginAdmin(page);
-    await page.goto('/wp-admin/admin.php?page=wc-settings&tab=general');
+    await page.goto('./wp-admin/admin.php?page=wc-settings&tab=general');
     await page.locator('select[name="woocommerce_currency"]').selectOption(currency);
     await page.locator('button[name="save"]').click();
     await logoutAdmin(page);
@@ -295,7 +295,7 @@ const changeStoreCurrency = async (page, currency) => {
 // type = PAYMENT_FORM_TEMPLATE_LEGACY | PAYMENT_FORM_TEMPLATE_WP_PAGE
 const changePaymentTemplate = async (page, type) => {
     await loginAdmin(page);
-    await gotoWPPage(page, '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_general');
+    await gotoWPPage(page, './wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_general');
     await page.locator('#airwallex-online-payments-gatewayairwallex_general_payment_page_template').selectOption(type);
     await page.getByRole('button', { name: 'Save changes' }).click();
     await logoutAdmin(page);
@@ -304,7 +304,7 @@ const changePaymentTemplate = async (page, type) => {
 // type = CARD_CHECKOUT_FORM_INLINE | CARD_CHECKOUT_FORM_REDIRECT
 const changeCardCheckoutForm = async (page, type) => {
     await loginAdmin(page);
-    await gotoWPPage(page, '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_card');
+    await gotoWPPage(page, './wp-admin/admin.php?page=wc-settings&tab=checkout&section=airwallex_card');
     await page.locator('#airwallex-online-payments-gatewayairwallex_card_checkout_form_type').selectOption(type);
     await page.locator('button[name="save"]').click();
     await logoutAdmin(page);

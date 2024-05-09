@@ -17,7 +17,7 @@ import { before, beforeEach } from 'node:test';
 test.describe('WeChat element - Shortcode checkout page - Legacy payment template', () => {
   test('Success transaction - Simple product - WeChat element', async ({ page }) => {
     await addProductToCart(page, 'simple_product');
-    await page.goto('/checkout/');
+    await page.goto('./checkout/');
     await fillCustomerInCheckout(page, 'DE');
     await selectPaymentMethodInCheckout(page, 'WeChat Pay');
     await placeOrderCheckout(page, 'Place order');

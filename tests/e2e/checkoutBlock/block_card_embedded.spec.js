@@ -38,7 +38,7 @@ test('Change setting to use auto capture', async ({ page }) => {
 test.describe('Embedded card - Block checkout page - Auto Capture', () => {
   test('Success transaction - Simple product - No 3DS', async ({ page }) => {
     await addProductToCart(page, 'simple_product');
-    await page.goto('/checkout-block/');
+    await page.goto('./checkout-block/');
     await fillCustomerInCheckoutBlock(page, 'DE');
     await selectPaymentMethodInCheckout(page, 'Credit Card');
     await fillInCardDetails(page, 'Airwallex card element iframe', 'success');
@@ -55,7 +55,7 @@ test.describe('Embedded card - Block checkout page - Auto Capture', () => {
   test('Success transaction - Subscription product - 3DS challenge - Renew subscription', async ({ page }) => {
     await loginToAccount(page, WP_NORMAL_USER_EMAIL_FOR_CARD, WP_NORMAL_USER_PASSWORD_FOR_CARD);
     await addProductToCart(page, 'subscription_product');
-    await page.goto('/checkout-block/');
+    await page.goto('./checkout-block/');
     await fillCustomerInCheckoutBlock(page, 'DE');
     await selectPaymentMethodInCheckout(page, 'Credit Card');
     await fillInCardDetails(page, 'Airwallex card element iframe', '3ds_challenge');
@@ -77,7 +77,7 @@ test('Change setting to use manual capture', async ({ page }) => {
 test.describe('Embedded card - Block checkout page - Manual capture', () => {  
   test('Success transaction - Simple product - No 3DS', async ({ page }) => {
     await addProductToCart(page, 'simple_product');
-    await page.goto('/checkout-block/');
+    await page.goto('./checkout-block/');
     await fillCustomerInCheckoutBlock(page, 'DE');
     await selectPaymentMethodInCheckout(page, 'Credit Card');
     await fillInCardDetails(page, 'Airwallex card element iframe', 'success');
@@ -96,7 +96,7 @@ test.describe('Embedded card - Block checkout page - Manual capture', () => {
   test('Success transaction - Subscription product - 3DS challenge - Renew subscription', async ({ page }) => {
     await loginToAccount(page, WP_NORMAL_USER_EMAIL_FOR_CARD, WP_NORMAL_USER_PASSWORD_FOR_CARD);
     await addProductToCart(page, 'subscription_product');
-    await page.goto('/checkout-block/');
+    await page.goto('./checkout-block/');
     await fillCustomerInCheckoutBlock(page, 'DE');
     await selectPaymentMethodInCheckout(page, 'Credit Card');
     await fillInCardDetails(page, 'Airwallex card element iframe', '3ds_challenge');
