@@ -1,3 +1,9 @@
+import { expect } from '@playwright/test';
+import {
+    WP_ADMIN_USER_NAME,
+    WP_ADMIN_PASSWORD,
+} from './constants';
+
 async function gotoWPPage(page, url) {
     await page.goto(url);
 }
@@ -12,13 +18,19 @@ async function gotoWPPlugins(page) {
 
 const loginAdmin = async (page) => {
     await gotoWPLogin(page);
-    await page.locator('#user_login').fill(process.env.ADMIN_USER);
-    await page.locator('#user_pass').fill(process.env.ADMIN_PASS);
-    await Promise.all([
-        page.waitForNavigation(),
-        page.locator('input:has-text("Log In")').click(),
-    ]);
+    await page.locator('#user_login').fill(WP_ADMIN_USER_NAME);
+    await page.locator('#user_pass').fill(WP_ADMIN_PASSWORD);
+    await page.locator('input:has-text("Log In")').click();
+    await expect(async () => {
+        await page.goto('/wp-admin');
+        await page.waitForURL('**/wp-admin/**', { timeout: 5000 });
+    }).toPass();
 };
+
+const logoutAdmin = async (page) => {
+    const logoutUrl = await page.locator('id=wp-admin-bar-logout').locator('a').getAttribute('href');
+    await gotoWPPage(page, logoutUrl);
+}
 
 async function deactivateWPPlugin(page, pluginName) {
     await page
@@ -85,8 +97,22 @@ const fillNumberSettings = async (page, settingName, settingsTabUrl, value) => {
     await saveSettings(page);
 };
 
+const loginToAccount = async(page, username, password) => {
+    await page.goto('/my-account');
+    await expect(page.locator('input[name="username"]')).toBeVisible();
+    await page.locator('input[name="username"]').fill(username);
+    await page.locator('input[name="password"]').fill(password);
+    await page.getByRole('button', {name: 'Log in'}).click();
+};
+
+const logoutFromAccount = async(page) => {
+    await page.goto('/my-account');
+    await page.locator('li').filter({ hasText: 'Log out' }).getByRole('link').click();
+}
+
 module.exports = {
     loginAdmin,
+    logoutAdmin,
     deactivateWPPlugin,
     activateWPPlugin,
     gotoWPPlugins,
@@ -95,4 +121,6 @@ module.exports = {
     selectOptionSetting,
     fillTextSettings,
     fillNumberSettings,
+    loginToAccount,
+    logoutFromAccount,
 };

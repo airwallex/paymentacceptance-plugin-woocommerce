@@ -49,7 +49,6 @@ function airwallex_init() {
 
 	$airwallex = \Airwallex\Main::getInstance();
 	$airwallex->init();
-	add_action('wp_enqueue_scripts', [$airwallex, 'addJsLegacy']);
 }
 
 add_action( 'plugins_loaded', 'airwallex_init' );

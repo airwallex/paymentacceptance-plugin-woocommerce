@@ -81,6 +81,10 @@ class Main extends WC_Payment_Gateway {
 		}
 	}
 
+	public function enqueueScripts() {
+		wp_enqueue_script('airwallex-redirect-js');
+	}
+
 	public function enqueueAdminScripts() {
 	}
 
@@ -603,6 +607,7 @@ class Main extends WC_Payment_Gateway {
 				LogService::CARD_ELEMENT_TYPE
 			);
 
+			$this->enqueueScripts();
 			include_once AIRWALLEX_PLUGIN_PATH . '/html/drop-in-payment-shortcode.php';
 		} catch ( Exception $e ) {
 			$this->logService->error( __METHOD__ . ' - Drop in payment page redirect failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE );

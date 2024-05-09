@@ -11,13 +11,3 @@
 		display: none;
 	}
 }
-
-#awxGooglePayButton {
-	margin-top: -8px;
-}
-
-/*--------Local Payment Methods---------*/
-.airwallex-lpm-icon {
-	margin-left: auto;
-	margin-right: 5px;
-}

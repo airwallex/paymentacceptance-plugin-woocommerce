@@ -42,6 +42,36 @@
     ],
     "filtersOnBuild": false,
     "confirmationDelayed": false,
+    "Subscription": false
+  },
+  "express": {
+    "id": "airwallex_express_checkout",
+    "defaultTitle": "__(\"Airwallex - Express Checkout\", \"airwallex-online-payments-gateway\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
     "Subscription": true
+  },
+  "klarna": {
+    "id": "airwallex_klarna",
+    "defaultTitle": "__(\"Airwallex - Klarna\", \"airwallex-online-payments-gateway\")",
+    "settingsDescription": "",
+    "defaultDescription": "",
+    "paymentFields": false,
+    "instructions": true,
+    "supports": [
+      "products",
+      "refunds"
+    ],
+    "filtersOnBuild": false,
+    "confirmationDelayed": false,
+    "Subscription": false
   }
 }

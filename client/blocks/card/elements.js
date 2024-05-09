@@ -30,7 +30,8 @@ const confirmPayment      = ({
 			client_secret: paymentDetails.airwallexClientSecret,
 			currency: paymentDetails.airwallexCurrency,
 			element: card,
-			next_triggered_by: 'merchant'
+			next_triggered_by: 'merchant',
+			billing: getBillingInformation(billingData),
 		}).then((response) => {
 			paymentResponse.confirmUrl = confirmUrl;
 			return paymentResponse;
@@ -51,11 +52,6 @@ const confirmPayment      = ({
 				},
 				billing: getBillingInformation(billingData),
 			},
-			payment_method_options: {
-				card: {
-					auto_capture: settings.capture_immediately,
-				},
-			}
 		}).then((response) => {
 			paymentResponse.confirmUrl = confirmUrl;
 			return paymentResponse;
@@ -102,7 +98,9 @@ export const InlineCard                             = ({
 				env: settings.environment,
 			});
 			
-			const card = createAirwallexElement('card');
+			const card = createAirwallexElement('card', {
+				autoCapture: settings.capture_immediately,
+			});
 			card.mount('airwallex-card');
 		});
 

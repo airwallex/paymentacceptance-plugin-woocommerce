@@ -1,8 +1,8 @@
-const { test } = require('@playwright/test');
-const { loginAdmin } = require('./Shared/wpUtils');
-const { STORAGE_STATE } = require('../../playwright.config');
+import { test } from '@playwright/test';
+import { STORAGE_STATE } from '../../playwright.config';
+import { loginAirwallex } from './Shared/airwallexUtils';
 
-test('do login', async ({ page }) => {
-    await loginAdmin(page);
+test('Login to airwallex', async ({ page }) => {
+    await loginAirwallex(page);
     await page.context().storageState({ path: STORAGE_STATE });
 });

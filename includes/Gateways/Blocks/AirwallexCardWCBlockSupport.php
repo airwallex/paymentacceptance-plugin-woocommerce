@@ -6,6 +6,7 @@ use Airwallex\Gateways\Card;
 use Airwallex\Services\Util;
 use Airwallex\Client\CardClient;
 use Airwallex\Gateways\CardSubscriptions;
+use Airwallex\Gateways\GatewayFactory;
 use Airwallex\Services\OrderService;
 use Automattic\WooCommerce\Blocks\Payments\PaymentResult;
 use Automattic\WooCommerce\Blocks\Payments\PaymentContext;
@@ -24,7 +25,7 @@ class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 	public function initialize() {
 		$this->settings = get_option( 'airwallex-online-payments-gatewayairwallex_card_settings', array() );
 		$this->enabled  = ! empty( $this->settings['enabled'] ) && in_array( $this->settings['enabled'], array( 'yes', 1, true, '1' ), true ) ? 'yes' : 'no';
-		$this->gateway  = $this->canDoSubscription() ? new CardSubscriptions() : new Card();
+		$this->gateway  = $this->canDoSubscription() ? GatewayFactory::create(CardSubscriptions::class) : GatewayFactory::create(Card::class);
 
 		add_action( 'woocommerce_rest_checkout_process_payment_with_context', array( $this, 'addPaymentIntent' ), 9999, 2 );
 		add_action( 'woocommerce_rest_checkout_process_payment_with_context', array( $this, 'redirectToSeparatePage' ), 9999, 2 );
@@ -36,12 +37,11 @@ class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 	 * @return void
 	 */
 	public function enqueue_style() {
-		wp_enqueue_style(
-			'airwallex-css',
-			AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout.css',
-			array(),
-			AIRWALLEX_VERSION
-		);
+		if (!is_checkout()) {
+			return;
+		}
+
+		wp_enqueue_style('airwallex-css');
 	}
 
 	/**
@@ -59,6 +59,7 @@ class AirwallexCardWCBlockSupport extends AirwallexWCBlockSupport {
 	 * Returns an associative array of data to be exposed for the payment method's client side.
 	 */
 	public function get_payment_method_data() {
+		$this->enqueue_style();
 		$data = array(
 			'enabled'             => $this->is_active(),
 			'name'                => $this->name,

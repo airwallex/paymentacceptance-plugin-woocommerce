@@ -116,18 +116,7 @@ trait AirwallexSettingsTrait {
 	}
 
 	public function enqueueAdminSettingsScripts() {
-		wp_enqueue_style(
-			'airwallex-admin-css',
-			AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout-admin.css',
-			[],
-			AIRWALLEX_VERSION
-		);
-		wp_enqueue_script(
-			'airwallex-admin-settings',
-			AIRWALLEX_PLUGIN_URL . '/assets/js/admin/airwallex-admin-settings.js',
-			['jquery'],
-			AIRWALLEX_VERSION,
-			true
-		);
+		wp_enqueue_style('airwallex-admin-css');
+		wp_enqueue_script('airwallex-admin-settings');
 	}
 }

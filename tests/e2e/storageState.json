@@ -1,85 +1,162 @@
 {
   "cookies": [
     {
-      "name": "wordpress_sec_812ec203ee00103a80d847d7c3d0ace6",
-      "value": "admin%7C1697694580%7CBqKCcJfVKxLQ36Eil1wFbCEpCSh267Mz5uBGMujpzp2%7Cd050943cbba24887af0095ec2e090f27bc68ae3333845933777fe323dad43f62",
-      "domain": "localhost",
-      "path": "/wp-content/plugins",
-      "expires": -1,
-      "httpOnly": true,
-      "secure": true,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "wordpress_sec_812ec203ee00103a80d847d7c3d0ace6",
-      "value": "admin%7C1697694580%7CBqKCcJfVKxLQ36Eil1wFbCEpCSh267Mz5uBGMujpzp2%7Cd050943cbba24887af0095ec2e090f27bc68ae3333845933777fe323dad43f62",
-      "domain": "localhost",
-      "path": "/wp-admin",
-      "expires": -1,
-      "httpOnly": true,
-      "secure": true,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "wordpress_test_cookie",
-      "value": "WP%20Cookie%20check",
-      "domain": "localhost",
+      "name": "_gid",
+      "value": "GA1.2.1806356283.1715067209",
+      "domain": ".airwallex.com",
       "path": "/",
-      "expires": -1,
-      "httpOnly": false,
-      "secure": true,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "wordpress_logged_in_812ec203ee00103a80d847d7c3d0ace6",
-      "value": "admin%7C1697694580%7CBqKCcJfVKxLQ36Eil1wFbCEpCSh267Mz5uBGMujpzp2%7C1798f77faf9ef4c2b019776e3db55f35702c948090035db3026407d8cb254189",
-      "domain": "localhost",
-      "path": "/",
-      "expires": -1,
-      "httpOnly": true,
-      "secure": true,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "mailpoet_subscriber",
-      "value": "%7B%22subscriber_id%22%3A1%7D",
-      "domain": "localhost",
-      "path": "/",
-      "expires": 1732081780.28509,
+      "expires": 1715156120,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
     },
     {
-      "name": "wp-settings-1",
-      "value": "libraryContent%3Dbrowse",
-      "domain": "localhost",
+      "name": "AWX_RISK_ID",
+      "value": "50da4c434c61a613c8ed55acbe75ede27d2a51f2",
+      "domain": ".demo.airwallex.com",
       "path": "/",
-      "expires": 1729057781.845507,
+      "expires": 1749629720.26834,
       "httpOnly": false,
-      "secure": true,
+      "secure": false,
       "sameSite": "Lax"
     },
     {
-      "name": "wp-settings-time-1",
-      "value": "1697521781",
-      "domain": "localhost",
+      "name": "AWX_RISK_ID",
+      "value": "50da4c434c61a613c8ed55acbe75ede27d2a51f2",
+      "domain": ".airwallex.com",
       "path": "/",
-      "expires": 1729057781.845541,
+      "expires": 1749629720.268406,
       "httpOnly": false,
-      "secure": true,
+      "secure": false,
       "sameSite": "Lax"
     },
     {
-      "name": "tk_ai",
-      "value": "woo%3A2VYNFV88uEPjI7zWLAdQ45QC",
-      "domain": "localhost",
+      "name": "AWX_RISK_SID",
+      "value": "db9f7fc3cfbcbd86baecb1ad6c83610269dcf235",
+      "domain": ".demo.airwallex.com",
       "path": "/",
-      "expires": -1,
+      "expires": 1715081608,
       "httpOnly": false,
-      "secure": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "AWX_RISK_SID",
+      "value": "db9f7fc3cfbcbd86baecb1ad6c83610269dcf235",
+      "domain": ".airwallex.com",
+      "path": "/",
+      "expires": 1715081608,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__AWX_TEMP_F_D__",
+      "value": "422a8c95fd78961ef2f13a85342ff039",
+      "domain": ".demo.airwallex.com",
+      "path": "/",
+      "expires": 1749627209.077569,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_splunk_rum_sid",
+      "value": "%7B%22id%22%3A%22b241dca41884bff741e816f52aa03bec%22%2C%22startTime%22%3A1715069702741%7D",
+      "domain": "demo.airwallex.com",
+      "path": "/",
+      "expires": 1715070619.993612,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Strict"
+    },
+    {
+      "name": "_gat",
+      "value": "1",
+      "domain": ".airwallex.com",
+      "path": "/",
+      "expires": 1715069763,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.2.50da4c434c61a613c8ed55acbe75ede27d2a51f2",
+      "domain": ".airwallex.com",
+      "path": "/",
+      "expires": 1749629720.287386,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_J1TGSTQ102",
+      "value": "GS1.2.1715069703.2.1.1715069722.41.0.0",
+      "domain": ".airwallex.com",
+      "path": "/",
+      "expires": 1749629722.09461,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_Q0QJPRPWK9",
+      "value": "GS1.1.1715069703.2.1.1715069722.41.0.0",
+      "domain": ".airwallex.com",
+      "path": "/",
+      "expires": 1749629722.097942,
+      "httpOnly": false,
+      "secure": false,
       "sameSite": "Lax"
     }
   ],
-  "origins": []
+  "origins": [
+    {
+      "origin": "https://demo.airwallex.com",
+      "localStorage": [
+        {
+          "name": "__AWX_TEMP_F_D__",
+          "value": "422a8c95fd78961ef2f13a85342ff039"
+        },
+        {
+          "name": "__awx__device_features__",
+          "value": "{\"deviceId\":\"422a8c95fd78961ef2f13a85342ff039\",\"userAgent\":\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.28 Safari/537.36\",\"time\":1715067209075,\"details\":{\"fonts\":{\"value\":[\"Arial Unicode MS\",\"Gill Sans\",\"Helvetica Neue\",\"Menlo\"],\"duration\":61},\"domBlockers\":{\"duration\":49},\"fontPreferences\":{\"value\":{\"default\":147.5625,\"apple\":147.5625,\"serif\":147.5625,\"sans\":144.0078125,\"mono\":132.625,\"min\":9.2265625,\"system\":146.09375},\"duration\":57},\"audio\":{\"value\":124.04344968475198,\"duration\":2},\"screenFrame\":{\"value\":[0,0,0,0],\"duration\":0},\"osCpu\":{\"duration\":0},\"languages\":{\"value\":[[\"en-US\"]],\"duration\":0},\"colorDepth\":{\"value\":30,\"duration\":0},\"deviceMemory\":{\"value\":8,\"duration\":0},\"screenResolution\":{\"value\":[720,1280],\"duration\":0},\"hardwareConcurrency\":{\"value\":16,\"duration\":0},\"timezone\":{\"value\":\"Asia/Shanghai\",\"duration\":0},\"sessionStorage\":{\"value\":true,\"duration\":0},\"localStorage\":{\"value\":true,\"duration\":0},\"indexedDB\":{\"value\":true,\"duration\":0},\"openDatabase\":{\"value\":true,\"duration\":0},\"cpuClass\":{\"duration\":0},\"platform\":{\"value\":\"MacIntel\",\"duration\":0},\"plugins\":{\"value\":[],\"duration\":1},\"canvas\":{\"value\":{\"winding\":true,\"geometry\":\"1fd188f9714ca90a5a10eb2fc306b5eb\",\"text\":\"32a115bd05e0f411c5ecd7e285fd36e2\"},\"duration\":26},\"touchSupport\":{\"value\":{\"maxTouchPoints\":0,\"touchEvent\":false,\"touchStart\":false},\"duration\":0},\"vendor\":{\"value\":\"Google Inc.\",\"duration\":0},\"vendorFlavors\":{\"value\":[],\"duration\":0},\"cookiesEnabled\":{\"value\":true,\"duration\":0},\"colorGamut\":{\"value\":\"srgb\",\"duration\":0},\"invertedColors\":{\"duration\":0},\"forcedColors\":{\"value\":false,\"duration\":0},\"monochrome\":{\"value\":0,\"duration\":0},\"contrast\":{\"value\":0,\"duration\":0},\"reducedMotion\":{\"value\":false,\"duration\":0},\"hdr\":{\"value\":false,\"duration\":0},\"math\":{\"value\":{\"acos\":1.4473588658278522,\"acosh\":709.889355822726,\"acoshPf\":355.291251501643,\"asin\":0.12343746096704435,\"asinh\":0.881373587019543,\"asinhPf\":0.8813735870195429,\"atanh\":0.5493061443340548,\"atanhPf\":0.5493061443340548,\"atan\":0.4636476090008061,\"sin\":0.8178819121159085,\"sinh\":1.1752011936438014,\"sinhPf\":2.534342107873324,\"cos\":-0.8390715290095377,\"cosh\":1.5430806348152437,\"coshPf\":1.5430806348152437,\"tan\":-1.4214488238747245,\"tanh\":0.7615941559557649,\"tanhPf\":0.7615941559557649,\"exp\":2.718281828459045,\"expm1\":1.718281828459045,\"expm1Pf\":1.718281828459045,\"log1p\":2.3978952727983707,\"log1pPf\":2.3978952727983707,\"powPI\":1.9275814160560204e-50},\"duration\":0},\"videoCard\":{\"value\":{\"vendor\":\"Google Inc. (Apple)\",\"renderer\":\"ANGLE (Apple, Apple M3 Max, OpenGL 4.1)\"},\"duration\":9},\"pdfViewerEnabled\":{\"value\":false,\"duration\":0},\"architecture\":{\"value\":127,\"duration\":0}}}"
+        },
+        {
+          "name": "AIR_ANALYTICS_DEVICE_ID",
+          "value": "f5767e69-2f56-4d17-a60b-ca8f0214dd10"
+        },
+        {
+          "name": "AWX_RISK_ID",
+          "value": "50da4c434c61a613c8ed55acbe75ede27d2a51f2"
+        },
+        {
+          "name": "COUNTRY_CODE",
+          "value": "\"CN\""
+        },
+        {
+          "name": "AWX_RISK_SID",
+          "value": "db9f7fc3cfbcbd86baecb1ad6c83610269dcf235"
+        },
+        {
+          "name": "ld:5e9d2d94486b2f0995706489:$diagnostics",
+          "value": "{\"dataSinceDate\":1715069703133,\"droppedEvents\":0,\"eventsInLastBatch\":0,\"streamInits\":[]}"
+        },
+        {
+          "name": "apc_local_id",
+          "value": "1b13631e-8a3d-4e7f-a52f-77c3c67b7df5"
+        }
+      ]
+    },
+    {
+      "origin": "https://www.recaptcha.net",
+      "localStorage": [
+        {
+          "name": "rc::a",
+          "value": "MXB2NTd0cjE3bnFjaGQ="
+        }
+      ]
+    }
+  ]
 }

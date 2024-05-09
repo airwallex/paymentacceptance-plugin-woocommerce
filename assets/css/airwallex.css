@@ -84,6 +84,7 @@
 	max-width: 1600px;
 	padding: 1vh 1vw;
 	margin: 0 auto;
+	flex-grow: 1;
 }
 
 .airwallex-checkout {
