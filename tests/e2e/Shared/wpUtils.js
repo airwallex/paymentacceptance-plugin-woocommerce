@@ -23,7 +23,7 @@ const loginAdmin = async (page) => {
     await page.locator('input:has-text("Log In")').click();
     await expect(async () => {
         await page.goto('./wp-admin');
-        await page.waitForURL('**/wp-admin/**', { timeout: 5000 });
+        await page.waitForURL(/\/wp-admin/, { timeout: 5000 });
     }).toPass();
 };
 

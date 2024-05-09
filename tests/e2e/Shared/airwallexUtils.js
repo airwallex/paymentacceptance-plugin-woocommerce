@@ -25,7 +25,7 @@ export const verifyAirwallexPaymentStatus = async (page, orderId, paymentStatus)
     await page.locator('[name="email"]').fill(AIRWALLEX_USER_EMAIL);
     await page.locator('[name="password"]').fill(AIRWALLEX_USER_PASSWORD);
     await page.getByRole('button', { name: 'Log in' }).click();
-    await page.waitForURL('**/app/dashboard**');
+    await page.waitForURL(/\/app\/dashboard/);
     await page.goto(`https://${ENV_HOST[process.env.ENVIRONMENT] || 'demo.airwallex.com'}/app/acquiring/list`);
     await expect(page.getByLabel('Clear Date')).toBeVisible();
     await page.getByLabel('Clear Date').click();
@@ -33,6 +33,7 @@ export const verifyAirwallexPaymentStatus = async (page, orderId, paymentStatus)
     await expect(page.locator('div').filter({ hasText: new RegExp(`^Payment status${paymentStatus}$`) })).toBeVisible();
     await page.locator('[data-test="page_controls"]').click();
     await page.locator('[data-test="content_wrapper"] [data-test="page_control_logout"]').click();
+    await page.waitForURL(/\/app\/login/);
 };
 
 export const fillInCardDetails = async (page, iframeName, type) => {

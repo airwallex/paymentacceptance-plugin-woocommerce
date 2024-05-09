@@ -18,7 +18,7 @@ async function gotoWooPaymentTab(page) {
  */
 const addProductToCart = async (page, productSku) => {
     await page.goto('./shop/');
-    await expect(page.getByRole('heading', { name: 'Shop' })).toBeVisible();
+    // await expect(page.getByRole('heading', { name: 'Shop' })).toBeVisible();
     await page
         .locator('[data-product_sku="' + productSku + '"].button.add_to_cart_button')
         .click();

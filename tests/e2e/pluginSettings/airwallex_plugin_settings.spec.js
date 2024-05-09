@@ -100,7 +100,7 @@ test.describe('Airwallex Settings Tab', () => {
     });
 
     test('Airwallex Klarna Tab', async () => {
-        await page.getByRole('link', { name: 'Klarna' }).click();
+        await page.getByRole('link', { name: 'Klarna', exact: true }).click();
         await expect(page.getByText('Enable Airwallex Klarna')).toBeVisible();
         await expect(page.getByLabel('Title', { exact: true })).toBeVisible();
         await expect(page.getByLabel('Description', { exact: true })).toBeVisible();

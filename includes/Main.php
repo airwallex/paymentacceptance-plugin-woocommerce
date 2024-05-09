@@ -442,7 +442,7 @@ class Main {
 			'airwallex-common-js',
 			AIRWALLEX_PLUGIN_URL . '/assets/js/airwallex-local.js',
 			['jquery'],
-			time(),
+			AIRWALLEX_VERSION,
 			true
 		);
 		wp_register_script(
@@ -456,14 +456,14 @@ class Main {
 			'airwallex-card-js',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-card.min.js',
 			['airwallex-common-js', 'airwallex-lib-js', 'jquery-blockui'],
-			time(),
+			AIRWALLEX_VERSION,
 			true
 		);
 		wp_register_script(
 			'airwallex-redirect-js',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-redirect.min.js',
 			['airwallex-common-js', 'airwallex-lib-js'],
-			time(),
+			AIRWALLEX_VERSION,
 			true
 		);
 		wp_register_script(
