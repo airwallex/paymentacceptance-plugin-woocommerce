@@ -40,6 +40,10 @@ const emptyCart = async (page) => {
  * @param                                   country
  */
 const fillCustomerInCheckout = async (page, country = 'DE') => {
+    const hasShippingAddress = await page.locator('#ship-to-different-address-checkbox').isVisible();
+    if (hasShippingAddress) {
+        await page.locator('#ship-to-different-address-checkbox').uncheck();
+    }
     await page.selectOption('select#billing_country', country);
     if (country === 'DE') {
         await page.locator('input[name="billing_city"]').fill('Berlin');

@@ -122,6 +122,9 @@ export default defineConfig({
 				'shortcode_card_redirect_legacy.spec.js',
 				'shortcode_dropin_legacy.spec.js',
 				'shortcode_wechat_legacy.spec.js',
+				'orderPay_card_redirect_legacy.spec.js',
+				'orderPay_dropin_legacy.spec.js',
+				'orderPay_wechat_legacy.spec.js',
 			],
 			use: {
 				...devices['Desktop Chrome'],
@@ -144,6 +147,9 @@ export default defineConfig({
 				'shortcode_card_redirect_wp_page.spec.js',
 				'shortcode_dropin_wp_page.spec.js',
 				'shortcode_wechat_wp_page.spec.js',
+				'orderPay_card_redirect_wp_page.spec.js',
+				'orderPay_dropin_wp_page.spec.js',
+				'orderPay_wechat_wp_page.spec.js',
 			],
 			use: {
 				...devices['Desktop Chrome'],
@@ -156,6 +162,7 @@ export default defineConfig({
 			testMatch: [
 				'shortcode_card_embedded.spec.js',
 				'shortcode_klarna.spec.js',
+				'orderPay_card_embedded.spec.js',
 			],
 			use: {
 				...devices['Desktop Chrome'],
