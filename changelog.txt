@@ -1,5 +1,10 @@
 *** WooCommerce Airwallex Online Payments Gateway Changelog ***
 
+2024-05-10 - version 1.10.0
+
+* Fix - Compatibility issue with frontend optimization plugins
+* Add - Make WordPress shortcode payment template default to new client
+
 2024-04-23 - version 1.9.3
 
 * Add - Update the link for Klarna's list of compatible countries
