@@ -194,4 +194,13 @@ class Util {
 
 		return isset($envHosts[$env]) ? $envHosts[$env] : $envHosts['prod'];
 	}
+
+	/**
+	 * Check whether the client is new
+	 * 
+	 * @return bool
+	 */
+	public static function isNewClient() {
+		return empty(Util::getApiKey()) || empty(Util::getClientSecret());
+	}
 }

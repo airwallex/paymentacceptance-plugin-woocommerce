@@ -5,6 +5,7 @@ namespace Airwallex\Gateways\Settings;
 use Airwallex\Controllers\AirwallexController;
 use Airwallex\Gateways\Settings\AbstractAirwallexSettings;
 use Airwallex\Main;
+use Airwallex\Services\Util;
 use WC_AJAX;
 
 if (!defined('ABSPATH')) {
@@ -137,6 +138,7 @@ class APISettings extends AbstractAirwallexSettings {
 					'wordpress_page' => __( 'WordPress page shortcodes', 'airwallex-online-payments-gateway' ),
 				),
 				'value'   => get_option( 'airwallex_payment_page_template' ),
+				'default' => Util::isNewClient() ? 'wordpress_page' : 'default',
 			),
 		);
 	}
@@ -146,7 +148,7 @@ class APISettings extends AbstractAirwallexSettings {
 
 		// make it compatible with the old approach
 		foreach ($this->settings as $key => $value) {
-			$this->settings[$key] = get_option('airwallex_' . $key);
+			$this->settings[$key] = get_option('airwallex_' . $key, $value);
 		}
 	}
 
