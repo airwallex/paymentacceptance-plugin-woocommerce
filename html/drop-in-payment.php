@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-wp_enqueue_style( 'airwallex-standalone-css', AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex.css', array(), AIRWALLEX_VERSION );
+wp_enqueue_style( 'airwallex-redirect-element-css' );
 
 //prevent errors when using Avada theme and Fusion Builder
 //@codingStandardsIgnoreStart
@@ -58,22 +58,14 @@ get_header( 'shop' );
 
 <?php
 
-wp_enqueue_script( 'airwallex-lib-js', 'https://checkout.airwallex.com/assets/elements.bundle.min.js', array(), null, true );
-wp_enqueue_script( 'airwallex-local-js', AIRWALLEX_PLUGIN_URL . '/assets/js/airwallex-local.js', array(), AIRWALLEX_VERSION, true );
-if ( defined( 'AIRWALLEX_INLINE_JS' ) ) {
-	wp_add_inline_script( 'airwallex-local-js', AIRWALLEX_INLINE_JS );
-}
-$airwallex_environment     = $isSandbox ? 'demo' : 'prod';
-$airwallex_locale          = \Airwallex\Services\Util::getLocale();
-$airwallex_methods         = $gateway->get_option( 'methods' );
-$airwallexMain             = \Airwallex\Main::getInstance();
-$airwallex_merchantCountry = strtoupper( substr( $paymentIntentId, 4, 2 ) );
+$airwallexMethods         = $gateway->get_option( 'methods' );
+$airwallexMerchantCountry = strtoupper( substr( $paymentIntentId, 4, 2 ) );
 if ( $order->has_billing_address() ) {
 	$airwallexBillingAddress     = array(
 		'city'         => $order->get_billing_city(),
 		'country_code' => $order->get_billing_country(),
 		'postcode'     => $order->get_billing_postcode(),
-		'state'        => $order->get_shipping_state(),
+		'state'        => $order->get_billing_state() ? $order->get_billing_state() : $order->get_shipping_state(),
 		'street'       => $order->get_billing_address_1(),
 	);
 	$airwallexBilling['billing'] = array(
@@ -87,76 +79,53 @@ if ( $order->has_billing_address() ) {
 	}
 }
 
-$airwallex_elementConfiguration = wp_json_encode(
-	array(
-		'intent_id'               => $paymentIntentId,
-		'client_secret'           => $paymentIntentClientSecret,
-		'currency'                => $order->get_currency(),
-		'country_code'            => $order->get_billing_country(),
-		'autoCapture'             => true,
-		'applePayRequestOptions'  => array(
-			'countryCode' => $airwallex_merchantCountry,
+$airwallexElementConfiguration = array(
+	'intent_id'               => $paymentIntentId,
+	'client_secret'           => $paymentIntentClientSecret,
+	'currency'                => $order->get_currency(),
+	'country_code'            => $order->get_billing_country(),
+	'autoCapture'             => true,
+	'applePayRequestOptions'  => array(
+		'countryCode' => $airwallexMerchantCountry,
+	),
+	'googlePayRequestOptions' => array(
+		'countryCode' => $airwallexMerchantCountry,
+	),
+	'style'                   => array(
+		'variant'     => 'bootstrap',
+		'popupWidth'  => 400,
+		'popupHeight' => 549,
+		'base'        => array(
+			'color' => 'black',
 		),
-		'googlePayRequestOptions' => array(
-			'countryCode' => $airwallex_merchantCountry,
+	),
+	'shopper_name'            => $order->get_formatted_billing_full_name(),
+	'shopper_phone'           => $order->get_billing_phone(),
+	'shopper_email'           => $order->get_billing_email(),
+)
++ ( $airwallexCustomerId ? array( 'customer_id' => $airwallexCustomerId ) : array() )
++ ( $isSubscription ? array(
+	'mode'             => 'recurring',
+	'recurringOptions' => array(
+		'card' => array(
+			'next_triggered_by'       => 'merchant',
+			'merchant_trigger_reason' => 'scheduled',
+			'currency'                => $order->get_currency(),
 		),
-		'style'                   => array(
-			'variant'     => 'bootstrap',
-			'popupWidth'  => 400,
-			'popupHeight' => 549,
-			'base'        => array(
-				'color' => 'black',
-			),
-		),
-		'shopper_name'            => $order->get_formatted_billing_full_name(),
-		'shopper_phone'           => $order->get_billing_phone(),
-		'shopper_email'           => $order->get_billing_email(),
-	)
-	+ ( $airwallexCustomerId ? array( 'customer_id' => $airwallexCustomerId ) : array() )
-	+ ( $isSubscription ? array(
-		'mode'             => 'recurring',
-		'recurringOptions' => array(
-			'card' => array(
-				'next_triggered_by'       => 'merchant',
-				'merchant_trigger_reason' => 'scheduled',
-				'currency'                => $order->get_currency(),
-			),
-		),
-	) : array() )
-	+ ( ! empty( $airwallex_methods ) && is_array( $airwallex_methods ) ? array(
-		'methods' => $airwallex_methods,
-	) : array() )
-	+ ( isset( $airwallexBilling ) ? $airwallexBilling : array() )
-);
+	),
+) : array() )
++ ( ! empty( $airwallexMethods ) && is_array( $airwallexMethods ) ? array(
+	'methods' => $airwallexMethods,
+) : array() )
++ ( isset( $airwallexBilling ) ? $airwallexBilling : array() );
 
-$airwallex_inlineJs = <<<AIRWALLEX
-        [].forEach.call(document.querySelectorAll('.elementor-menu-cart__container'), function (el) {
-          el.style.visibility = 'hidden';
-        });
-        Airwallex.init({
-            env: '$airwallex_environment',
-            locale: '$airwallex_locale',
-            origin: window.location.origin, // Setup your event target to receive the browser events message
-        });
-        const dropIn = Airwallex.createElement('dropIn', $airwallex_elementConfiguration);
-        dropIn.mount('airwallex-drop-in');
-        window.addEventListener('onSuccess', (event) => {
-            document.getElementById('airwallex-drop-in').style.display = 'none';
-            document.getElementById('airwallex-error-message').style.display = 'none';
-            var successCheck = document.getElementById('success-check');
-            if(successCheck){
-                successCheck.style.display = 'inline-block';
-            }
-            var successMessage = document.getElementById('success-message');
-            if(successMessage){
-                successMessage.style.display = 'block';
-            }
-            location.href = AirwallexParameters.confirmationUrl + 'order_id=$orderId&intent_id=$paymentIntentId';
-        })
-        window.addEventListener('onError', (event) => {
-            document.getElementById('airwallex-error-message').style.display = 'block';
-            console.warn(event.detail);
-        });
-AIRWALLEX;
-wp_add_inline_script( 'airwallex-local-js', $airwallex_inlineJs );
+$airwallexRedirectElScriptData = [
+    'elementType' => 'dropIn',
+    'elementOptions' => $airwallexElementConfiguration,
+    'containerId' => 'airwallex-drop-in',
+    'orderId' => $order->get_id(),
+    'paymentIntentId' => $paymentIntentId,
+];
+wp_enqueue_script('airwallex-redirect-js');
+wp_add_inline_script('airwallex-redirect-js', 'var awxRedirectElData=' . wp_json_encode($airwallexRedirectElScriptData), 'before');
 get_footer( 'shop' );

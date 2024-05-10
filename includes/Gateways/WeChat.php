@@ -55,6 +55,10 @@ class WeChat extends WC_Payment_Gateway {
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 	}
 
+	public function enqueueScripts() {
+		wp_enqueue_script('airwallex-redirect-js');
+	}
+
 	public function enqueueAdminScripts() {
 	}
 
@@ -204,6 +208,7 @@ class WeChat extends WC_Payment_Gateway {
 				LogService::WECHAT_ELEMENT_TYPE
 			);
 
+			$this->enqueueScripts();
 			include AIRWALLEX_PLUGIN_PATH . '/html/wechat-shortcode.php';
 		} catch ( Exception $e ) {
 			$this->logService->error(__METHOD__ . ' - Wechat payment page redirect failed', $e->getMessage(), LogService::WECHAT_ELEMENT_TYPE );

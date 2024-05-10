@@ -207,7 +207,7 @@ abstract class AbstractClient {
 			'country_code' => $order->get_billing_country(),
 			'postcode'     => $order->get_billing_postcode(),
 			'state'        => $order->get_billing_state(),
-			'street'       => $order->get_shipping_address_1(),
+			'street'       => $order->get_billing_address_1(),
 		);
 
 		$customer = array(
@@ -218,7 +218,7 @@ abstract class AbstractClient {
 			'phone_number'         => $order->get_billing_phone(),
 		);
 
-		if ( $order->get_billing_city() && $order->get_billing_country() && $order->get_shipping_address_1() ) {
+		if ( $order->get_billing_city() && $order->get_billing_country() && $order->get_billing_address_1() ) {
 			$data['customer']['address'] = $customerAddress;
 		}
 

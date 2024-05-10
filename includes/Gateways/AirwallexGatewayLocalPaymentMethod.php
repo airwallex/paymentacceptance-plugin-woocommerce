@@ -20,13 +20,17 @@ abstract class AirwallexGatewayLocalPaymentMethod extends AbstractAirwallexGatew
         add_action('wc_ajax_airwallex_currency_switcher_create_quote', [$this->quoteController, 'createQuoteForCurrencySwitching']);
         add_action('wc_ajax_airwallex_get_store_currency', [$this->orderController, 'getStoreCurrency']);
         add_action('woocommerce_review_order_after_order_total', [$this, 'renderCurrencySwitchingHtml']);
-        add_action('wp_enqueue_scripts', [$this, 'enqueueScripts']);
         add_action('wp_footer', [$this, 'renderQuoteExpireHtml']);
     }
 
     public function enqueueScripts() {
-		wp_enqueue_script('airwallex-js-lpm', AIRWALLEX_PLUGIN_URL . '/build/airwallex-lpm.min.js', ['jquery'], AIRWALLEX_VERSION, false );
-		wp_add_inline_script('airwallex-js-lpm', 'var awxEmbeddedLPMData = ' . json_encode($this->getLPMScriptData()));
+        if (!is_checkout()) {
+            return;
+        }
+
+        wp_enqueue_style('airwallex-css' );
+		wp_enqueue_script('airwallex-lpm-js');
+		wp_add_inline_script('airwallex-lpm-js', 'var awxEmbeddedLPMData = ' . json_encode($this->getLPMScriptData()), 'before');
 	}
 
     public function enqueueAdminScripts() {
@@ -90,6 +94,8 @@ abstract class AirwallexGatewayLocalPaymentMethod extends AbstractAirwallexGatew
     }
 
     public function payment_fields() {
+        $this->enqueueScripts();
+
         echo '<p style="display: flex; align-items: center;"><span>' . wp_kses_post( $this->description ) . '</span><span class="wc-airwallex-loader"></span></p>';
 
         $this->renderCountryIneligibleHtml();

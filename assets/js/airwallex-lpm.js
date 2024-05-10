@@ -1,7 +1,7 @@
 import {
     getBrowserInfo,
     airTrackerCommonData,
-    injectDeviceFingerprintJS,
+    initAirwallex,
 } from "./utils";
 import {
     getStoreCurrency,
@@ -223,8 +223,9 @@ jQuery(function ($) {
         });
     }
 
-    if (awxEmbeddedLPMData) {
-        injectDeviceFingerprintJS(awxEmbeddedLPMData.env, airTrackerCommonData.sessionId);
+    if (awxEmbeddedLPMData && awxCommonData) {
+        const { env, locale } = awxCommonData;
+        initAirwallex(env, locale, () => {});
 
         getStoreCurrency().done(function(response) {
             originalCurrency = response.currency;

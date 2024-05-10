@@ -17,8 +17,7 @@ loadAirwallex({
     initAirwallex({
         env: settings.env,
     });
+    registerExpressPaymentMethod(airwallexApplePayOption);
+    registerExpressPaymentMethod(airwallexGooglePayOption);
 });
-
-registerExpressPaymentMethod(airwallexApplePayOption);
-registerExpressPaymentMethod(airwallexGooglePayOption);
 

@@ -49,12 +49,11 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 	 * @return void
 	 */
 	public function enqueue_style() {
-		wp_enqueue_style(
-			'airwallex-css',
-			AIRWALLEX_PLUGIN_URL . '/assets/css/airwallex-checkout.css',
-			array(),
-			AIRWALLEX_VERSION
-		);
+		if (!is_checkout() && !is_cart()) {
+            return;
+        }
+
+		wp_enqueue_style('airwallex-css');
 	}
 
 	/**
@@ -66,12 +65,6 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 		$this->enqueue_style();
 
 		$dependencies = (function_exists('is_login') && is_login()) || is_admin() ? ['jquery'] : ['jquery', 'jquery-blockui'];
-		// only load the external script if the payment method is enabled
-		if ($this->gateway->isMethodEnabled('apple_pay')) {
-			$this->gateway->loadAppleScript();
-			$dependencies[] = 'airwallex-apple-pay-block';
-		}
-
 		wp_register_script(
 			'airwallex-wc-ec-blocks-integration',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-wc-ec-blocks.min.js',
@@ -91,17 +84,10 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 	public function get_payment_method_script_handles_for_admin() {
 		$this->enqueue_style();
 
-		$dependencies = ['jquery'];
-		// only load the external script if the payment method is enabled
-		if ($this->gateway->isMethodEnabled('apple_pay')) {
-			$this->gateway->loadAppleScript();
-			$dependencies[] = 'airwallex-apple-pay-block';
-		}
-
 		wp_register_script(
 			'airwallex-wc-ec-blocks-integration',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-wc-ec-blocks.min.js',
-			$dependencies,
+			['jquery'],
 			AIRWALLEX_VERSION,
 			true
 		);
@@ -113,7 +99,15 @@ class AirwallexExpressCheckoutWCBlockSupport extends AirwallexWCBlockSupport {
 	 * Returns an associative array of data to be exposed for the payment method's client side.
 	 */
 	public function get_payment_method_data() {
-		return $this->gateway->getExpressCheckoutScriptData(true);
+		$shouldDisplay = $this->shouldDisplay();
+		$data = $this->gateway->getExpressCheckoutScriptData(true);
+		if (isset($data['googlePayEnabled'])) {
+			$data['googlePayEnabled'] = $data['googlePayEnabled'] && $shouldDisplay;
+		}
+		if (isset($data['applePayEnabled'])) {
+			$data['applePayEnabled'] = $data['applePayEnabled'] && $shouldDisplay;
+		}
+		return $data;
 	}
 
 	public function shouldDisplay() {

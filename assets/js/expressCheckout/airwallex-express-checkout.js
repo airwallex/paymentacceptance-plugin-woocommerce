@@ -396,5 +396,9 @@ jQuery(function ($) {
 		$( document.body ).on( 'updated_checkout', function() {
 			airwallexExpressCheckout.init();
 		} );
+
+		$(document.body).on('change', '[name="quantity"]', function () {
+			airwallexExpressCheckout.init();
+		});
 	}
 });

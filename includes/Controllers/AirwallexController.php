@@ -46,18 +46,22 @@ class AirwallexController {
 		$confirmationUrl = $gateway->get_payment_confirmation_url();
 		$isSandbox       = $gateway->is_sandbox();
 
-		return [$orderId, $paymentIntentId, $clientSecret, $customerId, $confirmationUrl, $isSandbox];
+		return [$order, $paymentIntentId, $clientSecret, $customerId, $confirmationUrl, $isSandbox];
 	}
 
 	public function cardPayment() {
 		try {
 			$gateway = new Card();
+			$gateway->enqueueScriptForRedirectCard();
 			$apiClient = CardClient::getInstance();
-			list( $orderId, $paymentIntentId, $paymentIntentClientSecret, $airwallexCustomerId, $confirmationUrl, $isSandbox ) = $this->getPaymentDetailForRedirect($apiClient, $gateway);
+			list( $order, $paymentIntentId, $paymentIntentClientSecret, $airwallexCustomerId, $confirmationUrl, $isSandbox ) = $this->getPaymentDetailForRedirect($apiClient, $gateway);
+			$orderService = new OrderService();
+			$isSubscription = $orderService->containsSubscription( $order->get_id() );
+			$autoCapture = $gateway->is_capture_immediately();
 			$this->logService->debug(
 				__METHOD__ . ' - Card payment redirect',
 				array(
-					'orderId'       => $orderId,
+					'orderId'       => $order->get_id(),
 					'paymentIntent' => $paymentIntentId,
 				),
 				LogService::CARD_ELEMENT_TYPE
@@ -76,16 +80,16 @@ class AirwallexController {
 	public function dropInPayment() {
 		try {
 			$gateway = new Main();
+			$gateway->enqueueScripts();
 			$apiClient = MainClient::getInstance();
-			list( $orderId, $paymentIntentId, $paymentIntentClientSecret, $airwallexCustomerId, $confirmationUrl, $isSandbox ) = $this->getPaymentDetailForRedirect($apiClient, $gateway);
+			list( $order, $paymentIntentId, $paymentIntentClientSecret, $airwallexCustomerId, $confirmationUrl, $isSandbox ) = $this->getPaymentDetailForRedirect($apiClient, $gateway);
 			
 			$orderService = new OrderService();
-			$order = wc_get_order( $orderId );
-			$isSubscription = $orderService->containsSubscription( $orderId );
+			$isSubscription = $orderService->containsSubscription( $order->get_id() );
 			$this->logService->debug(
 				__METHOD__ . ' - Drop in payment redirect',
 				array(
-					'orderId'       => $orderId,
+					'orderId'       => $order->get_id(),
 					'paymentIntent' => $paymentIntentId,
 				),
 				LogService::DROP_IN_ELEMENT_TYPE
@@ -104,12 +108,13 @@ class AirwallexController {
 	public function weChatPayment() {
 		try {
 			$gateway = new WeChat();
+			$gateway->enqueueScripts();
 			$apiClient = WeChatClient::getInstance();
-			list( $orderId, $paymentIntentId, $paymentIntentClientSecret, $airwallexCustomerId, $confirmationUrl, $isSandbox ) = $this->getPaymentDetailForRedirect($apiClient, $gateway);
+			list( $order, $paymentIntentId, $paymentIntentClientSecret, $airwallexCustomerId, $confirmationUrl, $isSandbox ) = $this->getPaymentDetailForRedirect($apiClient, $gateway);
 			$this->logService->debug(
 				__METHOD__ . 'WeChat payment redirect',
 				array(
-					'orderId'       => $orderId,
+					'orderId'       => $order->get_id(),
 					'paymentIntent' => $paymentIntentId,
 				),
 				LogService::WECHAT_ELEMENT_TYPE

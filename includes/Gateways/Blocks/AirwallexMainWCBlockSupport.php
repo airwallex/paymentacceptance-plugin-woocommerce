@@ -2,6 +2,7 @@
 
 namespace Airwallex\Gateways\Blocks;
 
+use Airwallex\Gateways\GatewayFactory;
 use Airwallex\Gateways\Main;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,7 +18,7 @@ class AirwallexMainWCBlockSupport extends AirwallexWCBlockSupport {
 	public function initialize() {
 		$this->settings = get_option( 'airwallex-online-payments-gatewayairwallex_main_settings', array() );
 		$this->enabled  = ! empty( $this->settings['enabled'] ) && in_array( $this->settings['enabled'], array( 'yes', 1, true, '1' ), true ) ? 'yes' : 'no';
-		$this->gateway  = new Main();
+		$this->gateway  = GatewayFactory::create(Main::class);
 	}
 
 	/**

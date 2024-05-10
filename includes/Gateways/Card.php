@@ -64,6 +64,25 @@ class Card extends WC_Payment_Gateway {
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 	}
 
+	public function enqueueScriptsForEmbeddedCard() {
+		if (!is_checkout()) {
+			return;
+		}
+
+		wp_enqueue_script( 'airwallex-card-js' );
+		wp_enqueue_style( 'airwallex-css' );
+		$cardScriptData = [
+ 			'autoCapture' => $this->is_capture_immediately() ? 'true' : 'false',
+			'errorMessage' => __( 'An error has occurred. Please check your payment details (%s)', 'airwallex-online-payments-gateway' ),
+			'incompleteMessage' => __( 'Your credit card details are incomplete', 'airwallex-online-payments-gateway' ),
+		];
+		wp_add_inline_script( 'airwallex-card-js', 'var awxEmbeddedCardData=' . json_encode($cardScriptData), 'before' );
+	}
+
+	public function enqueueScriptForRedirectCard() {
+		wp_enqueue_script( 'airwallex-redirect-js' );
+	}
+
 	public function enqueueAdminScripts() {
 	}
 
@@ -105,6 +124,8 @@ class Card extends WC_Payment_Gateway {
 	}
 
 	public function payment_fields() {
+		$this->enqueueScriptsForEmbeddedCard();
+		
 		if ( $this->get_option( 'checkout_form_type' ) === 'inline' ) {
 			echo '<p>' . wp_kses_post( $this->description ) . '</p>';
 			echo '<div id="airwallex-card"></div>';
@@ -345,8 +366,12 @@ class Card extends WC_Payment_Gateway {
 			$apiClient                 = CardClient::getInstance();
 			$paymentIntent             = $apiClient->getPaymentIntent( $paymentIntentId );
 			$paymentIntentClientSecret = $paymentIntent->getClientSecret();
+			$airwallexCustomerId       = $paymentIntent->getCustomerId();
 			$confirmationUrl           = $this->get_payment_confirmation_url();
 			$isSandbox                 = $this->is_sandbox();
+			$autoCapture = $this->is_capture_immediately();
+			$orderService = new OrderService();
+			$isSubscription = $orderService->containsSubscription( $orderId );
 
 			$this->logService->debug(
 				__METHOD__ . ' - Redirect to the card payment page',
@@ -357,6 +382,7 @@ class Card extends WC_Payment_Gateway {
 				LogService::CARD_ELEMENT_TYPE
 			);
 
+			$this->enqueueScriptForRedirectCard();
 			include AIRWALLEX_PLUGIN_PATH . '/html/card-payment-shortcode.php';
 		} catch ( Exception $e ) {
 			$this->logService->error( __METHOD__ . ' - Card payment action failed', $e->getMessage(), LogService::CARD_ELEMENT_TYPE );

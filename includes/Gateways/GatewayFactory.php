@@ -5,7 +5,11 @@ namespace Airwallex\Gateways;
 defined( 'ABSPATH' ) || exit();
 
 class GatewayFactory {
-    private static $klarnaGateway;    
+    private static $klarnaGateway;
+    private static $cardGateway;
+    private static $cardSubscriptionsGateway;
+    private static $mainGateway;
+    private static $weChatGateway;
 
     /**
      * @param string $gateway

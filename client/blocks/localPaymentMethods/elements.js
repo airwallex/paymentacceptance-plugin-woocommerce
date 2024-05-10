@@ -19,7 +19,7 @@ export const AirwallexLpmLabel = ({
 
 	return <>
         <PaymentMethodLabel text={title} />
-        <img src={url} alt={alt} className='airwallex-lpm-icon' />
+        <img src={url} alt={alt} style={{ marginLeft: 'auto', marginRight: '5px' }} />
     </>;
 }
 

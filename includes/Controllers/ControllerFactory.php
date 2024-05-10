@@ -7,6 +7,7 @@ defined( 'ABSPATH' ) || exit();
 class ControllerFactory {
     private static $quoteController;
     private static $orderController;
+    private static $gatewaySettingsController;
 
     /**
      * @var CacheService

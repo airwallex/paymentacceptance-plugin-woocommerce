@@ -50,17 +50,12 @@ abstract class AbstractAirwallexGateway extends WC_Payment_Gateway {
 		$this->title       = $this->get_option( 'title' );
 		$this->description = $this->get_option( 'description' );
 		$this->registerHooks();
-		$this->enqueueScripts();
 	}
 
 	public function registerHooks() {
 		add_filter( 'wc_airwallex_settings_nav_tabs', array( $this, 'adminNavTab' ), 14 );
 		add_action( 'woocommerce_airwallex_settings_checkout_' . $this->id, array( $this, 'enqueueAdminScripts' ) );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ $this, 'process_admin_options' ] );
-	}
-
-	public function enqueueScripts() {
-		
 	}
 
 	public function needs_setup() {

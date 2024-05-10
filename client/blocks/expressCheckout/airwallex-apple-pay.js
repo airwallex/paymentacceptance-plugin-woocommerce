@@ -236,24 +236,32 @@ const AWXApplePayButton = (props) => {
 
 const AWXApplePayButtonPreview = (props) => {
 	const {
+		checkout,
 		locale,
 		button,
 	} = settings;
 
-	return (
-		<div
-			lang      ={locale}
-			className ='awx-block-ec-apple-pay-button'
-			style     ={{
-				'width': '100%',
-				'height': button.height,
-				'-apple-pay-button-style': button.theme || 'black',
-				'-apple-pay-button-type': button.buttonType || '',
-				'cursor': 'pointer',
-				}}
-		>
-		</div>
-	);
+	useEffect(() => {
+		if ('Airwallex' in window) {
+			const element = airwallexCreateElement('applePayButton', {
+				mode: button.mode,
+				buttonColor: button.theme,
+				buttonType: button.buttonType,
+				origin: window.location.origin,
+				totalPriceLabel: checkout.totalPriceLabel,
+				countryCode: checkout.countryCode,
+				requiredBillingContactFields: applePayRequiredBillingContactFields,
+				requiredShippingContactFields: applePayRequiredShippingContactFields,
+				amount: {
+					value: 0,
+					currency: checkout.currencyCode,
+				},
+			});
+			element.mount('awxApplePayButtonPreview');
+		}
+	}, []);
+
+	return (<div id='awxApplePayButtonPreview' />);
 };
 
 const canMakePayment = ({

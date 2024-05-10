@@ -19,18 +19,19 @@ const confirmPayment      = ({
 	errorContext,
 }) => {
 	const confirmUrl      = settings.confirm_url + (settings.confirm_url.indexOf('?') !== -1 ? '&' : '?')
-		+ 'order_id=' + paymentDetails.wcOrderId + '&intent_id=' + paymentDetails.airwallexPaymentIntent;
+		+ 'order_id=' + paymentDetails.orderId + '&intent_id=' + paymentDetails.paymentIntent;
 	const card            = getAirwallexElement('card');
 	const paymentResponse = { type: successType };
 
-	if (paymentDetails.airwallexCreateConsent) {
+	if (paymentDetails.createConsent) {
 		return createAirwallexPaymentConsent({
-			intent_id: paymentDetails.airwallexPaymentIntent,
-			customer_id: paymentDetails.airwallexCustomerId,
-			client_secret: paymentDetails.airwallexClientSecret,
-			currency: paymentDetails.airwallexCurrency,
+			intent_id: paymentDetails.paymentIntent,
+			customer_id: paymentDetails.customerId,
+			client_secret: paymentDetails.clientSecret,
+			currency: paymentDetails.currency,
 			element: card,
-			next_triggered_by: 'merchant'
+			next_triggered_by: 'merchant',
+			billing: getBillingInformation(billingData),
 		}).then((response) => {
 			paymentResponse.confirmUrl = confirmUrl;
 			return paymentResponse;
@@ -43,19 +44,14 @@ const confirmPayment      = ({
 	} else {
 		return confirmAirwallexPaymentIntent({
 			element: card,
-			id: paymentDetails.airwallexPaymentIntent,
-			client_secret: paymentDetails.airwallexClientSecret,
+			id: paymentDetails.paymentIntent,
+			client_secret: paymentDetails.clientSecret,
 			payment_method: {
 				card: {
 					name: getCardHolderName(billingData),
 				},
 				billing: getBillingInformation(billingData),
 			},
-			payment_method_options: {
-				card: {
-					auto_capture: settings.capture_immediately,
-				},
-			}
 		}).then((response) => {
 			paymentResponse.confirmUrl = confirmUrl;
 			return paymentResponse;
@@ -102,7 +98,9 @@ export const InlineCard                             = ({
 				env: settings.environment,
 			});
 			
-			const card = createAirwallexElement('card');
+			const card = createAirwallexElement('card', {
+				autoCapture: settings.capture_immediately,
+			});
 			card.mount('airwallex-card');
 		});
 

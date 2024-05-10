@@ -231,7 +231,10 @@ const AWXGooglePayButton = (props) => {
 	}, [billing.cartTotal]);
 
 	return (
-		<div id="awxGooglePayButton" />
+		<div
+			id="awxGooglePayButton"
+			style={{ marginTop: '-8px' }}
+		/>
 	);
 };
 
@@ -246,7 +249,7 @@ const AWXGooglePayButtonPreview = () => {
 	const paymentDataRequest = {
 		apiVersion: 2,
 		apiVersionMinor: 0,
-		allowedPaymentMethods: {
+		allowedPaymentMethods: [{
 			type: 'CARD',
 			parameters: {
 				allowedAuthMethods: ["PAN_ONLY", "CRYPTOGRAM_3DS"],
@@ -259,7 +262,7 @@ const AWXGooglePayButtonPreview = () => {
 					gatewayMerchantId: merchantInfo.accountId || '',
 				},
 			}
-		},
+		}],
 		merchantInfo: {
 			merchantId: AIRWALLEX_MERCHANT_ID,
 			merchantName: merchantInfo.businessName,

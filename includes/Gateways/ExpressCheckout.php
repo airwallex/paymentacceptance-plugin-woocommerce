@@ -81,7 +81,7 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		$this->title                     = $this->method_title;
 		$this->description               = __('Express Checkout', 'airwallex-online-payments-gateway');
 		$this->has_fields                = false;
-		$this->cardGateway               = $cardGateway;
+		$this->cardGateway               = GatewayFactory::create(Card::class);
 		$this->gatewaySettingsController = $gatewaySettingsController;
 		$this->orderController           = $orderController;
 		$this->paymentConsentController  = $paymentConsentController;
@@ -101,7 +101,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		add_action( 'woocommerce_airwallex_settings_checkout_' . $this->id, array( $this, 'enqueueAdminScripts' ) );
 		add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 		add_action( 'woocommerce_checkout_order_processed', [ $this, 'addOrderMeta' ], 10, 2 );
-		add_action( 'wp_enqueue_scripts', [ $this, 'enqueueScripts' ] );
 
 		add_action('wc_ajax_airwallex_get_cart_details', [$this->orderController, 'getCartDetails']);
 		add_action('wc_ajax_airwallex_get_shipping_options', [$this->orderController, 'getShippingOptions']);
@@ -308,11 +307,13 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		$this->enqueueAdminSettingsScripts();
 		wp_add_inline_script(
 			'airwallex-admin-settings',
-			'var awxAdminSettings = "";'
+			'var awxAdminSettings = "";',
+			'before'
 		);
 		wp_add_inline_script(
 			'airwallex-admin-settings',
-			'var awxAdminECSettings = ' . wp_json_encode($this->getExpressCheckoutSettingsScriptData())
+			'var awxAdminECSettings = ' . wp_json_encode($this->getExpressCheckoutSettingsScriptData()),
+			'before'
 		);
 	}
 
@@ -372,25 +373,12 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		}
 	}
 
-	public function loadAppleScript() {
-		wp_enqueue_script(
-			'airwallex-apple-pay-block',
-			'https://applepay.cdn-apple.com/jsapi/v1.1.0/apple-pay-sdk.js',
-			array(),
-			null,
-			true
-		);
-	}
-
 	public function enqueueScripts() {
-		wp_enqueue_script( 'airwallex-lib-js', Util::getCheckoutUIEnvHost(Util::getEnvironment()) . '/assets/elements.bundle.min.js', array(), null, true );
-		$dependencies = ['jquery', 'jquery-blockui', 'airwallex-lib-js'];
-		wp_enqueue_script(
+		wp_enqueue_script('airwallex-express-checkout');
+		wp_add_inline_script(
 			'airwallex-express-checkout',
-			AIRWALLEX_PLUGIN_URL . '/build/airwallex-express-checkout.min.js',
-			$dependencies,
-			AIRWALLEX_VERSION,
-			true
+			'var awxExpressCheckoutSettings = ' . wp_json_encode($this->getExpressCheckoutScriptData(false)),
+			'before'
 		);
 	}
 
@@ -412,9 +400,9 @@ class ExpressCheckout extends WC_Payment_Gateway {
 		if (!$this->shouldShowExpressCheckoutButton()) {
 			return;
 		}
-
-		?>
-		<div id="awx-express-checkout-wrapper" style="clear:both;padding-top:1.5em;">
+		$this->enqueueScripts();
+	?>
+		<div id="awx-express-checkout-wrapper" style="clear:both;padding-top:1.5em;display:none;">
 		<div class="awx-express-checkout-error"></div>
 			<?php if (is_checkout()) : ?>
 				<fieldset id="awx-express-checkout-button" class="awx-express-checkout-button-set">
@@ -440,10 +428,6 @@ class ExpressCheckout extends WC_Payment_Gateway {
 			<?php endif; ?>
 		</div>
 	<?php
-		wp_add_inline_script(
-			'airwallex-express-checkout',
-			'var awxExpressCheckoutSettings = ' . wp_json_encode($this->getExpressCheckoutScriptData(false))
-		);
 	}
 
 	public function displayExpressCheckoutButtonSeparatorHtml() {

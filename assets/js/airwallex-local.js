@@ -3,8 +3,8 @@ const AirwallexClient = {
 		const $inputField = jQuery('#' + fieldId);
 		if ($inputField.length) {
 			return $inputField.val().toString().trim();
-		} else if (typeof AirwallexParameters[parameterName] !== 'undefined') {
-			return AirwallexParameters[parameterName].trim();
+		} else if (typeof awxCommonData[parameterName] !== 'undefined') {
+			return awxCommonData[parameterName].trim();
 		} else {
 			return '';
 		}

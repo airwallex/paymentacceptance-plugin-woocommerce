@@ -161,15 +161,17 @@ class APISettings extends AbstractAirwallexSettings {
 		}
 	}
 
-	public function enqueueAdminScripts() { 
+	public function enqueueAdminScripts() {
 		$this->enqueueAdminSettingsScripts();
 		wp_add_inline_script(
 			'airwallex-admin-settings',
-			'var awxAdminSettings = ' . wp_json_encode($this->getExpressCheckoutSettingsScriptData())
+			'var awxAdminSettings = ' . wp_json_encode($this->getExpressCheckoutSettingsScriptData()),
+			'before'
 		);
 		wp_add_inline_script(
 			'airwallex-admin-settings',
-			'var awxAdminECSettings = "";'
+			'var awxAdminECSettings = "";',
+			'before'
 		);
 	}
 
