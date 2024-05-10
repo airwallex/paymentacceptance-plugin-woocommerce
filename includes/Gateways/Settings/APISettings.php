@@ -148,7 +148,7 @@ class APISettings extends AbstractAirwallexSettings {
 
 		// make it compatible with the old approach
 		foreach ($this->settings as $key => $value) {
-			$this->settings[$key] = get_option('airwallex_' . $key);
+			$this->settings[$key] = get_option('airwallex_' . $key, $value);
 		}
 	}
 

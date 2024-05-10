@@ -201,6 +201,6 @@ class Util {
 	 * @return bool
 	 */
 	public static function isNewClient() {
-		return empty(Util::getApiKey()) && empty(Util::getClientSecret());
+		return empty(Util::getApiKey()) || empty(Util::getClientSecret());
 	}
 }
