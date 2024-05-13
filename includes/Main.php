@@ -455,7 +455,7 @@ class Main {
 		wp_register_script(
 			'airwallex-card-js',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-card.min.js',
-			['airwallex-common-js', 'airwallex-lib-js', 'jquery-blockui'],
+			['airwallex-common-js', 'airwallex-lib-js'],
 			AIRWALLEX_VERSION,
 			true
 		);
@@ -469,7 +469,7 @@ class Main {
 		wp_register_script(
 			'airwallex-express-checkout',
 			AIRWALLEX_PLUGIN_URL . '/build/airwallex-express-checkout.min.js',
-			['airwallex-lib-js', 'jquery', 'jquery-blockui'],
+			['airwallex-lib-js', 'jquery'],
 			AIRWALLEX_VERSION,
 			true
 		);
