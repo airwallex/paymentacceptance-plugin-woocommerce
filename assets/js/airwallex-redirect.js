@@ -27,7 +27,7 @@ jQuery(function ($) {
             } else if (document.getElementById(containerId) && document.querySelector(`#${containerId} iframe`)) {
                 clearInterval(waitElementInterval);
             }
-        }, 3000);
+        }, 1000);
         window.addEventListener('onSuccess', (event) => {
             if (event.target.id !== containerId) {
                 return;

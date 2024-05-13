@@ -1,5 +1,9 @@
 *** WooCommerce Airwallex Online Payments Gateway Changelog ***
 
+2024-05-13 - version 1.10.1
+
+* Add - Compatibility enhancement
+
 2024-05-10 - version 1.10.0
 
 * Fix - Compatibility issue with frontend optimization plugins

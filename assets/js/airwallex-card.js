@@ -20,17 +20,15 @@ jQuery(function ($) {
             autoCapture: autoCapture,
         });
         let domElement = airwallexSlimCard.mount('airwallex-card');
-        const waitCardInterval = setInterval(function () {
+        setInterval(function () {
             if (document.getElementById('airwallex-card') && !document.querySelector('#airwallex-card iframe')) {
                 try {
                     domElement = airwallexSlimCard.mount('airwallex-card');
                 } catch(e) {
                     console.warn(e);
                 }
-            } else if (document.getElementById('airwallex-card') && document.querySelector('#airwallex-card iframe')) {
-                clearInterval(waitCardInterval);
             }
-        }, 3000);
+        }, 1000);
 
         window.addEventListener('onError', (event) => {
             if (!event.detail) {
