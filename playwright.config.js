@@ -122,9 +122,6 @@ export default defineConfig({
 				'shortcode_card_redirect_legacy.spec.js',
 				'shortcode_dropin_legacy.spec.js',
 				'shortcode_wechat_legacy.spec.js',
-				'orderPay_card_redirect_legacy.spec.js',
-				'orderPay_dropin_legacy.spec.js',
-				'orderPay_wechat_legacy.spec.js',
 			],
 			use: {
 				...devices['Desktop Chrome'],
@@ -133,8 +130,12 @@ export default defineConfig({
 			dependencies: ['use-shortcode-checkout-legacy-template'],
 		},
 		{
-			name: 'use-shortcode-checkout-wp-page-template',
-			testMatch: 'shortcode_checkout_wp_page_template.setup.js',
+			name: 'test-order-pay-legacy-template',
+			testMatch: [
+				'orderPay_card_redirect_legacy.spec.js',
+				'orderPay_dropin_legacy.spec.js',
+				'orderPay_wechat_legacy.spec.js',
+			],
 			use: {
 				...devices['Desktop Chrome'],
 				storageState: STORAGE_STATE,
@@ -142,14 +143,20 @@ export default defineConfig({
 			dependencies: ['test-shortcode-checkout-legacy-template'],
 		},
 		{
+			name: 'use-shortcode-checkout-wp-page-template',
+			testMatch: 'shortcode_checkout_wp_page_template.setup.js',
+			use: {
+				...devices['Desktop Chrome'],
+				storageState: STORAGE_STATE,
+			},
+			dependencies: ['test-order-pay-legacy-template'],
+		},
+		{
 			name: 'test-shortcode-checkout-wp-page-template',
 			testMatch: [
 				'shortcode_card_redirect_wp_page.spec.js',
 				'shortcode_dropin_wp_page.spec.js',
 				'shortcode_wechat_wp_page.spec.js',
-				'orderPay_card_redirect_wp_page.spec.js',
-				'orderPay_dropin_wp_page.spec.js',
-				'orderPay_wechat_wp_page.spec.js',
 			],
 			use: {
 				...devices['Desktop Chrome'],
@@ -158,17 +165,40 @@ export default defineConfig({
 			dependencies: ['use-shortcode-checkout-wp-page-template'],
 		},
 		{
-			name: 'test-shortcode-checkout-embedded-card',
+			name: 'test-order-pay-wp-page-template',
 			testMatch: [
-				'shortcode_card_embedded.spec.js',
-				'shortcode_klarna.spec.js',
-				'orderPay_card_embedded.spec.js',
+				'orderPay_card_redirect_wp_page.spec.js',
+				'orderPay_dropin_wp_page.spec.js',
+				'orderPay_wechat_wp_page.spec.js',
 			],
 			use: {
 				...devices['Desktop Chrome'],
 				storageState: STORAGE_STATE,
 			},
 			dependencies: ['test-shortcode-checkout-wp-page-template'],
+		},
+		{
+			name: 'test-shortcode-checkout-embedded-card',
+			testMatch: [
+				'shortcode_card_embedded.spec.js',
+				'shortcode_klarna.spec.js',
+			],
+			use: {
+				...devices['Desktop Chrome'],
+				storageState: STORAGE_STATE,
+			},
+			dependencies: ['test-order-pay-wp-page-template'],
+		},
+		{
+			name: 'test-order-pay-embedded-card',
+			testMatch: [
+				'orderPay_card_embedded.spec.js',
+			],
+			use: {
+				...devices['Desktop Chrome'],
+				storageState: STORAGE_STATE,
+			},
+			dependencies: ['test-shortcode-checkout-embedded-card'],
 		},
 		{
 			name: 'Revert plugin settings changes',
@@ -179,7 +209,7 @@ export default defineConfig({
 				...devices['Desktop Chrome'],
 				storageState: STORAGE_STATE,
 			},
-			dependencies: ['test-shortcode-checkout-embedded-card'],
+			dependencies: ['test-order-pay-embedded-card'],
 		},
 	],
 });

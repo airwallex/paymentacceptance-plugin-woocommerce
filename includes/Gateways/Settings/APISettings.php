@@ -116,7 +116,7 @@ class APISettings extends AbstractAirwallexSettings {
 				'title'   => __( 'Activate JS logging', 'airwallex-online-payments-gateway' ),
 				'description'    => __( 'Yes (only for special cases after contacting Airwallex)', 'airwallex-online-payments-gateway' ),
 				'type'    => 'checkbox',
-				'default' => 'yes',
+				'default' => '',
 				'id'      => 'airwallex_do_js_logging',
 				'value'   => get_option( 'airwallex_do_js_logging' ),
 			),

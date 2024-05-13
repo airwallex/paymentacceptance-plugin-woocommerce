@@ -62,6 +62,7 @@ class Card extends WC_Payment_Gateway {
 		add_filter( 'wc_airwallex_settings_nav_tabs', array( $this, 'adminNavTab' ), 11 );
 		add_action( 'woocommerce_airwallex_settings_checkout_' . $this->id, array( $this, 'enqueueAdminScripts' ) );
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueueScriptsForEmbeddedCard' ) );
 	}
 
 	public function enqueueScriptsForEmbeddedCard() {
@@ -124,8 +125,6 @@ class Card extends WC_Payment_Gateway {
 	}
 
 	public function payment_fields() {
-		$this->enqueueScriptsForEmbeddedCard();
-		
 		if ( $this->get_option( 'checkout_form_type' ) === 'inline' ) {
 			echo '<p>' . wp_kses_post( $this->description ) . '</p>';
 			echo '<div id="airwallex-card"></div>';

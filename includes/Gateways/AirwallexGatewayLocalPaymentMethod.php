@@ -21,6 +21,7 @@ abstract class AirwallexGatewayLocalPaymentMethod extends AbstractAirwallexGatew
         add_action('wc_ajax_airwallex_get_store_currency', [$this->orderController, 'getStoreCurrency']);
         add_action('woocommerce_review_order_after_order_total', [$this, 'renderCurrencySwitchingHtml']);
         add_action('wp_footer', [$this, 'renderQuoteExpireHtml']);
+        add_action('wp_enqueue_scripts', [$this, 'enqueueScripts']);
     }
 
     public function enqueueScripts() {
@@ -94,8 +95,6 @@ abstract class AirwallexGatewayLocalPaymentMethod extends AbstractAirwallexGatew
     }
 
     public function payment_fields() {
-        $this->enqueueScripts();
-
         echo '<p style="display: flex; align-items: center;"><span>' . wp_kses_post( $this->description ) . '</span><span class="wc-airwallex-loader"></span></p>';
 
         $this->renderCountryIneligibleHtml();
